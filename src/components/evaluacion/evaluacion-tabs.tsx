@@ -56,9 +56,12 @@ export default function EvaluacionTabs({ data }: EvaluacionTabsProps) {
   const [tabValue, setTabValue] = useState(0)
   const user = useUser((state) => state.user)
 
+  // Admin: puede actuar como técnico y como director (ambos flujos)
+  const isAdmin = user?.is_superuser === true
+
   // Check if user is director (superuser, staff, or has Director group, or has director role in zonas)
   const isDirector =
-    user?.is_superuser ||
+    isAdmin ||
     user?.is_staff ||
     user?.groups?.some((group: any) => group.name === "Director") ||
     user?.zonas?.some((zona: any) => zona.director === true)
@@ -208,7 +211,7 @@ export default function EvaluacionTabs({ data }: EvaluacionTabsProps) {
       </Box>
 
       <Box sx={{ mt: 4 }}>
-        <DescripcionSituacion descripcion={descripcionSituacion} setDescripcion={setDescripcionSituacion} disabled={isDirector} />
+        <DescripcionSituacion descripcion={descripcionSituacion} setDescripcion={setDescripcionSituacion} disabled={isDirector && !isAdmin} />
       </Box>
 
 
@@ -226,7 +229,7 @@ export default function EvaluacionTabs({ data }: EvaluacionTabsProps) {
             fullWidth
             variant="outlined"
             placeholder="Ingrese su valoración profesional final"
-            disabled={isDirector}
+            disabled={isDirector && !isAdmin}
           />
         </Paper>
       </Box>
@@ -278,7 +281,7 @@ export default function EvaluacionTabs({ data }: EvaluacionTabsProps) {
               variant="outlined"
               placeholder="Ingrese la justificación técnica (no aparecerá en el informe)"
               sx={{ mb: 3 }}
-              disabled={isDirector}
+              disabled={isDirector && !isAdmin}
             />
 
             <Divider sx={{ my: 2 }} />

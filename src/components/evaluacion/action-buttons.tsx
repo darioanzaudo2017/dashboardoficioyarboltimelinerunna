@@ -116,8 +116,11 @@ export default function ActionButtons({
   const [tipoMedidaEvaluado, setTipoMedidaEvaluado] = useState<string>("")
   const user = useUser((state) => state.user)
 
+  // Admin: puede actuar como técnico y como director (ambos flujos)
+  const isAdmin = user?.is_superuser === true
+
   // Check if user is director (superuser, staff, or has Director group, or has director role in zonas)
-  const isDirector = user?.is_superuser ||
+  const isDirector = isAdmin ||
     user?.is_staff ||
     user?.groups?.some((group: any) => group.name === "Director") ||
     user?.zonas?.some((zona: any) => zona.director === true)
@@ -484,8 +487,8 @@ export default function ActionButtons({
         }}
       />
 
-      {/* Show these buttons only if user is NOT a director */}
-      {!isDirector && (
+      {/* Show these buttons if user is NOT a director. El admin ve ambos flujos. */}
+      {(!isDirector || isAdmin) && (
         <>
           <Button
             variant="contained"
