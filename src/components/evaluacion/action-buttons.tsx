@@ -12,6 +12,7 @@ import {
   OutlinedInput,
   Autocomplete,
   TextField,
+  Typography,
   type SelectChangeEvent,
 } from "@mui/material"
 import { toast } from "react-toastify"
@@ -439,6 +440,121 @@ export default function ActionButtons({
     firmantes: firmantes,
   }
 
+  // Botones del flujo del Técnico (solicitud de archivo / tomar medida)
+  const tecnicoActions = (
+    <>
+      <Button
+        variant="contained"
+        color="secondary"
+        onClick={() => handleAuthorizationAction("autorizar archivar")}
+        disabled={isSubmitting}
+      >
+        Autorizar archivar
+      </Button>
+
+      {/* Multi-select for children before "Autorizar tomar medida" */}
+      <FormControl sx={{ minWidth: 250 }}>
+        <InputLabel id="select-multiple-children-label">Seleccionar NNyA</InputLabel>
+        <Select
+          labelId="select-multiple-children-label"
+          id="select-multiple-children"
+          multiple
+          value={selectedChildrenIds}
+          onChange={handleChildChange}
+          input={<OutlinedInput id="select-multiple-chip" label="Seleccionar NNyA" />}
+          renderValue={(selected) => (
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+              {selected.map((value) => {
+                const child = children.find((c) => c.id === value)
+                return (
+                  <Chip
+                    key={value}
+                    label={child ? child.name : value}
+                    size="small"
+                    deleteIcon={<CancelIcon onMouseDown={(event) => event.stopPropagation()} />}
+                    onDelete={() => {
+                      setSelectedChildrenIds(selectedChildrenIds.filter((id) => id !== value))
+                    }}
+                  />
+                )
+              })}
+            </Box>
+          )}
+          size="small"
+          MenuProps={{
+            PaperProps: {
+              style: {
+                maxHeight: 224,
+                width: 250,
+              },
+            },
+          }}
+        >
+          {children.length > 0 ? (
+            children.map((child) => (
+              <MenuItem key={child.id} value={child.id}>
+                {child.name} ({child.type})
+              </MenuItem>
+            ))
+          ) : (
+            <MenuItem disabled value="">
+              No hay NNyA registrados
+            </MenuItem>
+          )}
+        </Select>
+      </FormControl>
+
+      {/* Tipo de Medida selector */}
+      <FormControl sx={{ minWidth: 250 }}>
+        <InputLabel id="select-tipo-medida-label">Tipo de Medida *</InputLabel>
+        <Select
+          labelId="select-tipo-medida-label"
+          id="select-tipo-medida"
+          value={tipoMedidaEvaluado}
+          onChange={(e) => setTipoMedidaEvaluado(e.target.value)}
+          input={<OutlinedInput label="Tipo de Medida *" />}
+          size="small"
+        >
+          <MenuItem value="MPI">Medida de Protección Integral (MPI)</MenuItem>
+          <MenuItem value="MPE">Medida de Protección Excepcional (MPE)</MenuItem>
+          <MenuItem value="MPJ">Medida Penal Juvenil (MPJ)</MenuItem>
+        </Select>
+      </FormControl>
+
+      <Button
+        variant="contained"
+        color="secondary"
+        onClick={() => handleAuthorizationAction("autorizar tomar medida")}
+        disabled={selectedChildrenIds.length === 0 || !tipoMedidaEvaluado || isSubmitting}
+      >
+        Autorizar tomar medida
+      </Button>
+    </>
+  )
+
+  // Botones del flujo del Director (autorizar / no autorizar)
+  const directorActions = (
+    <>
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={() => handleAuthorizationAction("autorizar")}
+        disabled={isSubmitting}
+      >
+        Autorizar
+      </Button>
+
+      <Button
+        variant="contained"
+        color="error"
+        onClick={() => handleAuthorizationAction("no autorizar")}
+        disabled={isSubmitting}
+      >
+        No autorizar
+      </Button>
+    </>
+  )
+
   return (
     <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end", gap: 2, flexWrap: "wrap", alignItems: "center" }}>
       <DownloadPDFButton data={combinedData} onGenerate={handlePDFGenerated} />
@@ -487,118 +603,52 @@ export default function ActionButtons({
         }}
       />
 
-      {/* Show these buttons if user is NOT a director. El admin ve ambos flujos. */}
-      {(!isDirector || isAdmin) && (
+      {isAdmin ? (
+        // Admin: ve ambos flujos, separados y etiquetados
         <>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => handleAuthorizationAction("autorizar archivar")}
-            disabled={isSubmitting}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 1.5,
+              p: 1.5,
+              border: "1px dashed",
+              borderColor: "secondary.main",
+              borderRadius: 1,
+            }}
           >
-            Autorizar archivar
-          </Button>
+            <Typography variant="caption" sx={{ fontWeight: "bold", color: "secondary.main", letterSpacing: 0.5 }}>
+              TÉCNICO
+            </Typography>
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, alignItems: "center" }}>
+              {tecnicoActions}
+            </Box>
+          </Box>
 
-          {/* Multi-select for children before "Autorizar tomar medida" */}
-          <FormControl sx={{ minWidth: 250 }}>
-            <InputLabel id="select-multiple-children-label">Seleccionar NNyA</InputLabel>
-            <Select
-              labelId="select-multiple-children-label"
-              id="select-multiple-children"
-              multiple
-              value={selectedChildrenIds}
-              onChange={handleChildChange}
-              input={<OutlinedInput id="select-multiple-chip" label="Seleccionar NNyA" />}
-              renderValue={(selected) => (
-                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-                  {selected.map((value) => {
-                    const child = children.find((c) => c.id === value)
-                    return (
-                      <Chip
-                        key={value}
-                        label={child ? child.name : value}
-                        size="small"
-                        deleteIcon={<CancelIcon onMouseDown={(event) => event.stopPropagation()} />}
-                        onDelete={() => {
-                          setSelectedChildrenIds(selectedChildrenIds.filter((id) => id !== value))
-                        }}
-                      />
-                    )
-                  })}
-                </Box>
-              )}
-              size="small"
-              MenuProps={{
-                PaperProps: {
-                  style: {
-                    maxHeight: 224,
-                    width: 250,
-                  },
-                },
-              }}
-            >
-              {children.length > 0 ? (
-                children.map((child) => (
-                  <MenuItem key={child.id} value={child.id}>
-                    {child.name} ({child.type})
-                  </MenuItem>
-                ))
-              ) : (
-                <MenuItem disabled value="">
-                  No hay NNyA registrados
-                </MenuItem>
-              )}
-            </Select>
-          </FormControl>
-
-          {/* Tipo de Medida selector */}
-          <FormControl sx={{ minWidth: 250 }}>
-            <InputLabel id="select-tipo-medida-label">Tipo de Medida *</InputLabel>
-            <Select
-              labelId="select-tipo-medida-label"
-              id="select-tipo-medida"
-              value={tipoMedidaEvaluado}
-              onChange={(e) => setTipoMedidaEvaluado(e.target.value)}
-              input={<OutlinedInput label="Tipo de Medida *" />}
-              size="small"
-            >
-              <MenuItem value="MPI">Medida de Protección Integral (MPI)</MenuItem>
-              <MenuItem value="MPE">Medida de Protección Excepcional (MPE)</MenuItem>
-              <MenuItem value="MPJ">Medida Penal Juvenil (MPJ)</MenuItem>
-            </Select>
-          </FormControl>
-
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => handleAuthorizationAction("autorizar tomar medida")}
-            disabled={selectedChildrenIds.length === 0 || !tipoMedidaEvaluado || isSubmitting}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 1.5,
+              p: 1.5,
+              border: "1px dashed",
+              borderColor: "primary.main",
+              borderRadius: 1,
+            }}
           >
-            Autorizar tomar medida
-          </Button>
+            <Typography variant="caption" sx={{ fontWeight: "bold", color: "primary.main", letterSpacing: 0.5 }}>
+              DIRECTOR
+            </Typography>
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, alignItems: "center" }}>
+              {directorActions}
+            </Box>
+          </Box>
         </>
-      )}
-
-      {/* Show these buttons only if user IS a director */}
-      {isDirector && (
+      ) : (
+        // Resto de roles: un solo flujo, sin etiquetas
         <>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => handleAuthorizationAction("autorizar")}
-            disabled={isSubmitting}
-          >
-            Autorizar
-          </Button>
-
-          <Button
-            variant="contained"
-            color="error"
-            onClick={() => handleAuthorizationAction("no autorizar")}
-            disabled={isSubmitting}
-          >
-            No autorizar
-          </Button>
+          {!isDirector && tecnicoActions}
+          {isDirector && directorActions}
         </>
       )}
     </Box>
