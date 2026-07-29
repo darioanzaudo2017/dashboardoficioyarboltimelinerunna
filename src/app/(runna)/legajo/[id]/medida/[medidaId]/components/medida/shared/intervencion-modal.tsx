@@ -1261,11 +1261,13 @@ export const IntervencionModal: React.FC<IntervencionModalProps> = ({
                                     title={
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                             <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'secondary.dark' }}>
-                                                3. Documentos Adicionales (Opcional)
+                                                3. Documentación Adicional (Opcional)
                                             </Typography>
                                         </Box>
                                     }
-                                    subheader="Adjunte actas, entrevistas, fotos u otros respaldos pertinentes."
+                                    subheader={tipoMedida === 'MPE'
+                                        ? "Actas de puesta en conocimiento y de resguardo, notificaciones a los responsables legales del cuidado personal y otros documentos como informes externos, constancias."
+                                        : "Adjunte actas, entrevistas, fotos u otros respaldos pertinentes."}
                                     sx={{ py: 1.5 }}
                                     action={
                                         (intervencion ? additionalMappedAdjuntos.length : pendingFiles.length) > 0 && (
