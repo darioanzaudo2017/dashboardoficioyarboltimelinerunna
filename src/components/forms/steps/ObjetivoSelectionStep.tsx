@@ -42,7 +42,7 @@ interface ObjetivoOption {
 const OBJETIVO_OPTIONS: ObjetivoOption[] = [
   {
     key: "PROTECCION",
-    label: "Protección",
+    label: "Protección Inicial",
     description:
       "Registro de demanda para medidas de protección integral de niños, niñas y adolescentes.",
     icon: ShieldIcon,
@@ -60,7 +60,7 @@ const OBJETIVO_OPTIONS: ObjetivoOption[] = [
   },
   {
     key: "CARGA_OFICIOS",
-    label: "Carga de Oficios",
+    label: "Carga de Oficios Penal Juvenil",
     description:
       "Registro de oficios judiciales, medidas tutelares y comunicaciones del poder judicial.",
     icon: GavelIcon,
