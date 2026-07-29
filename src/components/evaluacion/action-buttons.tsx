@@ -449,7 +449,7 @@ export default function ActionButtons({
         onClick={() => handleAuthorizationAction("autorizar archivar")}
         disabled={isSubmitting}
       >
-        Autorizar archivar
+        Solicitud de autorización de archivo
       </Button>
 
       {/* Multi-select for children before "Autorizar tomar medida" */}
@@ -527,7 +527,7 @@ export default function ActionButtons({
         onClick={() => handleAuthorizationAction("autorizar tomar medida")}
         disabled={selectedChildrenIds.length === 0 || !tipoMedidaEvaluado || isSubmitting}
       >
-        Autorizar tomar medida
+        Solicitud de autorización de adopción de medida
       </Button>
     </>
   )
