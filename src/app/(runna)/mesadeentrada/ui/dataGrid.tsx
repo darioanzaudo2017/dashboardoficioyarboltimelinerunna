@@ -863,8 +863,7 @@ const DemandaTableContent: React.FC = () => {
   }
 
   // Define responsive columns based on screen size.
-  // Order matters: id is pinned-left as the row identifier
-  // and actions is appended last (acts as pinned-right action column).
+  // Final display order is normalized by DEFAULT_COLUMN_ORDER at the end of getColumns.
   const getColumns = (): GridColDef[] => {
     const baseColumns: GridColDef[] = [
       // SCORE COLUMN - HIDDEN
@@ -1140,7 +1139,6 @@ const DemandaTableContent: React.FC = () => {
       )
     }
 
-    // Append actions LAST so it sits at the right edge (acts as pinned-right column).
     baseColumns.push({
       field: "actions",
       headerName: "Acciones",
@@ -1236,7 +1234,27 @@ const DemandaTableContent: React.FC = () => {
       ),
     })
 
-    return baseColumns
+    // Default column order: identification → estado → acciones → seguimiento → resto
+    const DEFAULT_COLUMN_ORDER = [
+      "id",
+      "apellido",
+      "nombre",
+      "estado_demanda",
+      "actions",
+      "envioRespuesta",
+      "calificacion",
+      "ultimaActualizacion",
+      "adjuntos",
+      "origen",
+      "localidad",
+      "zonaEquipo",
+      "objetivoDemanda",
+    ]
+    return baseColumns.sort((a, b) => {
+      const indexA = DEFAULT_COLUMN_ORDER.indexOf(a.field)
+      const indexB = DEFAULT_COLUMN_ORDER.indexOf(b.field)
+      return (indexA === -1 ? DEFAULT_COLUMN_ORDER.length : indexA) - (indexB === -1 ? DEFAULT_COLUMN_ORDER.length : indexB)
+    })
   }
 
   const columns = useMemo(() => getColumns(), [isMobile])
