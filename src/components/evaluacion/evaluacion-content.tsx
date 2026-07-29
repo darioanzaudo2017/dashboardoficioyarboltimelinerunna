@@ -2,6 +2,7 @@
 import { useSearchParams } from "next/navigation"
 import { useQuery } from "@tanstack/react-query"
 import EvaluacionTabs from "@/components/evaluacion/evaluacion-tabs"
+import DemandaContextCard from "@/components/evaluacion/demanda-context-card"
 import { Box, CircularProgress, Alert } from "@mui/material"
 import { get } from "@/app/api/apiService"
 import { getCurrentDateISO } from "@/utils/dateUtils"
@@ -316,6 +317,7 @@ export default function EvaluacionContent() {
 
   return (
     <main className="max-w-[1200px] mx-auto p-5">
+      <DemandaContextCard apiData={data} />
       <EvaluacionTabs data={transformedData} />
     </main>
   )
