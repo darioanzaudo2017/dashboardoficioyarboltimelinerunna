@@ -77,6 +77,9 @@ export default function EvaluacionTabs({ data }: EvaluacionTabsProps) {
   const [justificacionTecnico, setJustificacionTecnico] = useState(typeof data.JustificacionTecnico === 'string' ? data.JustificacionTecnico : "")
   const [justificacionDirector, setJustificacionDirector] = useState(typeof data.JustificacionDirector === 'string' ? data.JustificacionDirector : "")
   const [expandedJustificaciones, setExpandedJustificaciones] = useState(true)
+
+  // Las justificaciones internas solo se activan cuando el director no autorizó la solicitud
+  const hayDiscrepanciaDirector = data.DecisionDirector === "NO AUTORIZAR"
   const [adjuntos, setAdjuntos] = useState(Array.isArray(data.adjuntos) ? data.adjuntos : [])
 
   // Reference to the file management component
@@ -236,85 +239,90 @@ export default function EvaluacionTabs({ data }: EvaluacionTabsProps) {
 
 
 
-      {/* Justificaciones - Accordion for better UX */}
-      <Accordion
-        expanded={expandedJustificaciones}
-        onChange={() => setExpandedJustificaciones(!expandedJustificaciones)}
-        sx={{ mt: 4, mb: 2, boxShadow: "none", border: "1px solid rgba(0, 0, 0, 0.12)" }}
-      >
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls="justificaciones-content"
-          id="justificaciones-header"
-          sx={{
-            backgroundColor: "rgba(14, 165, 233, 0.08)",
-            "&:hover": {
-              backgroundColor: "rgba(14, 165, 233, 0.12)",
-            },
-          }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
-            <Typography variant="h6" sx={{ fontWeight: "bold", color: "#0EA5E9" }}>
-              JUSTIFICACIONES INTERNAS
-            </Typography>
-            {data.SolicitudTecnico && (
-              <Chip
-                label={`Solicitud del técnico: ${data.SolicitudTecnico}${data.TipoMedidaEvaluado ? ` "${data.TipoMedidaEvaluado}"` : ""}`}
-                color="info"
-                variant="outlined"
-                size="small"
-              />
-            )}
-          </Box>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Box sx={{ p: 1 }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: "bold", mb: 1 }}>
-              Justificación del Técnico
-            </Typography>
-            <TextField
-              value={justificacionTecnico}
-              onChange={(e) => setJustificacionTecnico(e.target.value)}
-              multiline
-              rows={3}
-              fullWidth
-              variant="outlined"
-              placeholder="Ingrese la justificación técnica (no aparecerá en el informe)"
-              sx={{ mb: 3 }}
-              disabled={isDirector && !isAdmin}
-            />
-
-            <Divider sx={{ my: 2 }} />
-
-            <Typography variant="subtitle1" sx={{ fontWeight: "bold", mb: 1 }}>
-              Justificación del Director
-            </Typography>
-            <TextField
-              value={justificacionDirector}
-              onChange={(e) => setJustificacionDirector(e.target.value)}
-              multiline
-              rows={3}
-              fullWidth
-              variant="outlined"
-              placeholder="Ingrese la justificación del director (no aparecerá en el informe)"
-              disabled={!isDirector}
-            />
-
-            <Box sx={{ mt: 2, display: "flex", alignItems: "center" }}>
-              <Typography variant="caption" color="text.secondary" sx={{ fontStyle: "italic" }}>
-                Nota: Estas justificaciones son para uso interno y no se incluirán en el informe PDF.
-              </Typography>
-            </Box>
-          </Box>
-        </AccordionDetails>
-      </Accordion>
-
       {/* File Management Section */}
       <FileManagement
         ref={fileManagementRef}
         demandaId={demandaId}
         existingAdjuntos={data.latest_evaluacion?.adjuntos || []}
       />
+
+      {/* Justificaciones internas: solo se habilitan ante discrepancia del director (no autorización),
+          para el intercambio de mensajes entre técnico y director */}
+      {hayDiscrepanciaDirector && (
+        <Accordion
+          expanded={expandedJustificaciones}
+          onChange={() => setExpandedJustificaciones(!expandedJustificaciones)}
+          sx={{ mt: 4, mb: 2, boxShadow: "none", border: "1px solid rgba(0, 0, 0, 0.12)" }}
+        >
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            aria-controls="justificaciones-content"
+            id="justificaciones-header"
+            sx={{
+              backgroundColor: "rgba(14, 165, 233, 0.08)",
+              "&:hover": {
+                backgroundColor: "rgba(14, 165, 233, 0.12)",
+              },
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
+              <Typography variant="h6" sx={{ fontWeight: "bold", color: "#0EA5E9" }}>
+                JUSTIFICACIONES INTERNAS
+              </Typography>
+              <Chip label="Decisión del director: NO AUTORIZAR" color="error" variant="outlined" size="small" />
+              {data.SolicitudTecnico && (
+                <Chip
+                  label={`Solicitud del técnico: ${data.SolicitudTecnico}${data.TipoMedidaEvaluado ? ` "${data.TipoMedidaEvaluado}"` : ""}`}
+                  color="info"
+                  variant="outlined"
+                  size="small"
+                />
+              )}
+            </Box>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Box sx={{ p: 1 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: "bold", mb: 1 }}>
+                Justificación del Técnico
+              </Typography>
+              <TextField
+                value={justificacionTecnico}
+                onChange={(e) => setJustificacionTecnico(e.target.value)}
+                multiline
+                rows={3}
+                fullWidth
+                variant="outlined"
+                placeholder="Ingrese la justificación técnica (no aparecerá en el informe)"
+                sx={{ mb: 3 }}
+                disabled={isDirector && !isAdmin}
+              />
+
+              <Divider sx={{ my: 2 }} />
+
+              <Typography variant="subtitle1" sx={{ fontWeight: "bold", mb: 1 }}>
+                Justificación del Director
+              </Typography>
+              <TextField
+                value={justificacionDirector}
+                onChange={(e) => setJustificacionDirector(e.target.value)}
+                multiline
+                rows={3}
+                fullWidth
+                variant="outlined"
+                placeholder="Ingrese la justificación del director (no aparecerá en el informe)"
+                disabled={!isDirector}
+              />
+
+              <Box sx={{ mt: 2, display: "flex", alignItems: "center" }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontStyle: "italic" }}>
+                  Nota: Estas justificaciones son para el intercambio interno entre técnico y director ante la no
+                  autorización, y no se incluirán en el informe PDF.
+                </Typography>
+              </Box>
+            </Box>
+          </AccordionDetails>
+        </Accordion>
+      )}
 
       <ActionButtons
         generatePDF={() => Promise.resolve(collectUpdatedData())}
