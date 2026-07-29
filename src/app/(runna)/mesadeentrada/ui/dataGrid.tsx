@@ -34,7 +34,7 @@ import {
 } from "@mui/x-data-grid"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import {
-  PersonAdd,
+  TouchApp,
   Edit,
   Warning,
   AttachFile,
@@ -1181,7 +1181,7 @@ const DemandaTableContent: React.FC = () => {
                 }}
                 sx={{ color: "secondary.main" }}
               >
-                <PersonAdd fontSize="small" />
+                <TouchApp fontSize="small" />
               </IconButton>
             </Tooltip>
           )}
