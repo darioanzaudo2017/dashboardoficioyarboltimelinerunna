@@ -1459,13 +1459,13 @@ const DemandaTableContent: React.FC = () => {
             sx={{
               fontWeight: 700,
               fontSize: { xs: "1.125rem", md: "1.5rem" },
-              background: gradients.title,
+              background: gradients.success,
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               letterSpacing: "-0.5px",
             }}
           >
-            Gestión de Demandas
+            Mesa de Entradas
           </Typography>
 
           <ToggleButtonGroup

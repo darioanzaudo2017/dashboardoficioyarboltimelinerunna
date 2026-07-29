@@ -1213,7 +1213,7 @@ const LegajoTable: React.FC = () => {
                 letterSpacing: "-0.5px",
               }}
             >
-              Gestión de Legajos
+              Bandeja de Legajos
             </Typography>
 
             <ToggleButtonGroup
