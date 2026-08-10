@@ -5,8 +5,10 @@ import { Typography, Paper, Grid, Box, CircularProgress, Alert } from "@mui/mate
 import LocationOnIcon from "@mui/icons-material/LocationOn"
 import HomeIcon from "@mui/icons-material/Home"
 import type { LegajoDetailResponse } from "@/app/(runna)/legajo-mesa/types/legajo-api"
+import { unwrapLocalizacionActual } from "@/app/(runna)/legajo-mesa/utils/legajo-detail-normalizers"
 import { usePersonaLocalizacion } from "../../hooks/usePersonaData"
 import { buildFullAddress, getLocalidadNombre } from "../../api/localizacion-api-service"
+import type { LocalizacionPersona } from "../../types/persona-data"
 
 interface LocalizacionSectionProps {
   legajoData: LegajoDetailResponse
@@ -67,7 +69,8 @@ export const LocalizacionSection: React.FC<LocalizacionSectionProps> = ({ legajo
   }
 
   // No data state (with fallback to legajo localizacion_actual)
-  const displayLocalizacion = localizacion || legajoData?.localizacion_actual?.localizacion
+  const displayLocalizacion =
+    localizacion || unwrapLocalizacionActual<LocalizacionPersona>(legajoData.localizacion_actual)
 
   if (!displayLocalizacion) {
     return (

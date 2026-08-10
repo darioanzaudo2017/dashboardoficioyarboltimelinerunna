@@ -51,13 +51,18 @@ interface PlanTrabajoSectionProps {
 
 function esVigente(estado: string): boolean {
   const e = (estado || "").toUpperCase()
-  return e.includes("VIGENTE") || (e !== "CESADA" && e !== "ARCHIVADA" && e !== "INACTIVA")
+  return e === "VIGENTE"
+}
+
+function getMedidaEstado(m: MedidaInfo): string {
+  return m.estado_vigencia || m.estado || ""
 }
 
 function formatMedidaLabel(m: MedidaInfo): string {
   const tipo = m.tipo_medida || ""
-  const numero = m.numero || `#${m.id}`
-  const estado = esVigente(m.estado) ? "✓ Vigente" : m.estado
+  const numero = m.numero_medida || m.numero || `#${m.id}`
+  const estadoActual = getMedidaEstado(m)
+  const estado = esVigente(estadoActual) ? "✓ Vigente" : estadoActual
   const fecha = m.fecha_apertura ? new Date(m.fecha_apertura).toLocaleDateString("es-AR") : ""
   return `${tipo} ${numero} — ${estado}${fecha ? ` (${fecha})` : ""}`
 }
@@ -91,8 +96,8 @@ export const PlanTrabajoSection: React.FC<PlanTrabajoSectionProps> = ({
 
     // Ordenar: vigentes primero, luego por fecha desc
     return all.sort((a, b) => {
-      const aVigente = esVigente(a.estado) ? 1 : 0
-      const bVigente = esVigente(b.estado) ? 1 : 0
+      const aVigente = esVigente(getMedidaEstado(a)) ? 1 : 0
+      const bVigente = esVigente(getMedidaEstado(b)) ? 1 : 0
       if (bVigente !== aVigente) return bVigente - aVigente
       return new Date(b.fecha_apertura || 0).getTime() - new Date(a.fecha_apertura || 0).getTime()
     })
@@ -100,7 +105,7 @@ export const PlanTrabajoSection: React.FC<PlanTrabajoSectionProps> = ({
 
   // ─── Selección de medida: default = primer vigente (o primera disponible) ──
   const defaultMedidaId = useMemo(() => {
-    const vigente = todasLasMedidas.find((m) => esVigente(m.estado))
+    const vigente = todasLasMedidas.find((m) => esVigente(getMedidaEstado(m)))
     return vigente?.id ?? todasLasMedidas[0]?.id ?? null
   }, [todasLasMedidas])
 
@@ -156,9 +161,13 @@ export const PlanTrabajoSection: React.FC<PlanTrabajoSectionProps> = ({
           </Typography>
           {medidaSeleccionada && (
             <Chip
-              label={esVigente(medidaSeleccionada.estado) ? "Vigente" : medidaSeleccionada.estado}
+              label={
+                esVigente(getMedidaEstado(medidaSeleccionada))
+                  ? "Vigente"
+                  : getMedidaEstado(medidaSeleccionada)
+              }
               size="small"
-              color={esVigente(medidaSeleccionada.estado) ? "success" : "default"}
+              color={esVigente(getMedidaEstado(medidaSeleccionada)) ? "success" : "default"}
               variant="filled"
             />
           )}
@@ -195,12 +204,12 @@ export const PlanTrabajoSection: React.FC<PlanTrabajoSectionProps> = ({
                         label={m.tipo_medida || "—"}
                         size="small"
                         sx={{ fontSize: "0.7rem", height: 20 }}
-                        color={esVigente(m.estado) ? "primary" : "default"}
-                        variant={esVigente(m.estado) ? "filled" : "outlined"}
+                        color={esVigente(getMedidaEstado(m)) ? "primary" : "default"}
+                        variant={esVigente(getMedidaEstado(m)) ? "filled" : "outlined"}
                       />
                       <Typography variant="body2">
-                        {m.numero || `#${m.id}`}
-                        {esVigente(m.estado) && (
+                        {m.numero_medida || m.numero || `#${m.id}`}
+                        {esVigente(getMedidaEstado(m)) && (
                           <Typography component="span" variant="caption" color="success.main" sx={{ ml: 0.5 }}>
                             ✓ vigente
                           </Typography>

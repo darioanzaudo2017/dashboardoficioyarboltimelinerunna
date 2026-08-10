@@ -3,6 +3,8 @@
  * Based on GET /api/legajos/ endpoint
  */
 
+import type { MedidaBasicResponse, UrgenciaInfo } from "./medida-api"
+
 // Nested interface for NNyA data
 export interface NnyaData {
   id: number
@@ -425,9 +427,11 @@ export interface LegajoBasicInfo {
   id: number
   numero: string
   fecha_apertura: string
-  urgencia: string | null
+  urgencia: UrgenciaInfo | string | null
   estado: LegajoEstadoInfo | string // Can be object or string depending on API response
   ultima_actualizacion: string
+  estado_validacion?: EstadoValidacionLegajo
+  sin_dni?: boolean
 }
 
 // Localidad info
@@ -449,11 +453,18 @@ export interface LocalidadInfo {
   cpc_nombre: string | null
 }
 
-// Localizacion actual
-export interface LocalizacionActual {
+// Relación de la localización principal incluida por el detalle consolidado.
+export interface LocalizacionActualRelacion {
   id: number
   localizacion: LocalidadInfo
   principal: boolean
+}
+
+// Wrapper real retornado por GET /api/legajos/{id}/.
+export interface LocalizacionActual {
+  ubicacion: string | null
+  localidad: string | null
+  localizacion: LocalizacionActualRelacion
 }
 
 // Zona info
@@ -490,20 +501,16 @@ export interface AsignacionActiva {
   esta_activo: boolean
   recibido: boolean
   fecha_asignacion: string
-  enviado_por: UserInfo
-  recibido_por: UserInfo
+  enviado_por: UserInfo | null
+  recibido_por: UserInfo | null
   comentarios: string | null
 }
 
-// Medida
-export interface MedidaInfo {
-  id: number
-  numero: string
-  fecha_apertura: string
-  urgencia: string | null
-  estado: string
-  ultima_actualizacion: string
-  tipo_medida?: string
+// Medida incluida por el detalle. Conserva aliases legacy durante la transición.
+export interface MedidaInfo extends MedidaBasicResponse {
+  numero?: string
+  estado?: string
+  ultima_actualizacion?: string
 }
 
 // Demandas relacionadas
@@ -513,6 +520,7 @@ export interface DemandasRelacionadas {
     total_demandas: number
     activas: number
     cerradas: number
+    con_medidas_creadas: number
   }
 }
 
@@ -570,6 +578,7 @@ export interface LegajoDetailResponse {
   historial_asignaciones: any[]
   historial_cambios: HistorialCambio[]
   responsables: Responsables
+  personas_relacionadas?: any[]
   permisos_usuario: PermisosUsuario
   metadata: MetadataInfo
 }

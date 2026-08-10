@@ -10,6 +10,10 @@ import {
   CalendarToday as CalendarIcon,
 } from "@mui/icons-material"
 import type { LegajoDetailResponse } from "@/app/(runna)/legajo-mesa/types/legajo-api"
+import {
+  getUrgenciaNombre,
+  unwrapLocalizacionActual,
+} from "@/app/(runna)/legajo-mesa/utils/legajo-detail-normalizers"
 
 interface LegajoHeaderProps {
   legajoData: LegajoDetailResponse
@@ -20,8 +24,9 @@ export const LegajoHeader: React.FC<LegajoHeaderProps> = ({ legajoData, onViewAl
   // Extract needed data from the backend response
   const persona = legajoData.persona
   const legajo = legajoData.legajo
-  const localizacion = legajoData.localizacion_actual?.localizacion
+  const localizacion = persona?.localizacion ?? unwrapLocalizacionActual(legajoData.localizacion_actual)
   const asignacion = legajoData.asignaciones_activas?.[0]
+  const urgenciaNombre = getUrgenciaNombre(legajo?.urgencia)
 
   // Helper to get initials
   const getInitials = (nombre: string = "", apellido: string = ""): string => {
@@ -122,7 +127,7 @@ export const LegajoHeader: React.FC<LegajoHeaderProps> = ({ legajoData, onViewAl
           top: 0,
           bottom: 0,
           width: "6px",
-          backgroundColor: legajo?.urgencia === "ALTA" ? "#e53935" : "#1976d2",
+          backgroundColor: urgenciaNombre === "ALTA" ? "#e53935" : "#1976d2",
         },
       }}
     >
@@ -158,7 +163,7 @@ export const LegajoHeader: React.FC<LegajoHeaderProps> = ({ legajoData, onViewAl
                 variant="outlined"
               />
               <Chip icon={<PersonIcon />} label={`${edad || "N/A"} años`} size="small" variant="outlined" />
-              {legajo?.urgencia === "ALTA" && <Chip label="URGENTE" color="error" size="small" />}
+              {urgenciaNombre === "ALTA" && <Chip label="URGENTE" color="error" size="small" />}
               {asignacion?.zona && (
                 <Chip
                   icon={<LocationOnIcon />}

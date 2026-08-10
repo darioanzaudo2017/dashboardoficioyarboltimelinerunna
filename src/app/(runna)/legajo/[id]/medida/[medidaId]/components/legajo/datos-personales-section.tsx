@@ -4,6 +4,10 @@ import type React from "react"
 import { Typography, Grid, Divider, Chip, IconButton, Tooltip, Box } from "@mui/material"
 import EditIcon from "@mui/icons-material/Edit"
 import type { LegajoDetailResponse } from "@/app/(runna)/legajo-mesa/types/legajo-api"
+import {
+  getUrgenciaNombre,
+  unwrapLocalizacionActual,
+} from "@/app/(runna)/legajo-mesa/utils/legajo-detail-normalizers"
 import { useUser } from "@/utils/auth/userZustand"
 import { SectionCard } from "../medida/shared/section-card"
 import { usePersonaLocalizacion } from "../../hooks/usePersonaData"
@@ -30,20 +34,21 @@ export const DatosPersonalesSection: React.FC<DatosPersonalesSectionProps> = ({ 
   const personaId = persona?.id ?? null
   const asignacion = legajoData.asignaciones_activas?.[0]
   const permisos = legajoData.permisos_usuario
+  const urgenciaNombre = getUrgenciaNombre(legajo?.urgencia)
+  const localizacionActual = unwrapLocalizacionActual<LocalizacionDisplay>(legajoData.localizacion_actual)
   const { user } = useUser()
   const shouldFetchLocalizacion = !persona?.localizacion
   const { data: fetchedLocalizacion } = usePersonaLocalizacion(personaId, {
     enabled: !!personaId && shouldFetchLocalizacion,
   })
 
-  // @ts-ignore - Ignoring complex nested type mismatch from API
   const localizacion: LocalizacionDisplay | null = (() => {
     if (persona?.localizacion) {
       return persona.localizacion
     }
 
-    if (legajoData.localizacion_actual?.localizacion) {
-      return legajoData.localizacion_actual.localizacion
+    if (localizacionActual) {
+      return localizacionActual
     }
 
     if (fetchedLocalizacion) {
@@ -203,8 +208,8 @@ export const DatosPersonalesSection: React.FC<DatosPersonalesSectionProps> = ({ 
             <Grid item xs={6} sm={2}>
               <Typography variant="caption" color="text.secondary" display="block">Urgencia:</Typography>
               <Chip
-                label={legajo?.urgencia?.nombre || "MEDIA"}
-                color={legajo?.urgencia?.nombre === "ALTA" ? "error" : "default"}
+                label={urgenciaNombre || "N/A"}
+                color={urgenciaNombre === "ALTA" ? "error" : "default"}
                 size="small"
                 sx={{ height: 18, fontSize: '0.65rem', fontWeight: 600 }}
               />

@@ -61,6 +61,7 @@ import { updateNNyAData, type NNyAUpdateRequest } from "../../api/personas-relac
 import { PersonasRelacionadasSection } from "../personas-relacionadas"
 import VulnerabilityEditor from "./vulnerability-editor"
 import type { LegajoDetailResponse } from "@/app/(runna)/legajo-mesa/types/legajo-api"
+import { getUrgenciaNombre } from "@/app/(runna)/legajo-mesa/utils/legajo-detail-normalizers"
 import { toast } from "react-toastify"
 import { useQueryClient, useQuery } from "@tanstack/react-query"
 import { fetchDropdownData } from "@/components/forms/utils/fetchFormCase"
@@ -273,6 +274,7 @@ export default function PersonaDetailModalEnhanced({
   // Extract data
   const persona = legajoData?.persona
   const legajo = legajoData?.legajo
+  const urgenciaNombre = getUrgenciaNombre(legajo?.urgencia)
   const asignaciones = legajoData?.asignaciones_activas || []
   const medidasActivas = legajoData?.medidas_activas || []
   const demandas = legajoData?.demandas_relacionadas
@@ -649,7 +651,7 @@ export default function PersonaDetailModalEnhanced({
               <Box sx={{ display: "flex", gap: 1, mt: 1, flexWrap: "wrap" }}>
                 <Chip label={`DNI: ${displayData.dni || "N/A"}`} size="small" variant="outlined" />
                 <Chip label={`${edad || "N/A"} años`} size="small" variant="outlined" color="primary" />
-                {legajo?.urgencia?.nombre === "ALTA" && <Chip label="URGENTE" color="error" size="small" />}
+                {urgenciaNombre === "ALTA" && <Chip label="URGENTE" color="error" size="small" />}
                 {asignaciones[0]?.zona && (
                   <Chip label={asignaciones[0].zona.nombre} size="small" variant="outlined" color="secondary" />
                 )}
@@ -2032,13 +2034,13 @@ export default function PersonaDetailModalEnhanced({
               </Paper>
             </Grid>
 
-            {legajo?.urgencia && (
+            {urgenciaNombre && (
               <Grid item xs={12}>
-                <Alert severity={legajo.urgencia.nombre === "ALTA" ? "error" : "info"}>
+                <Alert severity={urgenciaNombre === "ALTA" ? "error" : "info"}>
                   <Typography variant="subtitle2" gutterBottom>
                     Nivel de Urgencia
                   </Typography>
-                  <Chip label={legajo.urgencia.nombre} color={legajo.urgencia.nombre === "ALTA" ? "error" : "default"} />
+                  <Chip label={urgenciaNombre} color={urgenciaNombre === "ALTA" ? "error" : "default"} />
                 </Alert>
               </Grid>
             )}

@@ -5,6 +5,7 @@ import type React from "react"
 import { Typography, Grid, Chip, Box, CircularProgress, Alert } from "@mui/material"
 import HomeIcon from "@mui/icons-material/Home"
 import type { LegajoDetailResponse } from "@/app/(runna)/legajo-mesa/types/legajo-api"
+import { unwrapLocalizacionActual } from "@/app/(runna)/legajo-mesa/utils/legajo-detail-normalizers"
 import { useDemandaFullDetail } from "@/hooks/useDemandaFullDetail"
 import { SectionCard } from "../medida/shared/section-card"
 
@@ -13,6 +14,8 @@ interface LocalizacionSectionProps {
 }
 
 export const LocalizacionSection: React.FC<LocalizacionSectionProps> = ({ legajoData }) => {
+  const localizacionActual = unwrapLocalizacionActual(legajoData.localizacion_actual)
+
   // Extract demanda ID from legajoData
   const demandaId = useMemo(() => {
     const demandas = legajoData?.demandas_relacionadas?.resultados || []
@@ -48,9 +51,9 @@ export const LocalizacionSection: React.FC<LocalizacionSectionProps> = ({ legajo
   const localizacion = useMemo(() => {
     // If no demanda ID or no response, try fallback
     if (!demandaId || !demandaDetail) {
-      if (legajoData?.localizacion_actual?.localizacion) {
+      if (localizacionActual) {
         console.log("LocalizacionSection - Using fallback legajo localizacion_actual")
-        return legajoData.localizacion_actual.localizacion
+        return localizacionActual
       }
       return null
     }
@@ -81,14 +84,14 @@ export const LocalizacionSection: React.FC<LocalizacionSectionProps> = ({ legajo
     }
 
     // 4. Fallback to legajo localizacion_actual
-    if (!foundLocalizacion && legajoData?.localizacion_actual?.localizacion) {
+    if (!foundLocalizacion && localizacionActual) {
       console.log("LocalizacionSection - Using fallback legajoData.localizacion_actual.localizacion")
-      foundLocalizacion = legajoData.localizacion_actual.localizacion
+      foundLocalizacion = localizacionActual
     }
 
     console.log("LocalizacionSection - Final localizacion:", foundLocalizacion)
     return foundLocalizacion
-  }, [demandaDetail, demandaId, legajoData])
+  }, [demandaDetail, demandaId, legajoData, localizacionActual])
 
   const error = queryError ? "Error al cargar la información de localización" : null
 

@@ -6,13 +6,17 @@ import { getCookie, setCookie } from "cookies-next";
 import { JwtPayload } from "jsonwebtoken";
 import { UserPermissions } from './userZustand';
 
+const decodeJwtPayload = (token: string): JwtPayload | null => {
+  const decoded = jwt.decode(token);
+  return decoded && typeof decoded === 'object' ? decoded : null;
+};
+
 export async function decodeToken(accessToken?: string) {
   try {
     const token = accessToken || cookies().get("accessToken")?.value;
     if (!token) return null;
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "default-secret");
-    return decoded;
+    return decodeJwtPayload(token);
   } catch (e) {
     return null;
   }
@@ -70,8 +74,10 @@ export const getSession = async (returnUserData: boolean = false): Promise<strin
       return accessToken;
     }
 
-    // Verify token and get user data
-    const decoded = jwt.verify(accessToken, process.env.JWT_SECRET || 'default-secret') as JwtPayload;
+    // The backend validates the signature on /user/me/. Here we only inspect
+    // expiration to decide whether a refresh is needed.
+    const decoded = decodeJwtPayload(accessToken);
+    if (!decoded) return null;
     const currentTime = Math.floor(Date.now() / 1000);
 
     // If token is expired, try to refresh it
