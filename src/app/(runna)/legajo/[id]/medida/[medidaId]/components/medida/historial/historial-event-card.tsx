@@ -40,7 +40,7 @@ interface HistorialEventCardProps {
   onDeepLinkClick?: (url: string) => void
 }
 
-const getCategoryIcon = (categoria: CategoriaEvento, tipoEvento?: string): React.ReactNode => {
+export const getCategoryIcon = (categoria: CategoriaEvento, tipoEvento?: string): React.ReactNode => {
   const iconProps = { fontSize: "small" as const }
 
   // Special icon for device configuration changes

@@ -284,6 +284,28 @@ export default function Header() {
               <span className="hidden sm:inline">Bandeja de legajos</span>
             </a>
           )}
+          <a
+            href="/indicadores"
+            className="px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-md text-xs md:text-sm font-medium transition-all duration-200 hover:scale-105 hover:bg-[rgba(0,188,212,0.25)] cursor-pointer no-underline text-white whitespace-nowrap"
+            style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.15)',
+              backdropFilter: 'blur(8px)',
+            }}
+          >
+            <span className="sm:hidden">Indicadores</span>
+            <span className="hidden sm:inline">Indicadores</span>
+          </a>
+          <a
+            href="/oficios"
+            className="px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-md text-xs md:text-sm font-medium transition-all duration-200 hover:scale-105 hover:bg-[rgba(0,188,212,0.25)] cursor-pointer no-underline text-white whitespace-nowrap"
+            style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.15)',
+              backdropFilter: 'blur(8px)',
+            }}
+          >
+            <span className="sm:hidden">Oficios</span>
+            <span className="hidden sm:inline">Oficios</span>
+          </a>
         </div>
 
         {/* Tutorial */}

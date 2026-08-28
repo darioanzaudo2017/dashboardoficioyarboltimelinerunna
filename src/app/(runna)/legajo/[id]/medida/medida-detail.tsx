@@ -1,7 +1,8 @@
 "use client"
 import { useState, useEffect, useMemo } from "react"
-import { CircularProgress, Typography, IconButton, Box, Alert } from "@mui/material"
+import { CircularProgress, Typography, IconButton, Box, Alert, Button } from "@mui/material"
 import CloseIcon from "@mui/icons-material/Close"
+import AccountTreeIcon from "@mui/icons-material/AccountTree"
 import { useRouter } from "next/navigation"
 import { MedidaData } from "./[medidaId]/types/medidas"
 import { AddTaskDialog, NewTask } from "./[medidaId]/components/dialogs/add-task-dialog"
@@ -567,8 +568,22 @@ export default function MedidaDetail({ params, onClose, isFullPage = false }: Me
           onChange={refetchMedida}
         />
 
-        {/* Toggle: new restyled dashboard vs. classic header + tabs layout. */}
-        <MedidaViewToggle mode={viewMode} onChange={setViewMode} />
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 1 }}>
+          {/* Toggle: new restyled dashboard vs. classic header + tabs layout. */}
+          <MedidaViewToggle mode={viewMode} onChange={setViewMode} />
+
+          {medidaApiData?.id && (
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<AccountTreeIcon />}
+              onClick={() => router.push(`/legajo/${params.id}/medida/${params.medidaId}/arbol`)}
+              sx={{ textTransform: "none", fontWeight: 600 }}
+            >
+              Ver Árbol de la Medida
+            </Button>
+          )}
+        </Box>
 
         {viewMode === "nuevo" && (
           <>

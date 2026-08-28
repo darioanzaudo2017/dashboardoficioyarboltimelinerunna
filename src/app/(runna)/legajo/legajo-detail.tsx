@@ -12,6 +12,7 @@ import FamilyRestroomIcon from "@mui/icons-material/FamilyRestroom"
 import GavelIcon from "@mui/icons-material/Gavel"
 import RefreshIcon from "@mui/icons-material/Refresh"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
+import AccountTreeIcon from "@mui/icons-material/AccountTree"
 import { useRouter } from "next/navigation"
 import { useQuery } from "@tanstack/react-query"
 import { updateLegajoDatosPersonales } from "../legajo-mesa/api/legajos-api-service"
@@ -309,6 +310,18 @@ export default function LegajoDetail({ params, onClose, isFullPage = false }: Le
         )}
 
         <LegajoHeader legajoData={legajoData} onViewAllPersonalData={handleViewAllPersonalData} />
+
+        <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<AccountTreeIcon />}
+            onClick={() => router.push(`/legajo/${params.id}/arbol`)}
+            sx={{ textTransform: "none", fontWeight: 600 }}
+          >
+            Ver Árbol del Legajo
+          </Button>
+        </Box>
 
         <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 3 }}>
           <Tabs
