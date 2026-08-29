@@ -27,6 +27,7 @@ type EtapaMedida = "Intervención" | "Aval" | "Informe Jurídico" | "Ratificaci�
 export interface AdvancedFiltersState {
   demanda_estado?: DemandaEstado
   medida_tipo?: string[]
+  medida_estado?: string[]
   oficio_tipo?: string[]
   oficios_proximos_vencer?: number | null
   oficios_vencidos?: boolean | null
@@ -43,12 +44,19 @@ interface AdvancedFiltersPanelProps {
 }
 
 // Constants for filter options
-const DEMANDA_ESTADOS: DemandaEstado[] = ["ACTIVA", "CERRADA", "DERIVADA"]
+const DEMANDA_ESTADOS: NonNullable<DemandaEstado>[] = ["ACTIVA", "CERRADA", "DERIVADA"]
 
 const MEDIDA_TIPOS = [
   { value: "MPI", label: "Medida de Protección Integral" },
   { value: "MPE", label: "Medida de Protección Excepcional" },
   { value: "MPJ", label: "Medida de Protección Judicial" },
+]
+
+const MEDIDA_ESTADOS = [
+  { value: "VIGENTE", label: "Vigente" },
+  { value: "CERRADA", label: "Cerrada" },
+  { value: "ARCHIVADA", label: "Archivada" },
+  { value: "NO_RATIFICADA", label: "No ratificada" },
 ]
 
 const OFICIO_TIPOS = [
@@ -58,7 +66,7 @@ const OFICIO_TIPOS = [
   { value: "Otros", label: "Otros" },
 ]
 
-const ETAPA_MEDIDAS: EtapaMedida[] = ["Intervención", "Aval", "Informe Jurídico", "Ratificación"]
+const ETAPA_MEDIDAS: NonNullable<EtapaMedida>[] = ["Intervención", "Aval", "Informe Jurídico", "Ratificación"]
 
 const VENCIMIENTO_PRESETS = [
   { value: 3, label: "Próximos 3 días" },
@@ -95,6 +103,14 @@ const AdvancedFiltersPanel: React.FC<AdvancedFiltersPanelProps> = ({ filters, on
     setLocalFilters({
       ...localFilters,
       oficio_tipo: typeof value === "string" ? value.split(",") : value,
+    })
+  }
+
+  const handleMedidaEstadoChange = (event: SelectChangeEvent<string[]>) => {
+    const value = event.target.value
+    setLocalFilters({
+      ...localFilters,
+      medida_estado: typeof value === "string" ? value.split(",") : value,
     })
   }
 
@@ -146,6 +162,7 @@ const AdvancedFiltersPanel: React.FC<AdvancedFiltersPanelProps> = ({ filters, on
     const clearedFilters: AdvancedFiltersState = {
       demanda_estado: null,
       medida_tipo: [],
+      medida_estado: [],
       oficio_tipo: [],
       oficios_proximos_vencer: null,
       oficios_vencidos: null,
@@ -161,6 +178,7 @@ const AdvancedFiltersPanel: React.FC<AdvancedFiltersPanelProps> = ({ filters, on
   const hasActiveFilters =
     localFilters.demanda_estado ||
     (localFilters.medida_tipo && localFilters.medida_tipo.length > 0) ||
+    (localFilters.medida_estado && localFilters.medida_estado.length > 0) ||
     (localFilters.oficio_tipo && localFilters.oficio_tipo.length > 0) ||
     localFilters.oficios_proximos_vencer ||
     localFilters.oficios_vencidos ||
@@ -232,6 +250,34 @@ const AdvancedFiltersPanel: React.FC<AdvancedFiltersPanelProps> = ({ filters, on
             {MEDIDA_TIPOS.map((tipo) => (
               <MenuItem key={tipo.value} value={tipo.value}>
                 {tipo.label} ({tipo.value})
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Box>
+
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="subtitle2" color="text.secondary" fontWeight={600} sx={{ mb: 1.5 }}>
+          Estado de la Medida
+        </Typography>
+        <FormControl fullWidth size="small">
+          <InputLabel>Estados de Medida</InputLabel>
+          <Select
+            multiple
+            value={localFilters.medida_estado || []}
+            onChange={handleMedidaEstadoChange}
+            input={<OutlinedInput label="Estados de Medida" />}
+            renderValue={(selected) => (
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                {selected.map((value) => (
+                  <Chip key={value} label={MEDIDA_ESTADOS.find((estado) => estado.value === value)?.label || value} size="small" />
+                ))}
+              </Box>
+            )}
+          >
+            {MEDIDA_ESTADOS.map((estado) => (
+              <MenuItem key={estado.value} value={estado.value}>
+                {estado.label}
               </MenuItem>
             ))}
           </Select>

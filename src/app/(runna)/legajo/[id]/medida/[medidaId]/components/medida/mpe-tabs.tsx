@@ -22,6 +22,8 @@ interface MPETabsProps {
         persona_nombre: string
         persona_apellido: string
         zona_nombre: string
+        origen_demanda?: string
+        tecnico_cargo?: string
     }
     planTrabajoId?: number
     /** Callback to refetch medida data from API after state changes */

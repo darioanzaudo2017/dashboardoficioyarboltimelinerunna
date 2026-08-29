@@ -145,6 +145,10 @@ export interface TipoOficio {
   id: number
   nombre: string
   descripcion: string
+  categoria?: {
+    id: number
+    nombre: string
+  } | null
   activo: boolean
   orden: number
 }

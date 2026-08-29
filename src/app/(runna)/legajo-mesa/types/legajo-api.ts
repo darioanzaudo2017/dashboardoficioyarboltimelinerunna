@@ -29,6 +29,9 @@ export interface OficioConSemaforo {
   archivo_url?: string // URL to the file attachment
   demanda_id?: number // ID of the related demanda
   tipo_oficio?: string // Type of oficio from demanda
+  categoria_oficio?: string
+  organo_judicial?: string
+  fecha_oficio?: string
 }
 
 // Indicadores de actividades del Plan de Trabajo
@@ -81,6 +84,7 @@ export interface MedidaActivaBasica {
   numero_medida: string
   tipo_medida: string
   estado_vigencia: string
+  nro_sac?: string | null
   etapa_actual__nombre: string | null
   etapa_actual__estado: string | null
 }
@@ -172,6 +176,7 @@ export interface LegajosQueryParams {
   // Advanced filters (LEG-03 CA-3)
   demanda_estado?: "ACTIVA" | "CERRADA" | "DERIVADA" // Estado de demanda
   medida_tipo?: string[] // Tipo de medida: ["MPI", "MPE", "MPJ"]
+  medida_estado?: string[] // Estado de vigencia: VIGENTE, CERRADA, ARCHIVADA, NO_RATIFICADA
   oficio_tipo?: string[] // Tipo de oficio multi-select
   oficios_proximos_vencer?: number // Días para vencimiento (ej: 3, 7, 15)
   oficios_vencidos?: boolean // Oficios vencidos
@@ -577,6 +582,27 @@ export interface LegajoDetailResponse {
   documentos: any[]
   historial_asignaciones: any[]
   historial_cambios: HistorialCambio[]
+  situacion_actual?: {
+    medida: {
+      id: number
+      numero: string
+      tipo: string
+      tipo_display: string
+      desde: string
+      hasta: string | null
+    }
+    ultimo_dispositivo: {
+      tipo: string | null
+      subtipo: string | null
+    } | null
+    situacion_dispositivo: {
+      tipo: string
+      tipo_display: string
+      fecha: string
+      observaciones: string | null
+    } | null
+    fecha_actualizacion: string
+  } | null
   responsables: Responsables
   personas_relacionadas?: any[]
   permisos_usuario: PermisosUsuario

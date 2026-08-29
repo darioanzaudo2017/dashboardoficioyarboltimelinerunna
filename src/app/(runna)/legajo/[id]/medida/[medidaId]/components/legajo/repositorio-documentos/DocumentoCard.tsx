@@ -169,7 +169,6 @@ export const DocumentoCard: React.FC<DocumentoCardProps> = ({ documento }) => {
               sx={{ display: 'block', mt: 0.5 }}
             >
               {formatDate(documento.fecha_subida)}
-              {documento.usuario_subida && ` • ${documento.usuario_subida.nombre_completo}`}
             </Typography>
           </Tooltip>
         </Box>
@@ -245,6 +244,44 @@ export const DocumentoCard: React.FC<DocumentoCardProps> = ({ documento }) => {
             sx={{ height: 18, fontSize: '0.65rem', ml: 'auto' }}
           />
         </Box>
+
+        {(documento.medida || documento.actividad || documento.usuario_subida) && (
+          <Box
+            sx={{
+              mt: 1,
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, minmax(0, 1fr))' },
+              gap: 1,
+            }}
+          >
+            <Box>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                Medida
+              </Typography>
+              <Typography variant="caption" fontWeight={600}>
+                {documento.medida
+                  ? `${documento.medida.tipo_medida} · ${documento.medida.numero_medida}`
+                  : '—'}
+              </Typography>
+            </Box>
+            <Box>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                Actividad
+              </Typography>
+              <Typography variant="caption" fontWeight={600}>
+                {documento.actividad?.nombre || '—'}
+              </Typography>
+            </Box>
+            <Box>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                Cargado por
+              </Typography>
+              <Typography variant="caption" fontWeight={600}>
+                {documento.usuario_subida?.nombre_completo || 'Sin identificar'}
+              </Typography>
+            </Box>
+          </Box>
+        )}
 
         {documento.descripcion && (
           <Typography

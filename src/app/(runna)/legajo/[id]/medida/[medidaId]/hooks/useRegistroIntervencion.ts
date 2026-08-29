@@ -85,6 +85,7 @@ interface UseRegistroIntervencionOptions {
   intervencionId?: number // Si se pasa, carga la intervención existente
   autoLoadCatalogs?: boolean // Si true, carga catálogos automáticamente
   workflowPhase?: 'apertura' | 'innovacion' | 'prorroga' | 'cese'
+  tipoMedida?: 'MPI' | 'MPE' | 'MPJ'
 }
 
 interface ValidationErrors {
@@ -100,6 +101,7 @@ export const useRegistroIntervencion = ({
   intervencionId,
   autoLoadCatalogs = true,
   workflowPhase,
+  tipoMedida,
 }: UseRegistroIntervencionOptions) => {
   // Query client for cache invalidation
   const queryClient = useQueryClient()
@@ -960,6 +962,26 @@ export const useRegistroIntervencion = ({
     // Motivo is only required for apertura and innovacion phases
     if ((workflowPhase === 'apertura' || workflowPhase === 'innovacion') && !formData.motivo_id) {
       errors.motivo_id = "El motivo es obligatorio"
+    }
+
+    const motivoTieneSubmotivos = !!formData.motivo_id && subMotivos.some(
+      (subMotivo) => subMotivo.motivo_id === formData.motivo_id
+    )
+    if (
+      (workflowPhase === 'apertura' || workflowPhase === 'innovacion')
+      && motivoTieneSubmotivos
+      && !formData.sub_motivo_id
+    ) {
+      errors.sub_motivo_id = "El submotivo es obligatorio"
+    }
+
+    if (tipoMedida === 'MPE' && (workflowPhase === 'apertura' || workflowPhase === 'innovacion')) {
+      if (!formData.tipo_dispositivo_id) {
+        errors.tipo_dispositivo_id = "El tipo de dispositivo es obligatorio"
+      }
+      if (!formData.subtipo_dispositivo_id) {
+        errors.subtipo_dispositivo_id = "El dispositivo de resguardo es obligatorio"
+      }
     }
 
     if (!formData.categoria_intervencion_id) {

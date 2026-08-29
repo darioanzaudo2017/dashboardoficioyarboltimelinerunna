@@ -163,6 +163,10 @@ export const fetchLegajos = async (
       queryParams.medida_tipo = params.medida_tipo.join(",")
     }
 
+    if (params.medida_estado && params.medida_estado.length > 0) {
+      queryParams.medida_estado = params.medida_estado.join(",")
+    }
+
     if (params.oficio_tipo && params.oficio_tipo.length > 0) {
       queryParams.oficio_tipo = params.oficio_tipo.join(",")
     }

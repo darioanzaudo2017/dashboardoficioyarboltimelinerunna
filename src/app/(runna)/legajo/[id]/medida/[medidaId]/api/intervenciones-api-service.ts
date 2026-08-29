@@ -294,7 +294,7 @@ export interface CrearYEnviarRequest {
   tipo_dispositivo_id?: number | null
   subtipo_dispositivo_id?: number | null
   tipo_cese?: string | null
-  subtipo_cese?: number | null
+  subtipo_cese?: string | null
   requiere_informes_ampliatorios?: boolean
 }
 
@@ -823,21 +823,12 @@ export const getTiposDispositivo = async (): Promise<TipoDispositivoWithSubtipos
 /**
  * Get categorias de intervencion
  * GET /api/categorias-intervencion/
- * TODO: Replace with actual endpoint when available
  */
 export const getCategoriasIntervencion = async (): Promise<CategoriaIntervencion[]> => {
   try {
     console.log("Fetching categorias intervencion")
 
-    // TODO: Replace with actual endpoint
-    // const response = await get<CategoriaIntervencion[]>("categorias-intervencion/")
-
-    // Mock data for now
-    return [
-      { id: 1, nombre: "Categoría A", activo: true },
-      { id: 2, nombre: "Categoría B", activo: true },
-      { id: 3, nombre: "Categoría C", activo: true },
-    ]
+    return await get<CategoriaIntervencion[]>("categorias-intervencion/")
   } catch (error: any) {
     console.error("Error fetching categorias intervencion:", error)
     throw error

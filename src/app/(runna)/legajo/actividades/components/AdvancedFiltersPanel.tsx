@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import {
   Box,
   Paper,
@@ -37,7 +37,7 @@ import CategoryIcon from '@mui/icons-material/Category'
 import MarkEmailUnreadIcon from '@mui/icons-material/MarkEmailUnread'
 import { useCatalogData, extractArray } from '@/hooks/useApiQuery'
 import type { GlobalActividadFilters } from '../services/globalActividadService'
-import type { TTipoActividad } from '../../[id]/medida/[medidaId]/types/actividades'
+import type { TTipoActividad, TTipoOficio } from '../../[id]/medida/[medidaId]/types/actividades'
 import type { Usuario, Zona } from '@/app/(runna)/legajo-mesa/types/asignacion-types'
 import type { TableVariant } from './UnifiedActividadesTable'
 import { useUser } from '@/utils/auth/userZustand'
@@ -171,6 +171,18 @@ export const AdvancedFiltersPanel: React.FC<AdvancedFiltersPanelProps> = ({
   const { data: zonasData, isLoading: isLoadingZonas } = useCatalogData<Zona[]>('zonas/')
   const zonas = extractArray(zonasData)
 
+  const { data: tiposOficioData, isLoading: isLoadingTiposOficio } = useCatalogData<TTipoOficio[]>(
+    'tipos-oficio/?activo=true&page_size=500'
+  )
+  const tiposOficio = extractArray(tiposOficioData)
+  const categoriasOficio = useMemo(() => {
+    const unicas = new Map<number, { id: number; nombre: string }>()
+    tiposOficio.forEach((tipo) => {
+      if (tipo.categoria) unicas.set(tipo.categoria.id, tipo.categoria)
+    })
+    return Array.from(unicas.values()).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
+  }, [tiposOficio])
+
   // Parse estado values from comma-separated string
   const selectedEstados = filters.estado ? filters.estado.split(',').filter(Boolean) : []
 
@@ -191,6 +203,9 @@ export const AdvancedFiltersPanel: React.FC<AdvancedFiltersPanelProps> = ({
     filters.nnya_dni,
     filters.numero_legajo,
     filters.tipo_medida,
+    filters.categoria_oficio,
+    filters.tipo_oficio,
+    filters.estado_oficio,
     filters.responsable,
     filters.tipo_actividad,
     filters.zona,
@@ -246,6 +261,27 @@ export const AdvancedFiltersPanel: React.FC<AdvancedFiltersPanelProps> = ({
               }}
             />
           </Grid>
+
+          {showNnyaLegajoSection && (
+            <Grid item xs={12} sm={6} md={2}>
+              <TextField
+                fullWidth
+                size="small"
+                label="N° de legajo"
+                placeholder="LEG-2026-..."
+                value={localNumeroLegajo}
+                onChange={(e) => setLocalNumeroLegajo(e.target.value)}
+                onKeyDown={handleKeyDown}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <FolderIcon fontSize="small" color="action" />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
+          )}
 
           {/* Quick Filter: Mis Actividades */}
           <Grid item xs={12} sm={6} md={2}>
@@ -308,6 +344,72 @@ export const AdvancedFiltersPanel: React.FC<AdvancedFiltersPanelProps> = ({
               </Select>
             </FormControl>
           </Grid>
+
+          {variant === 'global' && (
+            <>
+              <Grid item xs={12} sm={6} md={2}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Categoría de oficio</InputLabel>
+                  <Select
+                    value={filters.categoria_oficio || ''}
+                    onChange={(e) => {
+                      const categoriaId = e.target.value ? Number(e.target.value) : undefined
+                      onFilterChange('categoria_oficio', categoriaId)
+                      const tipoSeleccionado = tiposOficio.find((tipo) => tipo.id === filters.tipo_oficio)
+                      if (tipoSeleccionado?.categoria?.id !== categoriaId) {
+                        onFilterChange('tipo_oficio', undefined)
+                      }
+                    }}
+                    label="Categoría de oficio"
+                    disabled={isLoadingTiposOficio}
+                  >
+                    <MenuItem value="">Todas</MenuItem>
+                    {categoriasOficio.map((categoria) => (
+                      <MenuItem key={categoria.id} value={categoria.id}>
+                        {categoria.nombre}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              <Grid item xs={12} sm={6} md={2}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Tipo de oficio</InputLabel>
+                  <Select
+                    value={filters.tipo_oficio || ''}
+                    onChange={(e) => onFilterChange('tipo_oficio', e.target.value ? Number(e.target.value) : undefined)}
+                    label="Tipo de oficio"
+                    disabled={isLoadingTiposOficio}
+                  >
+                    <MenuItem value="">Todos</MenuItem>
+                    {tiposOficio
+                      .filter((tipo) => !filters.categoria_oficio || tipo.categoria?.id === filters.categoria_oficio)
+                      .map((tipo) => (
+                        <MenuItem key={tipo.id} value={tipo.id}>
+                          {tipo.nombre}
+                        </MenuItem>
+                      ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              <Grid item xs={12} sm={6} md={2}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Estado del oficio</InputLabel>
+                  <Select
+                    value={filters.estado_oficio || ''}
+                    onChange={(e) => onFilterChange('estado_oficio', e.target.value)}
+                    label="Estado del oficio"
+                  >
+                    <MenuItem value="">Todos</MenuItem>
+                    <MenuItem value="PENDIENTE">Pendiente de respuesta</MenuItem>
+                    <MenuItem value="CONTESTADO">Contestado</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+            </>
+          )}
 
           {/* Ordering */}
           <Grid item xs={12} sm={6} md={canSeeAllActors ? 1.5 : 2.5}>

@@ -27,6 +27,7 @@ export const LegajoHeader: React.FC<LegajoHeaderProps> = ({ legajoData, onViewAl
   const localizacion = persona?.localizacion ?? unwrapLocalizacionActual(legajoData.localizacion_actual)
   const asignacion = legajoData.asignaciones_activas?.[0]
   const urgenciaNombre = getUrgenciaNombre(legajo?.urgencia)
+  const situacionActual = legajoData.situacion_actual
 
   // Helper to get initials
   const getInitials = (nombre: string = "", apellido: string = ""): string => {
@@ -83,7 +84,7 @@ export const LegajoHeader: React.FC<LegajoHeaderProps> = ({ legajoData, onViewAl
     return addressParts.length > 0 ? addressParts.join(", ") : "N/A"
   }
 
-  const formatFecha = (fecha: string | undefined) => {
+  const formatFecha = (fecha: string | null | undefined) => {
     if (!fecha) return "N/A"
     try {
       const date = new Date(fecha)
@@ -240,6 +241,57 @@ export const LegajoHeader: React.FC<LegajoHeaderProps> = ({ legajoData, onViewAl
             </Box>
           </Grid>
         </Grid>
+
+        <Box
+          sx={{
+            mt: 2.5,
+            pt: 2,
+            borderTop: '1px solid',
+            borderColor: 'divider',
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
+            gap: 2,
+          }}
+        >
+          <Box>
+            <Typography variant="caption" color="text.secondary">Medida vigente</Typography>
+            <Typography variant="body2" fontWeight={600}>
+              {situacionActual?.medida
+                ? `${situacionActual.medida.tipo} · ${situacionActual.medida.numero}`
+                : 'Sin medida vigente'}
+            </Typography>
+            {situacionActual?.medida && (
+              <Typography variant="caption" color="text.secondary">
+                Desde {formatFecha(situacionActual.medida.desde)} · Hasta {situacionActual.medida.hasta ? formatFecha(situacionActual.medida.hasta) : 'Vigente'}
+              </Typography>
+            )}
+          </Box>
+          <Box>
+            <Typography variant="caption" color="text.secondary">Último dispositivo</Typography>
+            <Typography variant="body2" fontWeight={600}>
+              {situacionActual?.ultimo_dispositivo?.subtipo
+                || situacionActual?.ultimo_dispositivo?.tipo
+                || 'Sin registrar'}
+            </Typography>
+          </Box>
+          <Box>
+            <Typography variant="caption" color="text.secondary">Situación actual</Typography>
+            <Typography variant="body2" fontWeight={600}>
+              {situacionActual?.situacion_dispositivo?.tipo_display || 'Sin registrar'}
+            </Typography>
+            {situacionActual?.situacion_dispositivo?.fecha && (
+              <Typography variant="caption" color="text.secondary">
+                {formatFecha(situacionActual.situacion_dispositivo.fecha)}
+              </Typography>
+            )}
+          </Box>
+          <Box>
+            <Typography variant="caption" color="text.secondary">Última actualización</Typography>
+            <Typography variant="body2" fontWeight={600}>
+              {formatFecha(situacionActual?.fecha_actualizacion || legajo?.ultima_actualizacion)}
+            </Typography>
+          </Box>
+        </Box>
       </Box>
     </Paper>
   )

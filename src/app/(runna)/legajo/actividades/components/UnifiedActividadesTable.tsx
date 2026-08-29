@@ -548,6 +548,9 @@ export const UnifiedActividadesTable: React.FC<UnifiedActividadesTableProps> = (
       (filters as GlobalActividadFilters).nnya_dni ||
       (filters as GlobalActividadFilters).numero_legajo ||
       (filters as GlobalActividadFilters).tipo_medida ||
+      (filters as GlobalActividadFilters).categoria_oficio ||
+      (filters as GlobalActividadFilters).tipo_oficio ||
+      (filters as GlobalActividadFilters).estado_oficio ||
       (filters as GlobalActividadFilters).responsable ||
       (filters as GlobalActividadFilters).tipo_actividad ||
       (filters as GlobalActividadFilters).zona ||
@@ -591,6 +594,9 @@ export const UnifiedActividadesTable: React.FC<UnifiedActividadesTableProps> = (
       nnya_dni: undefined,
       numero_legajo: undefined,
       tipo_medida: undefined,
+      categoria_oficio: undefined,
+      tipo_oficio: undefined,
+      estado_oficio: undefined,
       responsable: undefined,
       tipo_actividad: undefined,
       zona: undefined,

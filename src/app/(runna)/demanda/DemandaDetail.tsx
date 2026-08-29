@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import { CircularProgress, Typography, IconButton, Box, Alert, Tabs, Tab, Paper, Button } from "@mui/material"
+import { CircularProgress, Typography, IconButton, Box, Alert, Tabs, Tab, Paper, Button, Chip } from "@mui/material"
 import CloseIcon from "@mui/icons-material/Close"
 import SendIcon from "@mui/icons-material/Send"
 import ArticleIcon from "@mui/icons-material/Article"
@@ -10,6 +10,8 @@ import GavelIcon from "@mui/icons-material/Gavel"
 import CloudUploadIcon from "@mui/icons-material/CloudUpload"
 import LinkIcon from "@mui/icons-material/Link"
 import FolderOpenIcon from "@mui/icons-material/FolderOpen"
+import ArrowBackIcon from "@mui/icons-material/ArrowBack"
+import PersonIcon from "@mui/icons-material/Person"
 import { create, update } from "@/app/api/apiService"
 import type { FormData } from "@/components/forms/types/formTypes"
 import MultiStepForm from "@/components/forms/MultiStepForm"
@@ -102,6 +104,8 @@ export default function DemandaDetail({ params, onClose, isFullPage = false }: D
   const isEvaluacionDisabled = formData?.estado_demanda === "EVALUACION"
 
   const isPeticionDeInforme = formData?.objetivo_de_demanda === "PETICION_DE_INFORME"
+  const isCargaOficios = formData?.objetivo_de_demanda === "CARGA_OFICIOS"
+  const nnyaPrincipal = formData?.ninosAdolescentes?.[0]
 
   // Flujo "Oficio judicial de MPE/MPI vigente":
   // - PENDIENTE_SUBIR_PJ: el signal del BE detectó que todas las actividades originadas
@@ -305,7 +309,60 @@ export default function DemandaDetail({ params, onClose, isFullPage = false }: D
           </Box>
         </Box>
 
-        {formData?.unassigned && (
+        {formData && (
+          <Paper
+            elevation={0}
+            sx={{
+              p: 2,
+              mb: 3,
+              border: "1px solid",
+              borderColor: "divider",
+              borderLeft: "4px solid",
+              borderLeftColor: "primary.main",
+              display: "flex",
+              alignItems: { xs: "flex-start", md: "center" },
+              justifyContent: "space-between",
+              flexDirection: { xs: "column", md: "row" },
+              gap: 1.5,
+            }}
+          >
+            <Box>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap", mb: 0.75 }}>
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                  Demanda #{params.id}
+                </Typography>
+                {formData.objetivo_de_demanda && (
+                  <Chip label={formData.objetivo_de_demanda.replaceAll("_", " ")} size="small" variant="outlined" />
+                )}
+                {formData.estado_demanda && (
+                  <Chip label={formData.estado_demanda.replaceAll("_", " ")} size="small" color="primary" variant="outlined" />
+                )}
+              </Box>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                <PersonIcon fontSize="small" color="action" />
+                <Typography variant="body2" color="text.secondary">
+                  NNyA: <strong>
+                    {nnyaPrincipal
+                      ? `${nnyaPrincipal.apellido}, ${nnyaPrincipal.nombre}`
+                      : `${formData.apellido || ""}, ${formData.nombre || ""}`.replace(/^, |, $/g, "") || "Sin identificar"}
+                  </strong>
+                  {(nnyaPrincipal?.dni || formData.dni_oficio) && ` · DNI ${nnyaPrincipal?.dni || formData.dni_oficio}`}
+                </Typography>
+              </Box>
+            </Box>
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<ArrowBackIcon />}
+              onClick={() => router.push(`/mesadeentrada?demanda=${params.id}`)}
+              sx={{ textTransform: "none", whiteSpace: "nowrap" }}
+            >
+              Volver a Mesa de Entrada
+            </Button>
+          </Paper>
+        )}
+
+        {(formData as (FormData & { unassigned?: boolean }) | null)?.unassigned && (
           <Alert
             severity="warning"
             sx={{
@@ -511,7 +568,7 @@ export default function DemandaDetail({ params, onClose, isFullPage = false }: D
                   id={params.id}
                   demandaId={Number.parseInt(params.id)}
                 />
-                {!isPeticionDeInforme && (
+                {!isPeticionDeInforme && !isCargaOficios && (
                   <Box sx={{ mt: 4, display: "flex", justifyContent: "flex-end" }}>
                     <Button
                       variant="contained"

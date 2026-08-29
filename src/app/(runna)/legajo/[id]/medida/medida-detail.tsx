@@ -229,6 +229,19 @@ export default function MedidaDetail({ params, onClose, isFullPage = false }: Me
   // Load demanda full-detail data using shared hook (for seguimiento dispositivo)
   const { data: demandaData } = useDemandaFullDetail(demandaId)
 
+  const workflowLegajoData = useMemo(() => {
+    if (!legajoData) return undefined
+    const remitente = demandaData?.bloque_datos_remitente_info?.nombre || demandaData?.institucion_info?.nombre
+    return {
+      numero: legajoData.legajo?.numero || "",
+      persona_nombre: legajoData.persona?.nombre || "",
+      persona_apellido: legajoData.persona?.apellido || "",
+      zona_nombre: legajoData.asignaciones_activas?.[0]?.zona?.nombre || "",
+      origen_demanda: demandaId ? `${remitente || "Demanda"} (#${demandaId})` : "",
+      tecnico_cargo: legajoData.asignaciones_activas?.[0]?.user_responsable?.nombre_completo || "",
+    }
+  }, [demandaData, demandaId, legajoData])
+
   // UI state
   const [openAddTaskDialog, setOpenAddTaskDialog] = useState(false)
   const [editingTaskIndex, setEditingTaskIndex] = useState<number | null>(null)
@@ -625,12 +638,7 @@ export default function MedidaDetail({ params, onClose, isFullPage = false }: Me
                 legajo: medidaApiData?.legajo,
                 legajos_adicionales: medidaApiData?.legajos_adicionales,
               }}
-              legajoData={legajoData ? {
-                numero: legajoData.legajo?.numero || "",
-                persona_nombre: legajoData.persona?.nombre || "",
-                persona_apellido: legajoData.persona?.apellido || "",
-                zona_nombre: legajoData.asignaciones_activas?.[0]?.zona?.nombre || ""
-              } : undefined}
+              legajoData={workflowLegajoData}
               onMedidaRefetch={refetchMedida}
             />
 
@@ -677,12 +685,7 @@ export default function MedidaDetail({ params, onClose, isFullPage = false }: Me
                 legajos_adicionales: medidaApiData?.legajos_adicionales,
               }}
               medidaApiData={medidaApiData || undefined}
-              legajoData={legajoData ? {
-                numero: legajoData.legajo?.numero || "",
-                persona_nombre: legajoData.persona?.nombre || "",
-                persona_apellido: legajoData.persona?.apellido || "",
-                zona_nombre: legajoData.asignaciones_activas?.[0]?.zona?.nombre || ""
-              } : undefined}
+              legajoData={workflowLegajoData}
               planTrabajoId={medidaApiData?.plan_trabajo_id}
               onMedidaRefetch={refetchMedida}
             />
@@ -718,12 +721,7 @@ export default function MedidaDetail({ params, onClose, isFullPage = false }: Me
                 legajos_adicionales: medidaApiData?.legajos_adicionales,
               }}
               medidaApiData={medidaApiData}
-              legajoData={legajoData ? {
-                numero: legajoData.legajo?.numero || "",
-                persona_nombre: legajoData.persona?.nombre || "",
-                persona_apellido: legajoData.persona?.apellido || "",
-                zona_nombre: legajoData.asignaciones_activas?.[0]?.zona?.nombre || ""
-              } : undefined}
+              legajoData={workflowLegajoData}
               planTrabajoId={medidaApiData?.plan_trabajo_id}
             />
           </>
@@ -760,12 +758,7 @@ export default function MedidaDetail({ params, onClose, isFullPage = false }: Me
                   fecha_apertura: medidaApiData.fecha_apertura,
                 }}
                 medidaApiData={medidaApiData}
-                legajoData={legajoData ? {
-                  numero: legajoData.legajo?.numero || "",
-                  persona_nombre: legajoData.persona?.nombre || "",
-                  persona_apellido: legajoData.persona?.apellido || "",
-                  zona_nombre: legajoData.asignaciones_activas?.[0]?.zona?.nombre || ""
-                } : undefined}
+                legajoData={workflowLegajoData}
                 workflowPhase="apertura"
                 onMedidaRefetch={refetchMedida}
               />

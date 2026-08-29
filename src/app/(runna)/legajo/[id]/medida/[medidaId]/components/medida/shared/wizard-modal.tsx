@@ -14,7 +14,7 @@
  * - Action buttons (primary and secondary)
  */
 
-import type React from "react"
+import React, { Component, type ErrorInfo } from "react"
 import {
   Dialog,
   DialogTitle,
@@ -28,6 +28,8 @@ import {
   IconButton,
   Typography,
   LinearProgress,
+  Alert,
+  AlertTitle,
 } from "@mui/material"
 import CloseIcon from "@mui/icons-material/Close"
 import NavigateNextIcon from "@mui/icons-material/NavigateNext"
@@ -70,6 +72,52 @@ export interface WizardModalProps {
   allowStepClick?: boolean
 }
 
+interface WizardContentBoundaryProps {
+  children: React.ReactNode
+  resetKey: number
+}
+
+interface WizardContentBoundaryState {
+  hasError: boolean
+}
+
+/**
+ * Evita que un error aislado en el contenido de un paso derribe toda la ruta.
+ * El detalle queda en consola para diagnóstico y el usuario conserva el modal.
+ */
+class WizardContentBoundary extends Component<
+  WizardContentBoundaryProps,
+  WizardContentBoundaryState
+> {
+  state: WizardContentBoundaryState = { hasError: false }
+
+  static getDerivedStateFromError(): WizardContentBoundaryState {
+    return { hasError: true }
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error("Error al renderizar un paso del asistente:", error, info)
+  }
+
+  componentDidUpdate(previousProps: WizardContentBoundaryProps) {
+    if (previousProps.resetKey !== this.props.resetKey && this.state.hasError) {
+      this.setState({ hasError: false })
+    }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <Alert severity="error">
+          <AlertTitle>No se pudo mostrar este paso</AlertTitle>
+          Volvé al paso anterior y revisá los datos. La información cargada no se perdió.
+        </Alert>
+      )
+    }
+    return this.props.children
+  }
+}
+
 export const WizardModal: React.FC<WizardModalProps> = ({
   open,
   onClose,
@@ -86,9 +134,11 @@ export const WizardModal: React.FC<WizardModalProps> = ({
   showProgress = true,
   allowStepClick = true,
 }) => {
-  const progress = ((activeStep + 1) / steps.length) * 100
-  const isFirstStep = activeStep === 0
-  const isLastStep = activeStep === steps.length - 1
+  const lastStepIndex = Math.max(steps.length - 1, 0)
+  const safeActiveStep = Math.min(Math.max(activeStep, 0), lastStepIndex)
+  const progress = steps.length > 0 ? ((safeActiveStep + 1) / steps.length) * 100 : 0
+  const isFirstStep = safeActiveStep === 0
+  const isLastStep = safeActiveStep === lastStepIndex
 
   const handleStepClick = (step: number) => {
     if (allowStepClick && onStepClick) {
@@ -104,8 +154,7 @@ export const WizardModal: React.FC<WizardModalProps> = ({
       fullWidth={fullWidth}
       PaperProps={{
         sx: {
-          minHeight: "80vh",
-          maxHeight: "90vh",
+          maxHeight: "96vh",
         },
       }}
     >
@@ -124,16 +173,16 @@ export const WizardModal: React.FC<WizardModalProps> = ({
         <Box sx={{ px: 3 }}>
           <LinearProgress variant="determinate" value={progress} sx={{ height: 6, borderRadius: 3 }} />
           <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: "block" }}>
-            Paso {activeStep + 1} de {steps.length}
+            Paso {safeActiveStep + 1} de {steps.length}
           </Typography>
         </Box>
       )}
 
       {/* Stepper */}
-      <Box sx={{ px: 3, py: 2 }}>
-        <Stepper activeStep={activeStep} alternativeLabel>
+      <Box sx={{ px: 2.5, py: 1 }}>
+        <Stepper activeStep={safeActiveStep} alternativeLabel>
           {steps.map((step, index) => (
-            <Step key={step.label} completed={index < activeStep}>
+            <Step key={step.label} completed={index < safeActiveStep}>
               <StepLabel
                 optional={step.optional ? <Typography variant="caption">Opcional</Typography> : undefined}
                 sx={{
@@ -152,12 +201,16 @@ export const WizardModal: React.FC<WizardModalProps> = ({
       </Box>
 
       {/* Content */}
-      <DialogContent sx={{ px: 3, py: 2, overflowY: "auto" }}>
-        {steps[activeStep]?.content}
+      <DialogContent sx={{ px: 2.5, py: 1.5, overflowY: "auto" }}>
+        <WizardContentBoundary resetKey={safeActiveStep}>
+          {steps[safeActiveStep]?.content ?? (
+            <Alert severity="warning">No hay contenido configurado para este paso.</Alert>
+          )}
+        </WizardContentBoundary>
       </DialogContent>
 
       {/* Actions */}
-      <DialogActions sx={{ px: 3, py: 2, gap: 1, flexWrap: "wrap", justifyContent: "space-between" }}>
+      <DialogActions sx={{ px: 2.5, py: 1, gap: 1, flexWrap: "wrap", justifyContent: "space-between" }}>
         <Box sx={{ display: "flex", gap: 1 }}>
           {/* Back Button */}
           {!isFirstStep && onBack && (

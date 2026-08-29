@@ -9,6 +9,10 @@ export interface TTipoOficio {
   id: number
   nombre: string
   descripcion: string | null
+  categoria?: {
+    id: number
+    nombre: string
+  } | null
   activo: boolean
   orden: number
 }

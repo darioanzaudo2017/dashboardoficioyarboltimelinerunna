@@ -87,6 +87,16 @@ import { useApiQuery } from "@/hooks/useApiQuery"
 // Dynamically import LegajoDetail with no SSR to avoid hydration issues
 const LegajoDetail = dynamic(() => import("../../legajo/legajo-detail"), { ssr: false })
 
+const calculateAge = (birthDate?: string | null): number | null => {
+  if (!birthDate) return null
+  const [year, month, day] = birthDate.slice(0, 10).split("-").map(Number)
+  if (!year || !month || !day) return null
+  const today = new Date()
+  let age = today.getFullYear() - year
+  if (today.getMonth() + 1 < month || (today.getMonth() + 1 === month && today.getDate() < day)) age -= 1
+  return age >= 0 ? age : null
+}
+
 // Custom toolbar component
 const CustomToolbar = ({ onExportXlsx, onRefresh }: { onExportXlsx: () => void; onRefresh: () => void }) => {
   return (
@@ -387,6 +397,17 @@ const LegajoTable: React.FC = () => {
     if (apiFilters.equipo_centro_vida !== undefined && apiFilters.equipo_centro_vida !== null) {
       params.equipo_centro_vida = apiFilters.equipo_centro_vida
     }
+
+    if (apiFilters.demanda_estado) params.demanda_estado = apiFilters.demanda_estado
+    if (apiFilters.medida_tipo?.length) params.medida_tipo = apiFilters.medida_tipo.join(",")
+    if (apiFilters.medida_estado?.length) params.medida_estado = apiFilters.medida_estado.join(",")
+    if (apiFilters.oficio_tipo?.length) params.oficio_tipo = apiFilters.oficio_tipo.join(",")
+    if (apiFilters.oficios_proximos_vencer != null) params.oficios_proximos_vencer = apiFilters.oficios_proximos_vencer
+    if (apiFilters.oficios_vencidos != null) params.oficios_vencidos = apiFilters.oficios_vencidos
+    if (apiFilters.pt_pendientes != null) params.pt_pendientes = apiFilters.pt_pendientes
+    if (apiFilters.pt_en_progreso != null) params.pt_en_progreso = apiFilters.pt_en_progreso
+    if (apiFilters.pt_vencidas != null) params.pt_vencidas = apiFilters.pt_vencidas
+    if (apiFilters.etapa_medida) params.etapa_medida = apiFilters.etapa_medida
 
     // Add sorting (multi-column support)
     if (sortModel.length > 0) {
@@ -736,6 +757,18 @@ const LegajoTable: React.FC = () => {
         },
       },
       {
+        field: "edad",
+        headerName: "Edad",
+        width: 70,
+        align: "center",
+        headerAlign: "center",
+        renderCell: (params) => (
+          <Typography variant="body2" sx={{ color: "#475569", fontSize: "0.8125rem" }}>
+            {params.value == null ? "-" : `${params.value} años`}
+          </Typography>
+        ),
+      },
+      {
         field: "ultimaActualizacion",
         headerName: "Actualización",
         width: 140,
@@ -759,6 +792,33 @@ const LegajoTable: React.FC = () => {
             medidas={params.row.medidas_activas || []}
             legajoId={params.row.id}
           />
+        ),
+      },
+      {
+        field: "tipo_medida_actual",
+        headerName: "Tipo medida",
+        width: 105,
+        align: "center",
+        headerAlign: "center",
+        renderCell: (params) => (
+          <Chip
+            label={params.value || "Sin medida"}
+            size="small"
+            variant="outlined"
+            color={params.value ? "primary" : "default"}
+          />
+        ),
+      },
+      {
+        field: "estado_medida_actual",
+        headerName: "Estado medida",
+        width: 125,
+        align: "center",
+        headerAlign: "center",
+        renderCell: (params) => (
+          <Typography variant="body2" sx={{ color: "#475569", fontSize: "0.75rem", fontWeight: 600 }}>
+            {params.value ? String(params.value).replaceAll("_", " ") : "-"}
+          </Typography>
         ),
       },
       {
@@ -1020,6 +1080,9 @@ const LegajoTable: React.FC = () => {
       }
 
       const medidasCount = Array.isArray(legajo.medidas_activas) ? legajo.medidas_activas.length : 0
+      const medidaActual = Array.isArray(legajo.medidas_activas)
+        ? legajo.medidas_activas.find((medida) => medida.estado_vigencia === "VIGENTE") || legajo.medidas_activas[0]
+        : undefined
       const actividadesCount = Array.isArray(legajo.actividades_activas) ? legajo.actividades_activas.length : 0
       const oficiosCount = Array.isArray(legajo.oficios) ? legajo.oficios.length : 0
 
@@ -1034,9 +1097,12 @@ const LegajoTable: React.FC = () => {
         nombre: legajo.nnya?.nombre || "N/A",
         apellido: legajo.nnya?.apellido || "N/A",
         dni: legajo.nnya?.dni ? String(legajo.nnya.dni) : "N/A",
+        edad: calculateAge(legajo.nnya?.fecha_nacimiento),
         prioridad: legajo.prioridad || null,
         ultimaActualizacion: ultimaActualizacionFormatted,
         medidas_activas_count: medidasCount,
+        tipo_medida_actual: medidaActual?.tipo_medida || null,
+        estado_medida_actual: medidaActual?.estado_vigencia || null,
         actividades_activas_count: actividadesCount,
         oficios_count: oficiosCount,
         zona: zonaValue,

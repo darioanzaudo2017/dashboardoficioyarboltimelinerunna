@@ -82,6 +82,8 @@ interface UnifiedWorkflowTabProps {
     persona_nombre: string
     persona_apellido: string
     zona_nombre: string
+    origen_demanda?: string
+    tecnico_cargo?: string
   }
 
   /** Workflow phase (apertura, innovacion, prorroga, cese) */
@@ -477,7 +479,7 @@ export const UnifiedWorkflowTab: React.FC<UnifiedWorkflowTabProps> = ({
           >
             <Box sx={{ p: 2 }}>
               <Alert severity="info" sx={{ mb: 2 }}>
-                La apertura ha sido aprobada. Ahora puede realizar el seguimiento en la sección de "Plan de Trabajo" debajo y luego proceder al cierre de la medida desde el siguiente paso.
+                La apertura ha sido aprobada. Ahora puede realizar el seguimiento en la sección de Plan de Trabajo y luego proceder al cierre de la medida desde el siguiente paso.
               </Alert>
               <Button
                 variant="contained"

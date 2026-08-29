@@ -53,6 +53,11 @@ export interface GlobalActividadFilters {
   /** Filter by medida type (MPI, MPE, MPJ) */
   tipo_medida?: 'MPI' | 'MPE' | 'MPJ' | ''
 
+  // ===== Oficio Filters =====
+  categoria_oficio?: number
+  tipo_oficio?: number
+  estado_oficio?: 'CONTESTADO' | 'PENDIENTE' | ''
+
   // ===== Responsable Filters =====
   /** User is principal OR secondary responsible */
   responsable?: number

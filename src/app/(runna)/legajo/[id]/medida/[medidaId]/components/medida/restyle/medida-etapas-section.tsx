@@ -80,6 +80,8 @@ interface MedidaEtapasSectionProps {
     persona_nombre: string
     persona_apellido: string
     zona_nombre: string
+    origen_demanda?: string
+    tecnico_cargo?: string
   }
   onMedidaRefetch?: () => void
 }

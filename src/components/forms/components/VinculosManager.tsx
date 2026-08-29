@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import {
   Box,
   Button,
@@ -29,12 +29,20 @@ import { MIN_CARACTERES_JUSTIFICACION_VINCULO } from "@/app/(runna)/legajo-mesa/
 interface VinculosManagerProps {
   dropdownData: DropdownData
   readOnly?: boolean
+  oficioMode?: boolean
 }
 
-export default function VinculosManager({ dropdownData, readOnly = false }: VinculosManagerProps) {
+const JUSTIFICACION_OFICIO_AUTOMATICA = "Vinculación registrada desde la carga de un oficio judicial."
+
+export default function VinculosManager({
+  dropdownData,
+  readOnly = false,
+  oficioMode = false,
+}: VinculosManagerProps) {
   const theme = useTheme()
   const { watch, setValue } = useFormContext<FormData>()
   const tipoVinculoOptions = Array.isArray(dropdownData.tipos_vinculo) ? dropdownData.tipos_vinculo : []
+  const tipoVinculoOficio = tipoVinculoOptions.find((tipo) => tipo.codigo === "OFICIO_JUDICIAL")
 
   const vinculos = watch("vinculos") || []
   const [expandedVinculos, setExpandedVinculos] = useState<Set<number>>(new Set())
@@ -47,12 +55,28 @@ export default function VinculosManager({ dropdownData, readOnly = false }: Vinc
     justificacion?: string
   }>>({})
 
+  useEffect(() => {
+    if (!oficioMode || !tipoVinculoOficio) return
+    const incompletos = vinculos.some((vinculo) => !vinculo.tipo_vinculo || !vinculo.justificacion.trim())
+    if (!incompletos) return
+    setValue(
+      "vinculos",
+      vinculos.map((vinculo) => ({
+        ...vinculo,
+        tipo_vinculo: vinculo.tipo_vinculo || tipoVinculoOficio.id,
+        justificacion: vinculo.justificacion.trim()
+          ? vinculo.justificacion
+          : JUSTIFICACION_OFICIO_AUTOMATICA,
+      })),
+    )
+  }, [oficioMode, setValue, tipoVinculoOficio, vinculos])
+
   const handleAddVinculo = () => {
     const newVinculo: VinculoFormData = {
       legajo: null,
       medida: null,
-      tipo_vinculo: null,
-      justificacion: "",
+      tipo_vinculo: oficioMode ? (tipoVinculoOficio?.id || null) : null,
+      justificacion: oficioMode ? JUSTIFICACION_OFICIO_AUTOMATICA : "",
     }
 
     setValue("vinculos", [...vinculos, newVinculo])
@@ -124,9 +148,9 @@ export default function VinculosManager({ dropdownData, readOnly = false }: Vinc
       errors.tipo_vinculo = "Debe seleccionar un tipo de vínculo"
     }
 
-    if (!vinculo.justificacion.trim()) {
+    if (!oficioMode && !vinculo.justificacion.trim()) {
       errors.justificacion = "La justificación es obligatoria"
-    } else if (vinculo.justificacion.trim().length < MIN_CARACTERES_JUSTIFICACION_VINCULO) {
+    } else if (!oficioMode && vinculo.justificacion.trim().length < MIN_CARACTERES_JUSTIFICACION_VINCULO) {
       errors.justificacion = `Mínimo ${MIN_CARACTERES_JUSTIFICACION_VINCULO} caracteres`
     }
 
@@ -251,7 +275,7 @@ export default function VinculosManager({ dropdownData, readOnly = false }: Vinc
                       <TextField
                         select
                         fullWidth
-                        label="Medida (Opcional)"
+                        label={oficioMode ? "Medida inicial/provisoria asociada" : "Medida (Opcional)"}
                         value={vinculo.medida || ""}
                         onChange={(e) =>
                           handleUpdateVinculo(index, "medida", e.target.value ? Number(e.target.value) : null)
@@ -261,7 +285,9 @@ export default function VinculosManager({ dropdownData, readOnly = false }: Vinc
                           errors.medida ||
                           (vinculo.legajo_info.medidas_activas.length === 0
                             ? "Este legajo no tiene medidas activas"
-                            : "Seleccione una medida específica (opcional)")
+                            : oficioMode
+                              ? "Seleccione la medida o el SAC asociado; si es una apertura MPJ, el sistema puede crearla."
+                              : "Seleccione una medida específica (opcional)")
                         }
                         disabled={
                           readOnly ||
@@ -279,7 +305,7 @@ export default function VinculosManager({ dropdownData, readOnly = false }: Vinc
                                 {medida.numero_medida} - {medida.tipo_medida}
                               </Typography>
                               <Typography variant="caption" color="text.secondary">
-                                Estado: {medida.estado_vigencia}
+                                Estado: {medida.estado_vigencia}{medida.nro_sac ? ` · SAC ${medida.nro_sac}` : ""}
                               </Typography>
                             </Box>
                           </MenuItem>
@@ -287,8 +313,8 @@ export default function VinculosManager({ dropdownData, readOnly = false }: Vinc
                       </TextField>
                     )}
 
-                    {/* Tipo de Vínculo */}
-                    <TextField
+                    {/* El tipo técnico OFICIO_JUDICIAL se completa automáticamente en la carga de oficios. */}
+                    {!oficioMode && <TextField
                       select
                       fullWidth
                       required
@@ -313,10 +339,10 @@ export default function VinculosManager({ dropdownData, readOnly = false }: Vinc
                           </Box>
                         </MenuItem>
                       ))}
-                    </TextField>
+                    </TextField>}
 
                     {/* Justificación */}
-                    <Box>
+                    {!oficioMode && <Box>
                       <TextField
                         fullWidth
                         required
@@ -357,7 +383,13 @@ export default function VinculosManager({ dropdownData, readOnly = false }: Vinc
                           )}
                         </Box>
                       )}
-                    </Box>
+                    </Box>}
+
+                    {oficioMode && (
+                      <Alert severity="info">
+                        El vínculo se registra automáticamente como oficio judicial. La justificación no requiere carga manual.
+                      </Alert>
+                    )}
 
                     {/* Summary chips (read-only mode) */}
                     {readOnly && (

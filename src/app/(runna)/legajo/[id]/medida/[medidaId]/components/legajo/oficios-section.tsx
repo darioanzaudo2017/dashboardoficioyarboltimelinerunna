@@ -54,6 +54,12 @@ export const OficiosSection: React.FC<OficiosSectionProps> = ({ legajoData, isLo
     document.body.removeChild(link)
   }
 
+  const formatFecha = (fecha?: string) => {
+    if (!fecha) return "—"
+    const parsed = new Date(`${fecha}T00:00:00`)
+    return Number.isNaN(parsed.getTime()) ? fecha : parsed.toLocaleDateString("es-AR")
+  }
+
 
   if (oficios.length === 0) {
     return (
@@ -80,7 +86,7 @@ export const OficiosSection: React.FC<OficiosSectionProps> = ({ legajoData, isLo
       color: "primary" as const,
     },
     ...(isLoadingEnhancements
-      ? [{ label: "Cargando más...", color: "default" as const }]
+      ? [{ label: "Cargando más...", color: "info" as const }]
       : []),
   ]
 
@@ -93,6 +99,10 @@ export const OficiosSection: React.FC<OficiosSectionProps> = ({ legajoData, isLo
           <TableHead>
             <TableRow>
               <TableCell sx={{ fontWeight: 600 }}>Archivo</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>Categoría</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>Tipo de oficio</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>Juzgado / órgano</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>Fecha del oficio</TableCell>
               <TableCell sx={{ fontWeight: 600, textAlign: "center" }}>Acciones</TableCell>
             </TableRow>
           </TableHead>
@@ -112,6 +122,20 @@ export const OficiosSection: React.FC<OficiosSectionProps> = ({ legajoData, isLo
                       Sin archivo
                     </Typography>
                   )}
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body2">{oficio.categoria_oficio || "Sin categoría"}</Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body2">{oficio.tipo_oficio || oficio.tipo || "—"}</Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body2">{oficio.organo_judicial || "—"}</Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body2" sx={{ whiteSpace: "nowrap" }}>
+                    {formatFecha(oficio.fecha_oficio || oficio.vencimiento)}
+                  </Typography>
                 </TableCell>
                 <TableCell>
                   {oficio.archivo_url ? (

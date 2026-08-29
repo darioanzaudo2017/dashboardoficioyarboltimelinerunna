@@ -51,6 +51,7 @@ export interface LegajoFiltersState {
   // Advanced filters (LEG-03 CA-3)
   demanda_estado?: "ACTIVA" | "CERRADA" | "DERIVADA" | null
   medida_tipo?: string[]
+  medida_estado?: string[]
   oficio_tipo?: string[]
   oficios_proximos_vencer?: number | null
   oficios_vencidos?: boolean | null
@@ -100,6 +101,7 @@ const LegajoFilters: React.FC<LegajoFiltersProps> = ({ onFilterChange }) => {
     equipo_centro_vida: null,
     demanda_estado: null,
     medida_tipo: [],
+    medida_estado: [],
     oficio_tipo: [],
     oficios_proximos_vencer: null,
     oficios_vencidos: null,
@@ -172,6 +174,7 @@ const LegajoFilters: React.FC<LegajoFiltersProps> = ({ onFilterChange }) => {
       equipo_centro_vida: null,
       demanda_estado: null,
       medida_tipo: [],
+      medida_estado: [],
       oficio_tipo: [],
       oficios_proximos_vencer: null,
       oficios_vencidos: null,
@@ -193,7 +196,9 @@ const LegajoFilters: React.FC<LegajoFiltersProps> = ({ onFilterChange }) => {
     onFilterChange(newState)
   }
 
-  const hasActiveFilters = Object.values(filterState).some((value) => value !== null)
+  const hasActiveFilters = Object.values(filterState).some((value) =>
+    Array.isArray(value) ? value.length > 0 : value !== null && value !== undefined
+  )
 
   return (
     <>
@@ -231,7 +236,9 @@ const LegajoFilters: React.FC<LegajoFiltersProps> = ({ onFilterChange }) => {
               fontWeight: "bold",
             }}
           >
-            {Object.values(filterState).filter((v) => v !== null).length}
+            {Object.values(filterState).filter((value) =>
+              Array.isArray(value) ? value.length > 0 : value !== null && value !== undefined
+            ).length}
           </Box>
         )}
       </Button>
@@ -251,6 +258,7 @@ const LegajoFilters: React.FC<LegajoFiltersProps> = ({ onFilterChange }) => {
           },
           ...((filterState.demanda_estado ||
             (filterState.medida_tipo && filterState.medida_tipo.length > 0) ||
+            (filterState.medida_estado && filterState.medida_estado.length > 0) ||
             (filterState.oficio_tipo && filterState.oficio_tipo.length > 0) ||
             filterState.oficios_proximos_vencer ||
             filterState.oficios_vencidos ||
@@ -267,6 +275,7 @@ const LegajoFilters: React.FC<LegajoFiltersProps> = ({ onFilterChange }) => {
         <span>Avanzados</span>
         {(filterState.demanda_estado ||
           (filterState.medida_tipo && filterState.medida_tipo.length > 0) ||
+          (filterState.medida_estado && filterState.medida_estado.length > 0) ||
           (filterState.oficio_tipo && filterState.oficio_tipo.length > 0) ||
           filterState.oficios_proximos_vencer ||
           filterState.oficios_vencidos ||
@@ -290,6 +299,7 @@ const LegajoFilters: React.FC<LegajoFiltersProps> = ({ onFilterChange }) => {
             {[
               filterState.demanda_estado,
               filterState.medida_tipo && filterState.medida_tipo.length > 0,
+              filterState.medida_estado && filterState.medida_estado.length > 0,
               filterState.oficio_tipo && filterState.oficio_tipo.length > 0,
               filterState.oficios_proximos_vencer,
               filterState.oficios_vencidos,
@@ -510,6 +520,7 @@ const LegajoFilters: React.FC<LegajoFiltersProps> = ({ onFilterChange }) => {
           filters={{
             demanda_estado: filterState.demanda_estado || null,
             medida_tipo: filterState.medida_tipo || [],
+            medida_estado: filterState.medida_estado || [],
             oficio_tipo: filterState.oficio_tipo || [],
             oficios_proximos_vencer: filterState.oficios_proximos_vencer || null,
             oficios_vencidos: filterState.oficios_vencidos || null,

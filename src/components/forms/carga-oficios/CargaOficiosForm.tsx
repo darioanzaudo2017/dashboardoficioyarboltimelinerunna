@@ -405,6 +405,7 @@ const CargaOficiosForm: React.FC<CargaOficiosFormInternalProps> = ({
         <VinculosManager
           dropdownData={dropdownData}
           readOnly={readOnly}
+          oficioMode
         />
       </FormSection>
 

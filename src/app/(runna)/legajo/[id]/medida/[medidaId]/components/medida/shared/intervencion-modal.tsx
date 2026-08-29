@@ -80,6 +80,8 @@ export interface IntervencionModalProps {
         persona_nombre: string
         persona_apellido: string
         zona_nombre: string
+        origen_demanda?: string
+        tecnico_cargo?: string
     }
     tipoMedida?: 'MPI' | 'MPE' | 'MPJ' // NEW: For dynamic title and behavior
     workflowPhase?: 'apertura' | 'innovacion' | 'prorroga' | 'cese' // NEW: For MPE/MPJ tabs
@@ -119,6 +121,7 @@ export const IntervencionModal: React.FC<IntervencionModalProps> = ({
         motivos,
         subMotivos,
         categorias,
+        tiposDispositivo,
         isLoadingCatalogs,
         adjuntos,
         isLoadingAdjuntos,
@@ -138,6 +141,7 @@ export const IntervencionModal: React.FC<IntervencionModalProps> = ({
         intervencionId,
         autoLoadCatalogs: true,
         workflowPhase,
+        tipoMedida,
     })
 
     // ============================================================================
@@ -198,6 +202,7 @@ export const IntervencionModal: React.FC<IntervencionModalProps> = ({
     useEffect(() => {
         if (open) {
             clearErrors()
+            setActiveStep(0)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open])
@@ -230,8 +235,14 @@ export const IntervencionModal: React.FC<IntervencionModalProps> = ({
 
             case 1: // Detalles de Intervención
                 const step1Errors: string[] = []
+                if (tipoMedida === 'MPE' && (workflowPhase === 'apertura' || workflowPhase === 'innovacion')) {
+                    if (!legajoData?.origen_demanda) step1Errors.push('La medida debe tener una demanda de origen asociada')
+                    if (!legajoData?.tecnico_cargo) step1Errors.push('El legajo debe tener un técnico a cargo')
+                }
+                if (errors.tipo_dispositivo_id) step1Errors.push(errors.tipo_dispositivo_id)
+                if (errors.subtipo_dispositivo_id) step1Errors.push(errors.subtipo_dispositivo_id)
                 if (errors.motivo_id) step1Errors.push(errors.motivo_id)
-                if (errors.categoria_intervencion_id) step1Errors.push(errors.categoria_intervencion_id)
+                if (errors.sub_motivo_id) step1Errors.push(errors.sub_motivo_id)
                 if (errors.intervencion_especifica) step1Errors.push(errors.intervencion_especifica)
 
                 if (step1Errors.length > 0) {
@@ -254,18 +265,18 @@ export const IntervencionModal: React.FC<IntervencionModalProps> = ({
         if (!validateStep(activeStep)) {
             return
         }
-        setActiveStep((prevStep) => prevStep + 1)
+        setActiveStep((prevStep) => Math.min(prevStep + 1, 2))
     }
 
     const handleBack = () => {
-        setActiveStep((prevStep) => prevStep - 1)
+        setActiveStep((prevStep) => Math.max(prevStep - 1, 0))
     }
 
     const handleStepClick = (step: number) => {
         // Only allow clicking on previous steps or current step
         // To go forward, must use Next button which validates
         if (step <= activeStep) {
-            setActiveStep(step)
+            setActiveStep(Math.min(Math.max(step, 0), 2))
         } else {
             // Validate all steps up to the target step
             for (let i = activeStep; i < step; i++) {
@@ -273,9 +284,14 @@ export const IntervencionModal: React.FC<IntervencionModalProps> = ({
                     return
                 }
             }
-            setActiveStep(step)
+            setActiveStep(Math.min(Math.max(step, 0), 2))
         }
     }
+
+    const selectedTipoDispositivo = tiposDispositivo.find(
+        (tipo) => tipo.id === formData.tipo_dispositivo_id
+    )
+    const subtiposDispositivo = selectedTipoDispositivo?.subtipos || []
 
     // ============================================================================
     // HANDLERS - Save & State Transitions
@@ -288,6 +304,16 @@ export const IntervencionModal: React.FC<IntervencionModalProps> = ({
      */
     const handleSaveAndSend = async () => {
         try {
+            const formErrors = validateForm()
+            if (Object.keys(formErrors).length > 0) {
+                const firstError = Object.values(formErrors)[0]
+                setSnackbar({ open: true, message: firstError, severity: 'error' })
+                if (!formErrors.categoria_intervencion_id) {
+                    setActiveStep(1)
+                }
+                return
+            }
+
             // Validate mandatory document: New file OR existing file must be present
             if (!informeObligatorio && !hasExistingInforme) {
                 setInformeObligatorioError('El Informe Obligatorio es requerido para enviar la intervención')
@@ -699,7 +725,7 @@ export const IntervencionModal: React.FC<IntervencionModalProps> = ({
         switch (step) {
             case 0: // Información Básica
                 return (
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                         {/* Error Alert */}
                         {error && (
                             <Alert severity="error" onClose={clearErrors}>
@@ -736,7 +762,7 @@ export const IntervencionModal: React.FC<IntervencionModalProps> = ({
 
                         {/* Tipo de Cese Section - Only for CESE workflow phase */}
                         {workflowPhase === 'cese' && (
-                            <Card elevation={2} sx={{ p: 3 }}>
+                            <Card elevation={2} sx={{ p: 2 }}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                                     <BusinessIcon sx={{ color: 'error.main', mr: 1 }} />
                                     <Typography variant="h6" sx={{ fontWeight: 600 }}>
@@ -796,7 +822,7 @@ export const IntervencionModal: React.FC<IntervencionModalProps> = ({
 
             case 1: // Detalles de Intervención - PRESERVED as-is
                 return (
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                         {/* Error Alert */}
                         {error && (
                             <Alert severity="error" onClose={clearErrors}>
@@ -804,14 +830,81 @@ export const IntervencionModal: React.FC<IntervencionModalProps> = ({
                             </Alert>
                         )}
 
-                        <Card elevation={2} sx={{ p: 3 }}>
+                        <Card elevation={2} sx={{ p: 2 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                                 <DescriptionIcon sx={{ color: 'primary.main', mr: 1 }} />
                                 <Typography variant="h6" sx={{ fontWeight: 600 }}>
                                     Detalles de la Intervención
                                 </Typography>
                             </Box>
-                            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2, mb: 3 }}>
+                            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 1.5, mb: 2 }}>
+                                {tipoMedida === 'MPE' && (workflowPhase === 'apertura' || workflowPhase === 'innovacion') && (
+                                    <>
+                                        <TextField
+                                            label="Origen de la demanda"
+                                            value={legajoData?.origen_demanda || ''}
+                                            required
+                                            disabled
+                                            error={!legajoData?.origen_demanda}
+                                            helperText={!legajoData?.origen_demanda ? 'Asocie una demanda de origen antes de continuar' : 'Dato tomado de la demanda vinculada'}
+                                        />
+
+                                        <TextField
+                                            label="Técnico a cargo"
+                                            value={legajoData?.tecnico_cargo || ''}
+                                            required
+                                            disabled
+                                            error={!legajoData?.tecnico_cargo}
+                                            helperText={!legajoData?.tecnico_cargo ? 'Asigne un técnico al legajo antes de continuar' : 'Dato tomado de la asignación vigente'}
+                                        />
+
+                                        <FormControl fullWidth required error={!!validationErrors.tipo_dispositivo_id}>
+                                            <InputLabel>Tipo de dispositivo</InputLabel>
+                                            <Select
+                                                value={formData.tipo_dispositivo_id || ''}
+                                                onChange={(e) => {
+                                                    updateField('tipo_dispositivo_id', Number(e.target.value))
+                                                    updateField('subtipo_dispositivo_id', null)
+                                                }}
+                                                label="Tipo de dispositivo"
+                                                disabled={!canEdit || isLoadingCatalogs}
+                                            >
+                                                <MenuItem value="">Seleccionar</MenuItem>
+                                                {tiposDispositivo.map((tipo) => (
+                                                    <MenuItem key={tipo.id} value={tipo.id}>
+                                                        {tipo.nombre}
+                                                    </MenuItem>
+                                                ))}
+                                            </Select>
+                                            {validationErrors.tipo_dispositivo_id && (
+                                                <FormHelperText>{validationErrors.tipo_dispositivo_id}</FormHelperText>
+                                            )}
+                                        </FormControl>
+
+                                        <FormControl fullWidth required error={!!validationErrors.subtipo_dispositivo_id}>
+                                            <InputLabel>Dispositivo de resguardo</InputLabel>
+                                            <Select
+                                                value={formData.subtipo_dispositivo_id || ''}
+                                                onChange={(e) => updateField('subtipo_dispositivo_id', Number(e.target.value))}
+                                                label="Dispositivo de resguardo"
+                                                disabled={!canEdit || !formData.tipo_dispositivo_id || isLoadingCatalogs}
+                                            >
+                                                <MenuItem value="">Seleccionar</MenuItem>
+                                                {subtiposDispositivo.map((subtipo) => (
+                                                    <MenuItem key={subtipo.id} value={subtipo.id}>
+                                                        {subtipo.nombre}
+                                                    </MenuItem>
+                                                ))}
+                                            </Select>
+                                            {validationErrors.subtipo_dispositivo_id ? (
+                                                <FormHelperText>{validationErrors.subtipo_dispositivo_id}</FormHelperText>
+                                            ) : !formData.tipo_dispositivo_id ? (
+                                                <FormHelperText>Seleccione primero un tipo de dispositivo</FormHelperText>
+                                            ) : null}
+                                        </FormControl>
+                                    </>
+                                )}
+
                                 {/* Motivo and Submotivo only visible for APERTURA and INNOVACION */}
                                 {(workflowPhase === 'apertura' || workflowPhase === 'innovacion') && (
                                     <>
@@ -835,47 +928,29 @@ export const IntervencionModal: React.FC<IntervencionModalProps> = ({
                                             )}
                                         </FormControl>
 
-                                        <FormControl fullWidth>
-                                            <InputLabel>Submotivo (opcional)</InputLabel>
+                                        <FormControl fullWidth required error={!!validationErrors.sub_motivo_id}>
+                                            <InputLabel>Submotivo</InputLabel>
                                             <Select
                                                 value={formData.sub_motivo_id || ''}
                                                 onChange={(e) => updateField('sub_motivo_id', e.target.value ? Number(e.target.value) : null)}
-                                                label="Submotivo (opcional)"
+                                                label="Submotivo"
                                                 disabled={!canEdit || !formData.motivo_id || isLoadingCatalogs}
                                             >
-                                                <MenuItem value="">Sin especificar</MenuItem>
+                                                <MenuItem value="">Seleccionar</MenuItem>
                                                 {subMotivos.map((submotivo) => (
                                                     <MenuItem key={submotivo.id} value={submotivo.id}>
                                                         {submotivo.nombre}
                                                     </MenuItem>
                                                 ))}
                                             </Select>
-                                            {!formData.motivo_id && (
+                                            {validationErrors.sub_motivo_id ? (
+                                                <FormHelperText>{validationErrors.sub_motivo_id}</FormHelperText>
+                                            ) : !formData.motivo_id ? (
                                                 <FormHelperText>Seleccione primero un motivo</FormHelperText>
-                                            )}
+                                            ) : null}
                                         </FormControl>
                                     </>
                                 )}
-
-                                <FormControl fullWidth required error={!!validationErrors.categoria_intervencion_id}>
-                                    <InputLabel>Categoría de intervención</InputLabel>
-                                    <Select
-                                        value={formData.categoria_intervencion_id || ''}
-                                        onChange={(e) => updateField('categoria_intervencion_id', Number(e.target.value))}
-                                        label="Categoría de intervención"
-                                        disabled={!canEdit || isLoadingCatalogs}
-                                    >
-                                        <MenuItem value="">Seleccionar</MenuItem>
-                                        {categorias.map((categoria) => (
-                                            <MenuItem key={categoria.id} value={categoria.id}>
-                                                {categoria.nombre}
-                                            </MenuItem>
-                                        ))}
-                                    </Select>
-                                    {validationErrors.categoria_intervencion_id && (
-                                        <FormHelperText>{validationErrors.categoria_intervencion_id}</FormHelperText>
-                                    )}
-                                </FormControl>
 
                                 {/* Estado (read-only) */}
                                 {intervencion && (
@@ -892,7 +967,7 @@ export const IntervencionModal: React.FC<IntervencionModalProps> = ({
                             <TextField
                                 label="Intervención específica"
                                 multiline
-                                rows={3}
+                                rows={2}
                                 fullWidth
                                 value={formData.intervencion_especifica}
                                 onChange={(e) => updateField('intervencion_especifica', e.target.value)}
@@ -901,13 +976,13 @@ export const IntervencionModal: React.FC<IntervencionModalProps> = ({
                                 disabled={!canEdit}
                                 error={!!validationErrors.intervencion_especifica}
                                 helperText={validationErrors.intervencion_especifica || "Obligatorio"}
-                                sx={{ mb: 2 }}
+                                sx={{ mb: 1.5 }}
                             />
 
                             <TextField
                                 label={workflowPhase === 'cese' ? "Descripción detallada del cese" : "Descripción detallada"}
                                 multiline
-                                rows={4}
+                                rows={2}
                                 fullWidth
                                 value={formData.descripcion_detallada}
                                 onChange={(e) => updateField('descripcion_detallada', e.target.value)}
@@ -916,13 +991,13 @@ export const IntervencionModal: React.FC<IntervencionModalProps> = ({
                                     : "Descripción adicional o contexto de la intervención..."}
                                 disabled={!canEdit}
                                 helperText="Opcional - Proporcione contexto adicional si es necesario"
-                                sx={{ mb: 2 }}
+                                sx={{ mb: 1.5 }}
                             />
 
                             <TextField
                                 label={workflowPhase === 'cese' ? "Motivo de Cese" : "Motivo de vulneraciones"}
                                 multiline
-                                rows={3}
+                                rows={2}
                                 fullWidth
                                 value={formData.motivo_vulneraciones}
                                 onChange={(e) => updateField('motivo_vulneraciones', e.target.value)}
@@ -940,7 +1015,7 @@ export const IntervencionModal: React.FC<IntervencionModalProps> = ({
 
             case 2: // Documentos y Configuración - MERGED from previous steps 2 and 3
                 return (
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                         {/* ============================================================ */}
                         {/* INFORME OBLIGATORIO SECTION (Required) */}
                         {/* ============================================================ */}
@@ -988,6 +1063,32 @@ export const IntervencionModal: React.FC<IntervencionModalProps> = ({
                                 }
                             />
                             <CardContent sx={{ pt: 1 }}>
+                                <FormControl
+                                    fullWidth
+                                    required
+                                    error={!!validationErrors.categoria_intervencion_id}
+                                    sx={{ mb: 2 }}
+                                >
+                                    <InputLabel>Categoría del informe</InputLabel>
+                                    <Select
+                                        value={formData.categoria_intervencion_id || ''}
+                                        onChange={(e) => updateField('categoria_intervencion_id', Number(e.target.value))}
+                                        label="Categoría del informe"
+                                        disabled={!canEdit || isLoadingCatalogs}
+                                    >
+                                        <MenuItem value="">Seleccionar</MenuItem>
+                                        {categorias.map((categoria) => (
+                                            <MenuItem key={categoria.id} value={categoria.id}>
+                                                {categoria.nombre}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                    <FormHelperText>
+                                        {validationErrors.categoria_intervencion_id
+                                            || 'Clasifica el documento para el repositorio y los reportes.'}
+                                    </FormHelperText>
+                                </FormControl>
+
                                 {informeObligatorio ? (
                                     // NEWLY Uploaded file
                                     <Paper

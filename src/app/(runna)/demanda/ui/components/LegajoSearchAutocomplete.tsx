@@ -19,6 +19,7 @@ export interface MedidaActiva {
   numero_medida: string
   tipo_medida: string
   estado_vigencia: string
+  nro_sac?: string | null
   etapa_actual__nombre: string | null
   etapa_actual__estado: string | null
 }

@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useRef, useState } from "react"
 import {
   Button,
   TextField,
@@ -15,7 +15,11 @@ import {
 import AddIcon from "@mui/icons-material/Add"
 import BaseDialog from "@/components/shared/BaseDialog"
 import { createMedida } from "@/app/(runna)/legajo-mesa/api/medidas-api-service"
-import type { CreateMedidaRequest, TipoMedida } from "@/app/(runna)/legajo-mesa/types/medida-api"
+import type {
+  CreateMedidaRequest,
+  MedidaDetailResponse,
+  TipoMedida,
+} from "@/app/(runna)/legajo-mesa/types/medida-api"
 import { useConditionalData, extractArray } from "@/hooks/useApiQuery"
 
 interface UrgenciaVulneracion {
@@ -38,7 +42,7 @@ interface CrearMedidaDialogProps {
   open: boolean
   legajoId: number
   onClose: () => void
-  onSuccess: () => void
+  onSuccess: (medida: MedidaDetailResponse) => void | Promise<void>
 }
 
 export const CrearMedidaDialog: React.FC<CrearMedidaDialogProps> = ({
@@ -55,6 +59,7 @@ export const CrearMedidaDialog: React.FC<CrearMedidaDialogProps> = ({
   })
   const [isCreating, setIsCreating] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const submitInFlightRef = useRef(false)
 
   // Fetch dropdown data using TanStack Query (only when dialog is open)
   const { data: juzgadosData, isLoading: isLoadingJuzgados } = useConditionalData<Juzgado[]>(
@@ -98,32 +103,26 @@ export const CrearMedidaDialog: React.FC<CrearMedidaDialogProps> = ({
   }
 
   const handleSubmit = async () => {
+    // El estado de React no bloquea un segundo click en el mismo ciclo de render.
+    // Este guard evita crear dos medidas ante doble click o una conexión lenta.
+    if (submitInFlightRef.current) return
+
+    if (!formData.tipo_medida) {
+      setError("El tipo de medida es obligatorio")
+      return
+    }
+
+    submitInFlightRef.current = true
+    setIsCreating(true)
+    setError(null)
+
+    let createdMedida: MedidaDetailResponse
+
     try {
-      setIsCreating(true)
-      setError(null)
-
-      // Validate required fields
-      if (!formData.tipo_medida) {
-        setError("El tipo de medida es obligatorio")
-        return
-      }
-
       // Call API to create medida
-      const createdMedida = await createMedida(legajoId, formData)
+      createdMedida = await createMedida(legajoId, formData)
 
       console.log("Medida created successfully:", createdMedida)
-
-      // Reset form and close dialog
-      setFormData({
-        tipo_medida: "MPI",
-        juzgado: null,
-        nro_sac: null,
-        urgencia: null,
-      })
-
-      // Notify parent component of success
-      onSuccess()
-      onClose()
     } catch (err: any) {
       console.error("Error creating medida:", err)
 
@@ -149,7 +148,31 @@ export const CrearMedidaDialog: React.FC<CrearMedidaDialogProps> = ({
       } else {
         setError("Error al crear la medida. Por favor, intente nuevamente.")
       }
+      submitInFlightRef.current = false
+      setIsCreating(false)
+      return
+    }
+
+    // A partir de aquí la medida ya existe. El refresco de la pantalla es una
+    // segunda fase: si falla, nunca debe mostrarse como error de creación ni
+    // invitar al usuario a repetir la operación.
+    setFormData({
+      tipo_medida: "MPI",
+      juzgado: null,
+      nro_sac: null,
+      urgencia: null,
+    })
+    onClose()
+
+    try {
+      await onSuccess(createdMedida)
+    } catch (refreshError) {
+      console.warn(
+        "La medida fue creada, pero no se pudo refrescar el detalle del legajo:",
+        refreshError,
+      )
     } finally {
+      submitInFlightRef.current = false
       setIsCreating(false)
     }
   }

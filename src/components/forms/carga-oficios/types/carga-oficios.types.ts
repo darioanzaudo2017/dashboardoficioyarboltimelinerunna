@@ -144,6 +144,7 @@ export interface VinculoFormData {
       numero_medida: string
       tipo_medida: string
       estado_vigencia: string
+      nro_sac?: string | null
     }>
   }
 }

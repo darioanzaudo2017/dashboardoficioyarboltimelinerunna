@@ -24,6 +24,19 @@ export interface Documento {
   usuario_subida: UsuarioSubida | null
   tipo_documento: string | null
   descripcion: string | null
+  medida?: {
+    id: number
+    numero_medida: string
+    tipo_medida: string
+    tipo_medida_display: string
+    estado_vigencia: string
+  } | null
+  actividad?: {
+    id: number
+    nombre: string
+    estado: string
+    estado_display: string
+  } | null
   metadata: Record<string, unknown>
 }
 

@@ -15,6 +15,9 @@ export interface ProcessedOficio {
   archivo_url?: string
   demanda_id?: number
   tipo_oficio?: string
+  categoria_oficio?: string
+  organo_judicial?: string
+  fecha_oficio?: string
 }
 
 // Documento structure expected by DocumentosSection
@@ -85,6 +88,12 @@ export const processAdjuntosToOficios = (
       id: `demanda-${demandaDetail.id}-oficio-${index}`,
       tipo: demandaDetail.tipo_oficio?.nombre || "Oficio",
       tipo_oficio: demandaDetail.tipo_oficio?.nombre || "Oficio",
+      categoria_oficio: demandaDetail.tipo_oficio?.categoria?.nombre || "Sin categoría",
+      organo_judicial:
+        demandaDetail.institucion?.nombre
+        || demandaDetail.bloque_datos_remitente?.nombre
+        || "Sin organismo",
+      fecha_oficio: demandaDetail.fecha_oficio_documento,
       numero: demandaDetail.id.toString(),
       estado: demandaDetail.estado_demanda || "ACTIVO",
       // Use fecha_oficio_documento as vencimiento, or calculate 90 days from fecha_ingreso_senaf

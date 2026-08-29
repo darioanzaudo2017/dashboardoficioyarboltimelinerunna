@@ -341,6 +341,8 @@ export interface WorkflowSectionProps {
     persona_nombre: string
     persona_apellido: string
     zona_nombre: string
+    origen_demanda?: string
+    tecnico_cargo?: string
   }
   onDataChange?: (data: WorkflowItem[]) => void
 }
@@ -368,6 +370,8 @@ export interface UnifiedWorkflowModalProps {
     persona_nombre: string
     persona_apellido: string
     zona_nombre: string
+    origen_demanda?: string
+    tecnico_cargo?: string
   }
   tipoMedida?: TipoMedida
 
