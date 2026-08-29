@@ -8,22 +8,15 @@
  * genera actividades de Plan de Trabajo y/o Control de Legalidad con
  * `oficio_origen.id` apuntando a esa demanda.
  *
- * Fuentes de datos (ninguna tenía wrapper en el frontend, las tres son
- * endpoints "bulk" sin paginar descubiertos pegándole al backend real):
- * - `GET /medidas-all/` (medida.nro_sac + plan_trabajo.actividades embebido)
- * - `GET /registro-demanda-form/` (SAC/expediente/oficio-web REALES de cada
- *   demanda-oficio — `oficio_origen.numero`, embebido en la actividad, viene
- *   siempre null, así que no alcanza con `medidas-all` solo)
- *
- * El SAC de la medida y el SAC/expediente de la demanda-oficio que la originó
- * NO están garantizados a coincidir (son campos separados, sin sincronización
- * confirmada) — por eso la búsqueda prueba contra los dos lados.
+ * Fuente de datos: una única búsqueda server-side en `GET /medidas-all/?search=`.
+ * El backend filtra por identificadores de medida, legajo y demanda, y cada
+ * actividad incluye los identificadores reales de su oficio de origen.
  *
  * Un oficio se considera "Contestado" cuando TODAS las actividades que
  * generó llegaron a un estado terminal (ver `lib/buscar-oficios.ts`).
  */
-import { useMemo, useState } from "react"
-import { useQueries } from "@tanstack/react-query"
+import { useEffect, useMemo, useState } from "react"
+import { useQuery } from "@tanstack/react-query"
 import {
   Alert,
   Box,
@@ -39,34 +32,39 @@ import SearchIcon from "@mui/icons-material/Search"
 import DescriptionIcon from "@mui/icons-material/Description"
 import CheckCircleIcon from "@mui/icons-material/CheckCircle"
 import PendingIcon from "@mui/icons-material/Pending"
-import { getMedidasAll } from "../indicadores/api/indicadores-api-service"
-import { getDemandasAll } from "./api/oficios-api-service"
+import { buscarMedidasConOficios } from "./api/oficios-api-service"
 import { armarMedidasConOficios, buscarPorIdentificador, OBJETIVO_LABELS } from "./lib/buscar-oficios"
 import { ActividadNode } from "../legajo/[id]/medida/[medidaId]/components/medida/arbol/actividad-node"
 import { BarraAvanceOficio } from "./components/BarraAvanceOficio"
 
 export default function OficiosPage() {
   const [query, setQuery] = useState("")
+  const [queryDiferida, setQueryDiferida] = useState("")
 
-  const [medidasQuery, demandasQuery] = useQueries({
-    queries: [
-      { queryKey: ["oficios-medidas-all"], queryFn: getMedidasAll, staleTime: 1000 * 60 * 5 },
-      { queryKey: ["oficios-demandas-all"], queryFn: getDemandasAll, staleTime: 1000 * 60 * 5 },
-    ],
+  useEffect(() => {
+    const timer = window.setTimeout(() => setQueryDiferida(query.trim()), 300)
+    return () => window.clearTimeout(timer)
+  }, [query])
+
+  const medidasQuery = useQuery({
+    queryKey: ["oficios-busqueda", queryDiferida],
+    queryFn: () => buscarMedidasConOficios(queryDiferida),
+    enabled: queryDiferida.length >= 2,
+    staleTime: 1000 * 60 * 5,
   })
 
-  const isLoading = medidasQuery.isLoading || demandasQuery.isLoading
-  const error = medidasQuery.error ?? demandasQuery.error ?? null
+  const isLoading = medidasQuery.isFetching
+  const error = medidasQuery.error ?? null
 
   const medidasConOficios = useMemo(() => {
-    if (!medidasQuery.data || !demandasQuery.data) return []
-    return armarMedidasConOficios(medidasQuery.data, demandasQuery.data)
-  }, [medidasQuery.data, demandasQuery.data])
+    if (!medidasQuery.data) return []
+    return armarMedidasConOficios(medidasQuery.data)
+  }, [medidasQuery.data])
 
   const resultados = useMemo(() => {
-    if (!query.trim()) return []
-    return buscarPorIdentificador(medidasConOficios, query)
-  }, [medidasConOficios, query])
+    if (queryDiferida.length < 2) return []
+    return buscarPorIdentificador(medidasConOficios, queryDiferida)
+  }, [medidasConOficios, queryDiferida])
 
   const totalOficiosEncontrados = resultados.reduce((acc, r) => acc + r.oficios.length, 0)
 
@@ -109,9 +107,9 @@ export default function OficiosPage() {
         </Stack>
       )}
 
-      {!isLoading && !error && query.trim() && resultados.length === 0 && (
+      {!isLoading && !error && queryDiferida.length >= 2 && resultados.length === 0 && (
         <Alert severity="warning">
-          No se encontró ningún oficio ni medida con &quot;{query}&quot;. Probá con el SAC/expediente/oficio
+          No se encontró ningún oficio ni medida con &quot;{queryDiferida}&quot;. Probá con el SAC/expediente/oficio
           web del oficio, el SAC de la medida, el número de medida (ej. MED-2026-045) o el número de legajo
           (ej. LEG-2026-0093).
         </Alert>
@@ -182,7 +180,9 @@ export default function OficiosPage() {
                         {oficio.actividadesCompletas} de {oficio.actividadesTotal} actividades completas
                       </Typography>
                       <Typography variant="caption" sx={{ fontWeight: 700 }} color="text.secondary">
-                        {Math.round((oficio.actividadesCompletas / oficio.actividadesTotal) * 100)}%
+                        {oficio.actividadesTotal > 0
+                          ? Math.round((oficio.actividadesCompletas / oficio.actividadesTotal) * 100)
+                          : 0}%
                       </Typography>
                     </Stack>
                     <BarraAvanceOficio actividades={oficio.actividades} />

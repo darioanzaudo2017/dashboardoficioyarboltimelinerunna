@@ -1,5 +1,4 @@
 import type { MedidaAllItem } from "../../indicadores/types"
-import type { DemandaAllItem } from "../types"
 import type { TActividadPlanTrabajo } from "../../legajo/[id]/medida/[medidaId]/types/actividades"
 
 /**
@@ -34,21 +33,21 @@ const contieneTexto = (valor: string | number | null | undefined, query: string)
   valor !== null && valor !== undefined && String(valor).toLowerCase().includes(query)
 
 /**
- * Agrupa TODAS las actividades de TODAS las medidas por oficio de origen
- * (`oficio_origen.id`, que es el id de la demanda-oficio), enriqueciendo cada
- * grupo con los identificadores reales sacados de `demandasAll` — no de
- * `oficio_origen.numero`, que viene siempre vacío.
+ * Agrupa las actividades de las medidas ya filtradas por oficio de origen.
+ * Usa los identificadores embebidos por el backend y conserva también los
+ * oficios vinculados que todavía no generaron actividades.
  */
 export function armarMedidasConOficios(
-  medidas: MedidaAllItem[],
-  demandas: DemandaAllItem[]
+  medidas: MedidaAllItem[]
 ): MedidaConOficios[] {
-  const demandaPorId = new Map<number, DemandaAllItem>()
-  for (const d of demandas) demandaPorId.set(d.id, d)
-
   return medidas.map((medida) => {
     const actividades = medida.plan_trabajo?.actividades ?? []
     const porOficio = new Map<number, TActividadPlanTrabajo[]>()
+    const demandasPorId = new Map(medida.demandas_origen.map((demanda) => [demanda.id, demanda]))
+
+    for (const demanda of medida.demandas_origen) {
+      porOficio.set(demanda.id, [])
+    }
 
     for (const actividad of actividades) {
       if (!actividad.oficio_origen) continue
@@ -58,18 +57,19 @@ export function armarMedidasConOficios(
     }
 
     const oficios: OficioEncontrado[] = Array.from(porOficio.entries()).map(([oficioId, acts]) => {
-      const demanda = demandaPorId.get(oficioId)
+      const oficio = acts[0]?.oficio_origen
+      const demanda = demandasPorId.get(oficioId)
       const completas = acts.filter((a) => ESTADOS_TERMINALES.has(a.estado)).length
       return {
         oficioId,
-        objetivo: demanda?.objetivo_de_demanda ?? acts[0]?.oficio_origen?.objetivo ?? "Sin dato",
+        objetivo: oficio?.objetivo ?? demanda?.objetivo ?? "Sin dato",
         actividades: acts,
         contestado: acts.length > 0 && completas === acts.length,
         actividadesCompletas: completas,
         actividadesTotal: acts.length,
-        numeroExpediente: demanda?.numero_expediente ?? null,
-        nroOficioWeb: demanda?.nro_oficio_web ?? null,
-        nroSacDemanda: demanda?.nro_sac ?? null,
+        numeroExpediente: oficio?.numero_expediente ?? demanda?.numero_expediente ?? null,
+        nroOficioWeb: oficio?.nro_oficio_web ?? demanda?.nro_oficio_web ?? null,
+        nroSacDemanda: oficio?.nro_sac ?? demanda?.nro_sac ?? null,
       }
     })
 

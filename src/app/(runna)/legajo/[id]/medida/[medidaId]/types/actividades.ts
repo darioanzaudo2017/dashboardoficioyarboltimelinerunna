@@ -512,7 +512,10 @@ export interface TActividadPlanTrabajo {
  */
 export interface OficioOrigen {
   id: number
-  numero: string
+  numero: string | null
+  nro_sac: string | null
+  numero_expediente: string | null
+  nro_oficio_web: string | null
   objetivo: string
   adjuntos: Array<{
     id: number

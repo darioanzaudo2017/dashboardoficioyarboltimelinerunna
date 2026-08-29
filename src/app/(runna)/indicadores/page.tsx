@@ -3,20 +3,14 @@
 /**
  * Página de Indicadores SPPD (IP1-IP27).
  *
- * Fuente de datos: `GET /medidas-all/` + `GET /persona/` (ver
- * `api/indicadores-api-service.ts` — ninguno tenía wrapper en el frontend
- * antes de esto, se descubrieron investigando directamente contra el
- * backend real). Se traen completos (sin paginar) y se filtran/agrupan acá.
+ * Fuente de datos: una única llamada liviana a
+ * `GET /medidas-all/?include_actividades=false`. El backend incluye los
+ * datos demográficos, motivos de cierre y demandas de origen necesarios.
  *
  * Gaps de datos confirmados (quedan marcados como "No disponible" en la
  * página, no ausentes en silencio):
  * - IP6 / IP9: Dispositivos Especializados de Aprehensión (DEA) no existen
  *   en el sistema — Córdoba no tiene este tipo de dispositivo.
- * - IP18 / IP19: el motivo de cierre de una MPE no viaja en `medidas-all`
- *   (a diferencia del `tipo_cese` de una MPI, que sí se guarda en el informe
- *   de cierre). Requeriría una consulta adicional por medida cerrada.
- * - IP20-IP23: no existe ningún campo que vincule una medida con la demanda
- *   que la originó, ni en `medidas-all` ni en el resto del código inventariado.
  *
  * Simplificaciones deliberadas (ajustables si hace falta más precisión):
  * - "Grupos etarios" y "grupos de duración": cortes definidos acá mismo
@@ -88,8 +82,8 @@ export default function IndicadoresPage() {
         </Typography>
       </Stack>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        27 indicadores del sistema de monitoreo de intervenciones (IP1-IP27). 8 de ellos no se pueden
-        calcular con los datos disponibles hoy — quedan marcados explícitamente más abajo.
+        27 indicadores del sistema de monitoreo de intervenciones (IP1-IP27). Los indicadores DEA
+        se marcan como no aplicables porque Córdoba no cuenta con ese tipo de dispositivo.
       </Typography>
 
       <Paper elevation={0} sx={{ p: 2, mb: 3, borderRadius: 2, border: "1px solid", borderColor: "divider" }}>
@@ -299,24 +293,30 @@ export default function IndicadoresPage() {
           />
 
           {/* IP18 / IP19 */}
-          <IndicadorNoDisponible
+          <IndicadorParCard
             codigo="IP18 / IP19"
             titulo="MPE cesadas según motivo de cierre"
-            motivo="El motivo de cierre de una MPE no viaja en el listado masivo de medidas (a diferencia del tipo_cese de una MPI, que sí queda en el informe de cierre). Se podría calcular pidiendo el detalle de cada MPE cerrada, pero implica una llamada extra por medida — quedó pendiente para no demorar esta primera versión."
+            lista={mpeCesadas}
+            dimensionTitulo="Por motivo de cierre"
+            dimensionSelector={(m) => m.motivoCese}
           />
 
           {/* IP20 / IP21 */}
-          <IndicadorNoDisponible
+          <IndicadorParCard
             codigo="IP20 / IP21"
             titulo="MPI creadas según origen de la demanda"
-            motivo="No existe ningún campo que vincule una medida con la demanda que la originó, ni en el listado masivo de medidas ni en el resto del sistema relevado. Habría que confirmar con el equipo de backend si ese vínculo existe en otro endpoint."
+            lista={mpi}
+            dimensionTitulo="Por origen de la demanda"
+            dimensionSelector={(m) => m.origenDemanda}
           />
 
           {/* IP22 / IP23 */}
-          <IndicadorNoDisponible
+          <IndicadorParCard
             codigo="IP22 / IP23"
             titulo="MPE creadas según origen de la demanda"
-            motivo="Mismo problema que IP20/IP21: no hay vínculo medida → demanda disponible."
+            lista={mpe}
+            dimensionTitulo="Por origen de la demanda"
+            dimensionSelector={(m) => m.origenDemanda}
           />
 
           {/* IP24 */}

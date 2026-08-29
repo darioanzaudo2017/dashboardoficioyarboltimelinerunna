@@ -1,4 +1,4 @@
-import type { MedidaAllItem, PersonaAllItem, TipoMedidaCodigo } from "../types"
+import type { MedidaAllItem, TipoMedidaCodigo } from "../types"
 import { calcularEdadEn, grupoEtario } from "./edad"
 
 export interface MedidaEnriquecida {
@@ -26,22 +26,17 @@ export interface MedidaEnriquecida {
   categoriaIntervencion: string | null
   tipoDispositivo: string | null // "tipo de alojamiento" (MPE) / "tipo de dispositivo" (MPJ)
   subtipoDispositivo: string | null
+  motivoCese: string | null
+  origenDemanda: string | null
 }
 
-export function enriquecerMedidas(
-  medidas: MedidaAllItem[],
-  personas: PersonaAllItem[]
-): MedidaEnriquecida[] {
-  const personaPorId = new Map<number, PersonaAllItem>()
-  for (const p of personas) personaPorId.set(p.id, p)
-
+export function enriquecerMedidas(medidas: MedidaAllItem[]): MedidaEnriquecida[] {
   return medidas.map((m): MedidaEnriquecida => {
     const nnya = m.legajo?.nnya ?? null
-    const persona = nnya ? personaPorId.get(nnya.id) ?? null : null
 
     const edad =
-      persona?.fecha_nacimiento != null
-        ? calcularEdadEn(persona.fecha_nacimiento, m.fecha_apertura)
+      nnya?.fecha_nacimiento != null
+        ? calcularEdadEn(nnya.fecha_nacimiento, m.fecha_apertura)
         : nnya?.edad_calculada ?? null
 
     return {
@@ -57,10 +52,10 @@ export function enriquecerMedidas(
       urgencia: m.urgencia,
 
       nnyaId: nnya?.id ?? null,
-      genero: persona?.genero ?? null,
-      nacionalidad: persona?.nacionalidad ?? null,
-      situacionDni: persona?.situacion_dni ?? null,
-      tieneDni: persona ? (persona.situacion_dni ? persona.situacion_dni === "VALIDO" : persona.dni != null) : null,
+      genero: nnya?.genero ?? null,
+      nacionalidad: nnya?.nacionalidad ?? null,
+      situacionDni: nnya?.situacion_dni ?? null,
+      tieneDni: nnya ? (nnya.situacion_dni ? nnya.situacion_dni === "VALIDO" : nnya.dni != null) : null,
       edad,
       grupoEtario: grupoEtario(edad),
 
@@ -68,6 +63,8 @@ export function enriquecerMedidas(
       categoriaIntervencion: m.intervencion?.categoria_intervencion_detalle?.nombre ?? null,
       tipoDispositivo: m.intervencion?.tipo_dispositivo_detalle?.nombre ?? null,
       subtipoDispositivo: m.intervencion?.subtipo_dispositivo_detalle?.nombre ?? null,
+      motivoCese: m.tipo_cese_display ?? m.subtipo_cese ?? m.tipo_cese ?? null,
+      origenDemanda: m.demandas_origen?.[0]?.origen ?? null,
     }
   })
 }

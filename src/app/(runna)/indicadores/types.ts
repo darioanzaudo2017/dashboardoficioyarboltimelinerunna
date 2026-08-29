@@ -22,6 +22,10 @@ export interface MedidaAllNnya {
   dni: number | null
   /** Edad ya calculada por el backend, presumiblemente "a hoy". */
   edad_calculada: number | null
+  fecha_nacimiento: string | null
+  genero: string | null
+  nacionalidad: string | null
+  situacion_dni: string | null
 }
 
 export interface MedidaAllLegajo {
@@ -48,6 +52,18 @@ export interface MedidaAllIntervencion {
   fecha_creacion: string
 }
 
+export interface MedidaAllDemandaOrigen {
+  id: number
+  numero: string | null
+  nro_sac: string | number | null
+  numero_expediente: string | null
+  nro_oficio_web: string | null
+  objetivo: string | null
+  origen_id: number | null
+  origen: string | null
+  fecha_creacion: string
+}
+
 /** Item de `GET /medidas-all/` — array plano, sin paginar. */
 export interface MedidaAllItem {
   id: number
@@ -58,35 +74,20 @@ export interface MedidaAllItem {
   estado_vigencia_display: string
   fecha_apertura: string
   fecha_cierre: string | null
-  /**
-   * Calculado por backend. Para medidas vigentes se recalcula "a hoy" cada
-   * vez (confirmado empíricamente). Puede dar valores negativos en aperturas
-   * y cierres el mismo día (bug de redondeo de fechas del backend) — se
-   * clampea a 0 al derivar los datos, ver `lib/enriquecer.ts`.
-   */
+  fecha_cese_efectivo: string | null
+  /** Calculado por backend en días calendario y nunca negativo. */
   duracion_dias: number
   juzgado: MedidaAllCatalogoRef | null
   urgencia: (MedidaAllCatalogoRef & { peso?: number | null }) | null
   legajo: MedidaAllLegajo | null
   intervencion: MedidaAllIntervencion | null
   fecha_creacion: string
-  /** SAC de la medida (distinto del SAC/expediente que pueda tener la demanda que la originó — no están garantizados a coincidir). */
+  /** SAC/identificador judicial de la medida; los vínculos nuevos lo sincronizan desde el oficio. */
   nro_sac: string | number | null
+  demandas_origen: MedidaAllDemandaOrigen[]
+  tipo_cese: string | null
+  tipo_cese_display: string | null
+  subtipo_cese: string | null
   /** Plan de trabajo con TODAS sus actividades embebidas (incluye `oficio_origen` por actividad). */
   plan_trabajo: { id: number; actividades: TActividadPlanTrabajo[] } | null
-}
-
-/** Item de `GET /persona/` — array plano, sin paginar (295 personas en la muestra). */
-export interface PersonaAllItem {
-  id: number
-  nombre: string
-  apellido: string
-  fecha_nacimiento: string | null
-  nacionalidad: string | null
-  dni: number | null
-  /** VALIDO | EN_TRAMITE | VENCIDO | EXTRAVIADO | INEXISTENTE | OTRO (no confirmado exhaustivamente). */
-  situacion_dni: string | null
-  genero: string | null
-  /** true si esta persona es el NNyA de un legajo (no un adulto relacionado). */
-  nnya: boolean
 }

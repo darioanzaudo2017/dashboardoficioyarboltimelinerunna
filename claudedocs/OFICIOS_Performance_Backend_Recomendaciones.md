@@ -1,6 +1,6 @@
 # Búsqueda de Oficios — Por qué es lenta y qué se necesita del backend
 
-## Revisión contra el backend actual (2026-08-29)
+## Implementación aplicada (2026-08-29)
 
 Se contrastó este documento con
 `SENAF-RUNNA-db-backend@00e0a82` (rama
@@ -9,17 +9,17 @@ se mantiene, con estos estados y precisiones:
 
 | Tema | Estado verificado | Evidencia / precisión |
 |---|---|---|
-| Filtros de `registro-demanda-form` | **Pendiente** | `RegistroDemandaFormView` no define `filterset_class`; el `DjangoFilterBackend` de `BaseViewSet` no tiene filtros que aplicar. |
-| Filtro `oficio_id` en actividades | **Pendiente** | `TActividadPlanTrabajoFilter` filtra medida/legajo/origen, pero no `origen_demanda`/oficio. El FK ya existe como `origen_demanda`. |
-| Índices de expediente/oficio/SAC | **Pendiente** | Los campos no tienen `db_index` y no se encontró una migración `AddIndex` para ellos. |
-| Serializers livianos de listado | **Pendiente** | Ambos endpoints siguen usando serializers completos; el de demanda además reconstruye relaciones anidadas en `to_representation`. |
+| Filtros de `registro-demanda-form` | **Implementado** | Filtros parciales por expediente/oficio/SAC y `search`; `?resumen=true` selecciona el serializer liviano. |
+| Filtro `oficio_id` en actividades | **Implementado** | Filtra directamente por `origen_demanda_id`. |
+| Índices de expediente/oficio/SAC | **Implementado** | Migración `1028` agrega índices a demanda y medida. |
+| Serializers livianos de listado | **Implementado** | Demandas tiene `?resumen=true`; medidas tiene `?include_actividades=false`. |
 | Filtros documentados de `medidas-all` | **Ya implementados** | `TMedidaFilter` implementa tipo, vigencia, legajo, número, rango de apertura, juzgado y urgencia; `test_medidas_all_endpoint.py` los cubre. Falta un filtro por oficio/SAC de demanda. |
-| Sincronización de SAC demanda → medida | **Parcial** | La creación automática general de medida copia `demanda.nro_sac`, pero el flujo de `oficio_signals.py` que crea o reutiliza una medida no lo copia/sincroniza. |
-| `oficio_origen.numero` | **Bug confirmado** | El serializer lee `demanda.numero`, atributo que no existe en `TDemanda`; debe exponer `nro_sac`, `numero_expediente` y `nro_oficio_web` explícitamente. |
-| `duracion_dias` negativo | **Bug confirmado** | La propiedad usa `(fecha_fin - fecha_apertura).days` sobre datetimes; un cierre a medianoche del mismo día puede producir `-1`. |
-| Relación medida → demanda | **Existe, pero no se expone desde medida** | `TVinculoLegajo` admite simultáneamente `demanda_destino` y `medida_destino`, y su endpoint filtra por `demanda_id`. El gap real está en `MedidaDetail`/`medidas-all`, no necesariamente en el modelo de datos. |
-| Motivo de cierre MPE | **Requiere definición funcional** | No se encontró el supuesto enum/modelo `TipoCeseMPE` en el backend actual. Antes de unificar endpoints hay que definir dónde persistir el dato y su catálogo. |
-| Datos del NNyA en `medidas-all` | **Pendiente** | El objeto embebido conserva sólo id, nombre, apellido, DNI y edad calculada. |
+| Sincronización de SAC demanda → medida | **Implementado** | Copia SAC o expediente sólo cuando la medida está vacía y registra discrepancias sin pisar datos. |
+| `oficio_origen.numero` | **Corregido** | Expone `nro_sac`, `numero_expediente` y `nro_oficio_web` explícitamente. |
+| `duracion_dias` negativo | **Corregido** | Se calcula por fecha calendario con mínimo cero. |
+| Relación medida → demanda | **Implementado** | `MedidaDetail` y `medidas-all` exponen `demandas_origen[]`. |
+| Motivo de cierre MPE/MPI | **Implementado** | Se persiste el catálogo que ya enviaban los formularios y se expone en `medidas-all`. |
+| Datos del NNyA en `medidas-all` | **Implementado** | Incluye fecha de nacimiento, género, nacionalidad y situación de DNI. |
 
 ### Orden de implementación recomendado después de la revisión
 
@@ -306,8 +306,5 @@ tener que pedir 295 personas aparte solo para completar esos tres campos.
 | 10 | Unificar el modelo de informe de cierre entre MPI y MPE (5.5) | Medio — hoy MPE no tiene motivo de cierre consultable en bloque |
 | 11 | Sumar género/nacionalidad/situación_dni al `nnya` embebido en `medidas-all` (5.6) | Bajo/medio — evita cruzar con `GET /persona/` aparte |
 
-Mientras estos cambios no estén, la página de Oficios sigue funcionando
-(usa `staleTime` de 5 minutos en el cliente para no repetir las llamadas
-pesadas en cada búsqueda dentro de la misma sesión), pero la primera
-búsqueda de cada sesión va a seguir tardando lo que tarden estos dos
-endpoints en responder — eso ya no depende del frontend.
+La página de Oficios ya consume una sola búsqueda server-side con debounce;
+dejó de descargar y cruzar los listados completos de demandas y medidas.

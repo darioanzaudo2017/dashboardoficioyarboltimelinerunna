@@ -2,7 +2,7 @@
 
 import { useMemo } from "react"
 import { useQuery } from "@tanstack/react-query"
-import { getMedidasAll, getPersonasAll } from "../api/indicadores-api-service"
+import { getMedidasAll } from "../api/indicadores-api-service"
 import { enriquecerMedidas } from "../lib/enriquecer"
 import type { MedidaEnriquecida } from "../lib/enriquecer"
 
@@ -18,16 +18,10 @@ export function useIndicadoresData(periodo: PeriodoFiltro) {
     staleTime: 1000 * 60 * 5,
   })
 
-  const personasQuery = useQuery({
-    queryKey: ["indicadores-personas-all"],
-    queryFn: getPersonasAll,
-    staleTime: 1000 * 60 * 5,
-  })
-
   const todas = useMemo(() => {
-    if (!medidasQuery.data || !personasQuery.data) return []
-    return enriquecerMedidas(medidasQuery.data, personasQuery.data)
-  }, [medidasQuery.data, personasQuery.data])
+    if (!medidasQuery.data) return []
+    return enriquecerMedidas(medidasQuery.data)
+  }, [medidasQuery.data])
 
   // El "período" filtra por fecha de apertura de la medida. Se aplica acá
   // (no en el backend) porque medidas-all no soporta filtro server-side
@@ -46,8 +40,8 @@ export function useIndicadoresData(periodo: PeriodoFiltro) {
   }, [todas, periodo.desde, periodo.hasta])
 
   return {
-    isLoading: medidasQuery.isLoading || personasQuery.isLoading,
-    error: medidasQuery.error ?? personasQuery.error ?? null,
+    isLoading: medidasQuery.isLoading,
+    error: medidasQuery.error ?? null,
     medidas,
     /** Sin filtro de período — para gráficos de evolución histórica (ver LineaVigentes). */
     todas,

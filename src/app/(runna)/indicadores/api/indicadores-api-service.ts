@@ -1,19 +1,13 @@
 /**
  * Servicio de datos para los indicadores SPPD (IP1-IP27).
  *
- * Descubrimiento: `GET /medidas-all/` y `GET /persona/` no tenían wrapper en
- * el frontend — se verificaron pegándole directamente al backend real.
- * Ambos devuelven un array plano SIN paginar (236 medidas / 295 personas en
- * la muestra usada para investigar), así que alcanza con una sola llamada a
- * cada uno para tener todo el dataset.
+ * El backend expone los datos demográficos del NNyA dentro de cada medida y
+ * permite omitir el detalle de actividades, por lo que el tablero se resuelve
+ * con una sola llamada liviana.
  */
 import { get } from "@/app/api/apiService"
-import type { MedidaAllItem, PersonaAllItem } from "../types"
+import type { MedidaAllItem } from "../types"
 
 export const getMedidasAll = async (): Promise<MedidaAllItem[]> => {
-  return get<MedidaAllItem[]>("medidas-all/")
-}
-
-export const getPersonasAll = async (): Promise<PersonaAllItem[]> => {
-  return get<PersonaAllItem[]>("persona/")
+  return get<MedidaAllItem[]>("medidas-all/", { include_actividades: false })
 }
