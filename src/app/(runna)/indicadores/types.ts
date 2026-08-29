@@ -65,8 +65,8 @@ export interface MedidaAllItem {
    * clampea a 0 al derivar los datos, ver `lib/enriquecer.ts`.
    */
   duracion_dias: number
-  juzgado: string | null
-  urgencia: string | null
+  juzgado: MedidaAllCatalogoRef | null
+  urgencia: (MedidaAllCatalogoRef & { peso?: number | null }) | null
   legajo: MedidaAllLegajo | null
   intervencion: MedidaAllIntervencion | null
   fecha_creacion: string

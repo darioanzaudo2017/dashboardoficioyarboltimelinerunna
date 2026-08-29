@@ -11,8 +11,8 @@ export interface MedidaEnriquecida {
   /** duracion_dias del backend, clampeada a 0 (ver nota en types.ts sobre el bug de -1). */
   duracionDias: number
   estaCerrada: boolean
-  juzgado: string | null
-  urgencia: string | null
+  juzgado: MedidaAllItem["juzgado"]
+  urgencia: MedidaAllItem["urgencia"]
 
   nnyaId: number | null
   genero: string | null

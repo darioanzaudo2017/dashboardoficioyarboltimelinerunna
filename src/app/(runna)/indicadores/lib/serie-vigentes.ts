@@ -49,7 +49,11 @@ export function calcularSerieVigentes(medidas: MedidaEnriquecida[]): PuntoSerieV
         if (m.tipoMedida !== tipo) return false
         const apertura = new Date(m.fechaApertura)
         if (apertura > finDeMes) return false
-        if (!m.fechaCierre) return true
+        // Una medida ARCHIVADA o NO_RATIFICADA sin fecha_cierre no debe
+        // proyectarse como vigente indefinidamente. El backend no expone la
+        // fecha histórica de esos cambios, por lo que sólo podemos considerar
+        // abierta sin fecha de cierre a la que sigue VIGENTE hoy.
+        if (!m.fechaCierre) return m.estadoVigencia === "VIGENTE"
         return new Date(m.fechaCierre) > finDeMes
       }).length
 

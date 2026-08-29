@@ -35,8 +35,12 @@ export function useIndicadoresData(periodo: PeriodoFiltro) {
   const medidas = useMemo(() => {
     if (!periodo.desde && !periodo.hasta) return todas
     return todas.filter((m) => {
-      if (periodo.desde && m.fechaApertura < periodo.desde) return false
-      if (periodo.hasta && m.fechaApertura > periodo.hasta) return false
+      // Los inputs entregan YYYY-MM-DD, mientras que fechaApertura incluye
+      // hora. Comparar el ISO completo hacía que el límite "hasta" excluyera
+      // todas las medidas abiertas durante ese mismo día.
+      const fechaApertura = m.fechaApertura.slice(0, 10)
+      if (periodo.desde && fechaApertura < periodo.desde) return false
+      if (periodo.hasta && fechaApertura > periodo.hasta) return false
       return true
     })
   }, [todas, periodo.desde, periodo.hasta])

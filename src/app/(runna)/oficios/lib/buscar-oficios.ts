@@ -87,20 +87,25 @@ export function buscarPorIdentificador(medidasConOficios: MedidaConOficios[], qu
   const q = query.trim().toLowerCase()
   if (!q) return []
 
-  return medidasConOficios.filter(({ medida, oficios }) => {
+  return medidasConOficios.flatMap(({ medida, oficios }) => {
     const matchMedida =
       contieneTexto(medida.nro_sac, q) ||
       contieneTexto(medida.numero_medida, q) ||
       contieneTexto(medida.legajo?.numero, q)
 
-    const matchOficio = oficios.some(
+    // Si coincidió la medida/legajo se muestran todos sus oficios. Si la
+    // coincidencia fue por un identificador de oficio, se muestran solamente
+    // los oficios coincidentes para no inflar el total ni mezclar resultados.
+    if (matchMedida) return [{ medida, oficios }]
+
+    const oficiosCoincidentes = oficios.filter(
       (o) =>
         contieneTexto(o.numeroExpediente, q) ||
         contieneTexto(o.nroOficioWeb, q) ||
         contieneTexto(o.nroSacDemanda, q)
     )
 
-    return matchMedida || matchOficio
+    return oficiosCoincidentes.length > 0 ? [{ medida, oficios: oficiosCoincidentes }] : []
   })
 }
 

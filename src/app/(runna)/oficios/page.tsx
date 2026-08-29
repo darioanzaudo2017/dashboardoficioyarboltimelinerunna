@@ -199,6 +199,11 @@ export default function OficiosPage() {
                         Oficio Web: <strong>{oficio.nroOficioWeb}</strong>
                       </Typography>
                     )}
+                    {oficio.nroSacDemanda && (
+                      <Typography variant="caption" color="text.secondary">
+                        SAC del oficio: <strong>{oficio.nroSacDemanda}</strong>
+                      </Typography>
+                    )}
                     {!oficio.numeroExpediente && !oficio.nroOficioWeb && !oficio.nroSacDemanda && (
                       <Typography variant="caption" color="text.disabled">
                         Sin SAC/expediente/oficio web cargado en la demanda de origen.

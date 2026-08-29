@@ -13,15 +13,13 @@
  * usuario para no perder el orden cronológico real entre módulos.
  */
 import { useMemo } from "react"
-import { useQueries } from "@tanstack/react-query"
-import {
-  useHistorialSeguimiento,
-  useTrazabilidadEtapas,
-} from "../../../hooks/useHistorialSeguimiento"
+import { useQueries, useQuery } from "@tanstack/react-query"
+import { useTrazabilidadEtapas } from "../../../hooks/useHistorialSeguimiento"
 import { useMedidaDetail } from "../../../hooks/useMedidaDetail"
 import { useActividadStats } from "../../../hooks/useActividadStats"
 import { useInformesSeguimiento } from "../../../hooks/useInformesSeguimiento"
 import { getEtapaDetail } from "../../../api/etapa-detail-api-service"
+import { getHistorialSeguimiento } from "../../../api/historial-seguimiento-api-service"
 import type { EtapaDetailResponse } from "../../../api/etapa-detail-api-service"
 import { getCategoriaFromTipoEvento } from "../../../types/historial-seguimiento-api"
 import type { CategoriaEvento, HistorialEventoItem } from "../../../types/historial-seguimiento-api"
@@ -36,9 +34,35 @@ import { ActividadNode } from "./actividad-node"
 import { InformeMensualCard } from "./informe-mensual-card"
 import type { ItemLineaTiempo, ModuloArbol } from "./modulo-config"
 
-// Traer todos los eventos de una sola vez: la línea de tiempo necesita el
-// set completo (no paginado) para poder mezclar y ordenar todo junto.
-const PAGE_SIZE_COMPLETO = 1000
+// El backend limita page_size a 200. La línea de tiempo necesita el conjunto
+// completo para mezclar módulos y ordenar cronológicamente, así que se
+// recorren todas las páginas en vez de pedir 1000 y perder eventos en silencio.
+const PAGE_SIZE_MAXIMO = 200
+
+const getHistorialCompleto = async (medidaId: number) => {
+  let page = 1
+  let total = 0
+  const results: HistorialEventoItem[] = []
+
+  while (true) {
+    const response = await getHistorialSeguimiento(medidaId, {
+      page,
+      page_size: PAGE_SIZE_MAXIMO,
+    })
+    total = response.count
+    results.push(...response.results)
+
+    if (!response.next || response.results.length === 0) break
+    page += 1
+  }
+
+  return {
+    count: total,
+    next: null,
+    previous: null,
+    results,
+  }
+}
 
 // Estas categorías del historial de seguimiento ya se muestran con datos
 // reales y más completos desde otro módulo (ver comentario de archivo), así
@@ -74,10 +98,13 @@ interface UseLineaTiempoMedidaParams {
 export function useLineaTiempoMedida({ medidaId, legajoId, enabled = true }: UseLineaTiempoMedidaParams) {
   const trazabilidad = useTrazabilidadEtapas({ medidaId, enabled })
 
-  const historial = useHistorialSeguimiento({
-    medidaId,
-    params: { page_size: PAGE_SIZE_COMPLETO },
-    enabled,
+  const historial = useQuery({
+    queryKey: ["arbol-historial-completo", medidaId],
+    queryFn: () => getHistorialCompleto(medidaId),
+    enabled: enabled && !!medidaId,
+    staleTime: 1000 * 60 * 2,
+    refetchOnWindowFocus: false,
+    retry: 2,
   })
 
   const medidaDetail = useMedidaDetail(medidaId, { enabled, legajoId })
@@ -86,7 +113,10 @@ export function useLineaTiempoMedida({ medidaId, legajoId, enabled = true }: Use
 
   const informes = useInformesSeguimiento({ medidaId, enabled })
 
-  const etapasTimeline = trazabilidad.data?.etapas_timeline ?? []
+  const etapasTimeline = useMemo(
+    () => trazabilidad.data?.etapas_timeline ?? [],
+    [trazabilidad.data?.etapas_timeline]
+  )
 
   // Documentos reales (intervención, nota de aval, informe jurídico,
   // ratificación) de CADA etapa, en paralelo — ya no se piden solo al
@@ -104,11 +134,18 @@ export function useLineaTiempoMedida({ medidaId, legajoId, enabled = true }: Use
   const isLoading =
     trazabilidad.isLoading ||
     historial.isLoading ||
+    medidaDetail.isLoading ||
     isLoadingActividades ||
     informes.isLoading ||
     documentosPorEtapa.some((q) => q.isLoading)
 
-  const error = trazabilidad.error ?? historial.error ?? null
+  const error =
+    trazabilidad.error ??
+    historial.error ??
+    medidaDetail.error ??
+    informes.error ??
+    documentosPorEtapa.find((q) => q.error)?.error ??
+    null
 
   const items = useMemo<ItemLineaTiempo[]>(() => {
     const lista: ItemLineaTiempo[] = []
@@ -204,11 +241,8 @@ export function useLineaTiempoMedida({ medidaId, legajoId, enabled = true }: Use
     error,
     medida: trazabilidad.data?.medida,
     resumen: trazabilidad.data?.resumen,
-    totalEventosHistorial: historial.data?.count ?? 0,
     totalActividades: actividades.length,
     totalInformes: informes.data?.length ?? 0,
     items,
-    // Expuestos para el panel de diagnóstico.
-    historialResults: historial.data?.results ?? [],
   }
 }

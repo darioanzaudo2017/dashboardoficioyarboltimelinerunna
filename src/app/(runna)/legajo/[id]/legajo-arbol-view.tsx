@@ -44,7 +44,7 @@ interface LegajoArbolViewProps {
 export const LegajoArbolView: React.FC<LegajoArbolViewProps> = ({ legajoId }) => {
   const router = useRouter()
   const legajoIdNum = Number(legajoId)
-  const isValidLegajoId = !Number.isNaN(legajoIdNum)
+  const isValidLegajoId = Number.isInteger(legajoIdNum) && legajoIdNum > 0
 
   const { data: medidas, isLoading, error } = useQuery({
     queryKey: ["legajo-arbol-medidas", legajoIdNum],

@@ -18,8 +18,9 @@ interface MedidaArbolViewProps {
 export const MedidaArbolView: React.FC<MedidaArbolViewProps> = ({ legajoId, medidaId }) => {
   const router = useRouter()
   const medidaIdNum = Number(medidaId)
-  const legajoIdNum = Number(legajoId) || undefined
-  const isValidMedidaId = !Number.isNaN(medidaIdNum)
+  const parsedLegajoId = Number(legajoId)
+  const legajoIdNum = Number.isInteger(parsedLegajoId) && parsedLegajoId > 0 ? parsedLegajoId : undefined
+  const isValidMedidaId = Number.isInteger(medidaIdNum) && medidaIdNum > 0
 
   const handleBack = () => {
     router.push(`/legajo/${legajoId}/medida/${medidaId}`)

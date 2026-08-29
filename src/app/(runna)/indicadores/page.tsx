@@ -66,8 +66,8 @@ export default function IndicadoresPage() {
   const mpj = useMemo(() => medidas.filter((m) => m.tipoMedida === "MPJ"), [medidas])
 
   const mpeCesadas = useMemo(() => mpe.filter((m) => m.estaCerrada), [mpe])
-  const mpeAbiertas = useMemo(() => mpe.filter((m) => !m.estaCerrada), [mpe])
-  const mpjAbiertas = useMemo(() => mpj.filter((m) => !m.estaCerrada), [mpj])
+  const mpeAbiertas = useMemo(() => mpe.filter((m) => m.estadoVigencia === "VIGENTE"), [mpe])
+  const mpjAbiertas = useMemo(() => mpj.filter((m) => m.estadoVigencia === "VIGENTE"), [mpj])
   const mpjCerradas = useMemo(() => mpj.filter((m) => m.estaCerrada), [mpj])
 
   const nnyaTotales = useMemo(() => porNnyaUnico(medidas), [medidas])

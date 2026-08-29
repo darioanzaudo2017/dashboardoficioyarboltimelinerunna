@@ -32,7 +32,7 @@ const formatearMes = (mes: string): string => {
 }
 
 export const LineaVigentes: React.FC<LineaVigentesProps> = ({ data }) => {
-  const { lineasPorTipo, yTicks, xPositions, innerWidth, innerHeight } = useMemo(() => {
+  const { lineasPorTipo, yTicks, xPositions, innerHeight } = useMemo(() => {
     const innerWidth = ANCHO - MARGEN.left - MARGEN.right
     const innerHeight = ALTO - MARGEN.top - MARGEN.bottom
     const n = data.length
@@ -52,7 +52,7 @@ export const LineaVigentes: React.FC<LineaVigentesProps> = ({ data }) => {
       return { tipo, color: colorPorIndice(idx), puntos }
     })
 
-    return { lineasPorTipo, yTicks, xPositions, innerWidth, innerHeight }
+    return { lineasPorTipo, yTicks, xPositions, innerHeight }
   }, [data])
 
   if (data.length === 0) {

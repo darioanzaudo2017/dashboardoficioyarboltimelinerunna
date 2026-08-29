@@ -1,27 +1,19 @@
 "use client"
 
 /**
- * Contenido de la línea de tiempo de una medida (resumen + Timeline +
- * debug), sin el chrome de página (breadcrumbs, botón volver). Extraído de
+ * Contenido de la línea de tiempo de una medida (resumen + Timeline), sin
+ * el chrome de página (breadcrumbs, botón volver). Extraído de
  * `medida-arbol-view.tsx` para poder reusarlo también embebido dentro de un
  * nodo expandible del árbol a nivel de LEGAJO (`legajo-arbol-view.tsx`), que
  * monta este mismo contenido por cada medida del legajo.
  */
 import type React from "react"
 import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
   Alert,
   Box,
   Chip,
   Skeleton,
   Stack,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
   Typography,
   Paper,
 } from "@mui/material"
@@ -35,9 +27,7 @@ import {
   TimelineSeparator,
 } from "@mui/lab"
 import AccountTreeIcon from "@mui/icons-material/AccountTree"
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
-import BugReportIcon from "@mui/icons-material/BugReport"
-import { getCategoriaFromTipoEvento, formatFechaSolo } from "../../../types/historial-seguimiento-api"
+import { formatFechaSolo } from "../../../types/historial-seguimiento-api"
 import { useLineaTiempoMedida } from "./use-linea-tiempo-medida"
 import { MODULO_CONFIG } from "./modulo-config"
 
@@ -58,11 +48,9 @@ export const MedidaLineaTiempoContenido: React.FC<MedidaLineaTiempoContenidoProp
     error,
     medida,
     resumen,
-    totalEventosHistorial,
     totalActividades,
     totalInformes,
     items,
-    historialResults,
   } = useLineaTiempoMedida({ medidaId, legajoId, enabled: !!medidaId })
 
   if (error) {
@@ -159,43 +147,6 @@ export const MedidaLineaTiempoContenido: React.FC<MedidaLineaTiempoContenidoProp
         </Timeline>
       )}
 
-      {/* Panel temporal de diagnóstico — ver medida-arbol-view.tsx para la nota completa. */}
-      <Accordion sx={{ mt: 3 }}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <BugReportIcon fontSize="small" color="disabled" />
-            <Typography variant="body2" color="text.secondary">
-              Debug: eventos crudos ({historialResults.length} de {totalEventosHistorial})
-            </Typography>
-          </Stack>
-        </AccordionSummary>
-        <AccordionDetails sx={{ overflowX: "auto" }}>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell>ID</TableCell>
-                <TableCell>tipo_evento</TableCell>
-                <TableCell>categoria</TableCell>
-                <TableCell>etapa.id</TableCell>
-                <TableCell>etapa.tipo_etapa</TableCell>
-                <TableCell>fecha_evento</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {historialResults.map((evento) => (
-                <TableRow key={evento.id}>
-                  <TableCell>{evento.id}</TableCell>
-                  <TableCell>{evento.tipo_evento}</TableCell>
-                  <TableCell>{getCategoriaFromTipoEvento(evento.tipo_evento)}</TableCell>
-                  <TableCell>{evento.etapa?.id ?? "—"}</TableCell>
-                  <TableCell>{evento.etapa?.tipo_etapa_display ?? "—"}</TableCell>
-                  <TableCell>{evento.fecha_evento}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </AccordionDetails>
-      </Accordion>
     </Box>
   )
 }
