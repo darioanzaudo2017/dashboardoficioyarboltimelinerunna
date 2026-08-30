@@ -76,7 +76,9 @@ export default function OficiosPage() {
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
         Buscá por SAC/expediente/oficio web del oficio, SAC de la medida, número de medida o número de
         legajo. Un oficio queda <strong>Contestado</strong> cuando todas sus actividades vinculadas llegaron a
-        un estado terminal (Completada, Visado Aprobado o Cancelada).
+        la condición correspondiente: <strong>Completada</strong> si no necesita visado o{' '}
+        <strong>Visado Aprobado</strong> cuando requiere la cadena JZ/Dirección y Legales. Las actividades
+        canceladas no acreditan una respuesta.
       </Typography>
 
       <TextField
