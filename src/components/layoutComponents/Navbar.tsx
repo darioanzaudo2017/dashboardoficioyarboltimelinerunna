@@ -238,6 +238,15 @@ export default function Header() {
     )
   }
 
+  const fullName = [user?.first_name, user?.last_name].filter(Boolean).join(" ").trim()
+  const displayName = fullName || user?.username || "Invitado"
+  const displayRole = user?.is_superuser
+    ? "Administrador"
+    : user?.groups?.[0]?.name || "Sin rol asignado"
+  const avatarText = fullName
+    ? `${user?.first_name?.[0] || ""}${user?.last_name?.[0] || ""}`
+    : user?.username?.slice(0, 2).toUpperCase() || "?"
+
   return (
     <header
       className="sticky top-0 z-[1200] text-white px-3 sm:px-6 py-3 flex justify-between items-center shadow-md gap-2"
@@ -446,18 +455,14 @@ export default function Header() {
           >
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold">
-                {user?.first_name && user?.last_name
-                  ? `${user.first_name[0]}${user.last_name[0]}`
-                  : "?"}
+                {avatarText}
               </div>
               <div className="text-left hidden md:block">
                 <div className="text-sm font-medium">
-                  {user?.first_name && user?.last_name
-                    ? `${user.first_name} ${user.last_name}`
-                    : "Invitado"}
+                  {displayName}
                 </div>
                 <div className="text-xs opacity-80">
-                  {user?.groups?.[0]?.name || "Sin rol"}
+                  {displayRole}
                 </div>
               </div>
               <ChevronDown

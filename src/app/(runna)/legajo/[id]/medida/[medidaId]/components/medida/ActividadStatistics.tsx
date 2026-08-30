@@ -8,6 +8,7 @@ import PlayCircleIcon from '@mui/icons-material/PlayCircle'
 import ErrorIcon from '@mui/icons-material/Error'
 import CancelIcon from '@mui/icons-material/Cancel'
 import type { TActividadPlanTrabajo } from '../../types/actividades'
+import { computeActividadStats } from '../../hooks/useActividadStats'
 
 interface ActividadStatisticsProps {
   actividades: TActividadPlanTrabajo[]
@@ -23,38 +24,7 @@ interface StatCard {
 }
 
 export const ActividadStatistics: React.FC<ActividadStatisticsProps> = ({ actividades }) => {
-  const statistics = useMemo(() => {
-    const total = actividades.length
-
-    if (total === 0) {
-      return {
-        total: 0,
-        pendientes: 0,
-        enProgreso: 0,
-        realizadas: 0,
-        canceladas: 0,
-        vencidas: 0,
-        completionRate: 0
-      }
-    }
-
-    const pendientes = actividades.filter(a => a.estado === 'PENDIENTE').length
-    const enProgreso = actividades.filter(a => a.estado === 'EN_PROGRESO').length
-    const realizadas = actividades.filter(a => a.estado === 'REALIZADA').length
-    const canceladas = actividades.filter(a => a.estado === 'CANCELADA').length
-    const vencidas = actividades.filter(a => a.esta_vencida && a.estado === 'PENDIENTE').length
-    const completionRate = (realizadas / total) * 100
-
-    return {
-      total,
-      pendientes,
-      enProgreso,
-      realizadas,
-      canceladas,
-      vencidas,
-      completionRate
-    }
-  }, [actividades])
+  const statistics = useMemo(() => computeActividadStats(actividades), [actividades])
 
   const statCards: StatCard[] = [
     {

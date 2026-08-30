@@ -255,21 +255,15 @@ export const getPlantillaInfo = async (
   medidaId: number
 ): Promise<PlantillaInfoResponse> => {
   try {
-    console.log(`Fetching plantilla info for medida ${medidaId}`)
-
-    const response = await get<PlantillaInfoResponse>(
-      `medidas/${medidaId}/informes-seguimiento/plantilla/`
+    // La ausencia de una plantilla es un estado válido de la medida. Aceptar
+    // el 404 aquí evita que el interceptor global lo registre como una falla.
+    const response = await axiosInstance.get<PlantillaInfoResponse>(
+      `medidas/${medidaId}/informes-seguimiento/plantilla/`,
+      { validateStatus: (status) => (status >= 200 && status < 300) || status === 404 }
     )
 
-    console.log("Plantilla info retrieved:", response)
-
-    return response
+    return response.status === 404 ? { disponible: false } : response.data
   } catch (error: any) {
-    console.error(`Error fetching plantilla info for medida ${medidaId}:`, error)
-    // Return default response if endpoint returns 404 (no template available)
-    if (error?.response?.status === 404) {
-      return { disponible: false }
-    }
     throw error
   }
 }

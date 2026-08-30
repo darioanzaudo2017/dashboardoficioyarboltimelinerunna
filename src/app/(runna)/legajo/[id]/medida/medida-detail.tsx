@@ -86,6 +86,7 @@ const convertMedidaToMedidaData = (
       id: legajo.persona?.id, // Add persona ID for creating education/health records
       nombre: legajo.persona ? `${legajo.persona.apellido} ${legajo.persona.nombre}` : "N/A",
       dni: legajo.persona?.dni ? String(legajo.persona.dni) : "N/A",
+      numero_legajo: legajo.legajo?.numero,
     },
     fecha_apertura: formatDateLocaleAR(medida.fecha_apertura),
     ubicacion: "", // TODO: Get from legajo location data

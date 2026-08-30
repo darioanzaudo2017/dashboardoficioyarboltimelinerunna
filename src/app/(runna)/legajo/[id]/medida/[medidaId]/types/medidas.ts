@@ -1,6 +1,8 @@
 export interface Persona {
+  id?: number
   nombre: string
   dni: string
+  numero_legajo?: string
 }
 
 export interface Apertura {

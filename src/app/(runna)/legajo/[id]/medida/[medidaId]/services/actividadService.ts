@@ -54,6 +54,12 @@ export const actividadService = {
     return get<TActividadPlanTrabajo>(`actividades/${id}/`)
   },
 
+  // List active attachments from their canonical endpoint. Some cached or
+  // reduced activity payloads omit the nested collection.
+  async getAttachments(id: number): Promise<TAdjuntoActividad[]> {
+    return get<TAdjuntoActividad[]>(`actividades/${id}/adjuntos/`)
+  },
+
   // Create activity
   async create(data: CreateActividadRequest): Promise<TActividadPlanTrabajo> {
     const formData = new FormData()

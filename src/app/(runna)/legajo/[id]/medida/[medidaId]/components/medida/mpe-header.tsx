@@ -44,6 +44,7 @@ interface MPEHeaderProps {
         persona: {
             nombre: string
             id?: number
+            numero_legajo?: string
         }
         ubicacion: string
         numero_sac: string
@@ -373,7 +374,7 @@ export const MPEHeader: React.FC<MPEHeaderProps> = ({
                                 {medidaData.persona.nombre}
                             </Typography>
                             <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, letterSpacing: "0.02em" }}>
-                                Legajo Asociado: <Typography component="span" variant="body2" sx={{ fontWeight: 700, color: "text.primary" }}>#{medidaData.persona.id || 'N/A'}</Typography>
+                                Legajo Asociado: <Typography component="span" variant="body2" sx={{ fontWeight: 700, color: "text.primary" }}>{medidaData.persona.numero_legajo || 'N/A'}</Typography>
                             </Typography>
                         </Box>
                     </Stack>

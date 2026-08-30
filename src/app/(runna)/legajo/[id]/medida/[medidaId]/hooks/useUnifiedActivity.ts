@@ -90,10 +90,10 @@ export const useUnifiedActivity = (actividadId: number): UseUnifiedActivityRetur
     setError(null)
 
     try {
-      // Fetch both historial and actividad in parallel
-      const [historialEntries, actividadDetail] = await Promise.all([
+      // Fetch timeline sources from their canonical endpoints in parallel.
+      const [historialEntries, adjuntos] = await Promise.all([
         actividadService.getHistorial(actividadId, {}),
-        actividadService.get(actividadId)
+        actividadService.getAttachments(actividadId)
       ])
 
       // Extract comentarios from historial entries with tipo_accion === "COMENTARIO"
@@ -102,9 +102,6 @@ export const useUnifiedActivity = (actividadId: number): UseUnifiedActivityRetur
       const comentarios: TComentarioActividad[] = historialArray
         .filter((entry: THistorialActividad) => entry.tipo_accion === 'COMENTARIO')
         .map(transformHistorialToComentario)
-
-      // Get adjuntos from actividad detail
-      const adjuntos: TAdjuntoActividad[] = actividadDetail.adjuntos || []
 
       // Merge and set items
       const mergedItems = mergeItems(comentarios, adjuntos)
