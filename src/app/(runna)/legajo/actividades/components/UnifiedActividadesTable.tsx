@@ -59,10 +59,13 @@ import { globalActividadService, type GlobalActividadFilters } from "../services
 import { actividadService } from "../../[id]/medida/[medidaId]/services/actividadService"
 
 // Import types
-import type { TActividadPlanTrabajo, ActividadFilters } from "../../[id]/medida/[medidaId]/types/actividades"
+import type {
+  TActividadPlanTrabajo,
+  ActividadFilters,
+  ActividadListResponse,
+} from "../../[id]/medida/[medidaId]/types/actividades"
 import { getActorColor, ACTOR_LABELS, ZONA_TIPO_LABELS, getZonaTipoColor } from "../../[id]/medida/[medidaId]/types/actividades"
 import { extractArray } from "@/hooks/useApiQuery"
-import { useApiQuery } from "@/hooks/useApiQuery"
 import {
   shouldNotifyActivity,
   UserPermissions as NotificationUserPerms
@@ -303,21 +306,24 @@ export const UnifiedActividadesTable: React.FC<UnifiedActividadesTableProps> = (
     data: medidaResponse,
     isLoading: medidaLoading,
     refetch: medidaRefetch,
-  } = useApiQuery<any>(
-    `actividades-plan/${planTrabajoId}`,
-    medidaFilters,
-    {
-      queryFn: () => actividadService.list(planTrabajoId!, medidaFilters),
-      enabled: variant === "medida" && !!planTrabajoId,
-    }
-  )
+  } = useQuery<ActividadListResponse | TActividadPlanTrabajo[]>({
+    queryKey: ["actividades-plan", planTrabajoId, medidaFilters],
+    queryFn: () => actividadService.list(planTrabajoId!, medidaFilters),
+    enabled: variant === "medida" && !!planTrabajoId,
+    staleTime: 2 * 60 * 1000,
+  })
 
   // ============================================================================
   // DERIVED DATA
   // ============================================================================
 
   // Parse actividades from the appropriate source
-  const { actividades, totalCount, isLoading, isFetching } = useMemo(() => {
+  const { actividades, totalCount, isLoading, isFetching } = useMemo<{
+    actividades: TActividadPlanTrabajo[]
+    totalCount: number
+    isLoading: boolean
+    isFetching: boolean
+  }>(() => {
     if (variant === "legajo") {
       // Use prop data for legajo variant
       return {
@@ -504,7 +510,7 @@ export const UnifiedActividadesTable: React.FC<UnifiedActividadesTableProps> = (
         isEquipoTecnico: roles.isET,
         isJefeZonal: roles.isJZ,
         isAdmin: !!user?.is_superuser,
-        userId: roles.user_id,
+        userId: roles.user_id ?? undefined,
       }
       return shouldNotifyActivity(actividad, userPerms)
     },
@@ -1468,12 +1474,12 @@ export const UnifiedActividadesTable: React.FC<UnifiedActividadesTableProps> = (
 
                       {/* Cancel */}
                       {features.showCancel && (
-                        <Tooltip title={actividad.estado === "REALIZADA" || actividad.estado === "CANCELADA" ? "No se puede cancelar" : "Cancelar"}>
+                        <Tooltip title={actividad.estado === "COMPLETADA" || actividad.estado === "CANCELADA" ? "No se puede cancelar" : "Cancelar"}>
                           <span>
                             <IconButton
                               size="small"
                               onClick={() => handleCancel(actividad)}
-                              disabled={actividad.estado === "REALIZADA" || actividad.estado === "CANCELADA"}
+                              disabled={actividad.estado === "COMPLETADA" || actividad.estado === "CANCELADA"}
                               sx={{
                                 color: "error.main",
                                 "&:hover": { backgroundColor: "rgba(244, 67, 54, 0.1)", transform: "scale(1.1)" },

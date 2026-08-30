@@ -34,7 +34,7 @@ interface MPEHeaderProps {
         fecha_apertura?: string
         fecha_creacion_raw?: string
         tipo_display?: string
-        juzgado: string
+        juzgado?: string
         fecha_resguardo: string
         lugar_resguardo: string
         origen_demanda: string
@@ -61,7 +61,7 @@ interface MPEHeaderProps {
     /** Etapa actual de la medida */
     etapaActual?: {
         tipo_etapa?: string
-        estado?: string
+        estado?: string | null
     }
     demandaData?: any // Full demanda data from the full-detail endpoint
     estados: {
@@ -544,4 +544,4 @@ export const MPEHeader: React.FC<MPEHeaderProps> = ({
             )}
         </Paper>
     )
-} 
+}

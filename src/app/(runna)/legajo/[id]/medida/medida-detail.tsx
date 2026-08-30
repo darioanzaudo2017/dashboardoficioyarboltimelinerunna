@@ -616,7 +616,7 @@ export default function MedidaDetail({ params, onClose, isFullPage = false }: Me
               estadoVigencia={medidaApiData?.estado_vigencia}
               estadoVigenciaDisplay={medidaApiData?.estado_vigencia_display}
               fechaApertura={medidaData.fecha_apertura}
-              planTrabajoId={medidaApiData?.plan_trabajo_id}
+              planTrabajoId={medidaApiData?.plan_trabajo_id ?? undefined}
               legajoId={legajoIdNum ?? undefined}
             />
 
@@ -634,11 +634,7 @@ export default function MedidaDetail({ params, onClose, isFullPage = false }: Me
               workflowMedidaData={{
                 id: medidaApiData?.id,
                 tipo_medida: medidaData.tipo,
-                numero_medida: typeof medidaApiData?.numero_medida === 'string'
-                  ? medidaApiData.numero_medida
-                  : (medidaApiData?.numero_medida && typeof medidaApiData.numero_medida === 'object' && 'display' in medidaApiData.numero_medida)
-                    ? String((medidaApiData.numero_medida as any).display)
-                    : `M-${medidaData.id}`,
+                numero_medida: medidaApiData?.numero_medida || `M-${medidaData.id}`,
                 estado: medidaApiData?.etapa_actual?.estado,
                 fecha_apertura: medidaApiData?.fecha_apertura,
                 estado_vigencia: medidaApiData?.estado_vigencia,
@@ -669,7 +665,7 @@ export default function MedidaDetail({ params, onClose, isFullPage = false }: Me
               medidaData={medidaData}
               medidaId={medidaApiData?.id}
               estadoVigencia={medidaApiData?.estado_vigencia}
-              etapaActual={medidaApiData?.etapa_actual}
+              etapaActual={medidaApiData?.etapa_actual ?? undefined}
               demandaData={demandaData}
               estados={medidaData.estados}
               progreso={medidaData.progreso}
@@ -681,19 +677,15 @@ export default function MedidaDetail({ params, onClose, isFullPage = false }: Me
                 ...medidaData,
                 tipo_medida: medidaData.tipo,
                 estado: medidaApiData?.etapa_actual?.estado,
-                numero_medida: typeof medidaApiData?.numero_medida === 'string'
-                  ? medidaApiData.numero_medida
-                  : (medidaApiData?.numero_medida && typeof medidaApiData.numero_medida === 'object' && 'display' in medidaApiData.numero_medida)
-                    ? String(medidaApiData.numero_medida.display)
-                    : `M-${medidaData.id}`,
-                plan_trabajo_id: medidaApiData?.plan_trabajo_id,
+                numero_medida: medidaApiData?.numero_medida || `M-${medidaData.id}`,
+                plan_trabajo_id: medidaApiData?.plan_trabajo_id ?? undefined,
                 // Granularidad: pasar legajo + adicionales para selectores de scope
                 legajo: medidaApiData?.legajo,
                 legajos_adicionales: medidaApiData?.legajos_adicionales,
               }}
               medidaApiData={medidaApiData || undefined}
               legajoData={workflowLegajoData}
-              planTrabajoId={medidaApiData?.plan_trabajo_id}
+              planTrabajoId={medidaApiData?.plan_trabajo_id ?? undefined}
               onMedidaRefetch={refetchMedida}
             />
           </>
@@ -717,19 +709,15 @@ export default function MedidaDetail({ params, onClose, isFullPage = false }: Me
                 ...medidaData,
                 tipo_medida: medidaData.tipo,
                 estado: medidaApiData?.etapa_actual?.estado,
-                numero_medida: typeof medidaApiData?.numero_medida === 'string'
-                  ? medidaApiData.numero_medida
-                  : (medidaApiData?.numero_medida && typeof medidaApiData.numero_medida === 'object' && 'display' in medidaApiData.numero_medida)
-                    ? String(medidaApiData.numero_medida.display)
-                    : `M-${medidaData.id}`,
-                plan_trabajo_id: medidaApiData?.plan_trabajo_id,
+                numero_medida: medidaApiData?.numero_medida || `M-${medidaData.id}`,
+                plan_trabajo_id: medidaApiData?.plan_trabajo_id ?? undefined,
                 // Granularidad: pasar legajo + adicionales para selectores de scope
                 legajo: medidaApiData?.legajo,
                 legajos_adicionales: medidaApiData?.legajos_adicionales,
               }}
               medidaApiData={medidaApiData}
               legajoData={workflowLegajoData}
-              planTrabajoId={medidaApiData?.plan_trabajo_id}
+              planTrabajoId={medidaApiData?.plan_trabajo_id ?? undefined}
             />
           </>
         ) : (
@@ -738,7 +726,7 @@ export default function MedidaDetail({ params, onClose, isFullPage = false }: Me
               medidaData={medidaData}
               medidaId={medidaApiData?.id}
               estadoVigencia={medidaApiData?.estado_vigencia}
-              etapaActual={medidaApiData?.etapa_actual}
+              etapaActual={medidaApiData?.etapa_actual ?? undefined}
               isActive={activeStep !== 2}
               onViewPersonalData={handleViewPersonalData}
               onMedidaRefetch={refetchMedida}
@@ -754,11 +742,7 @@ export default function MedidaDetail({ params, onClose, isFullPage = false }: Me
                 medidaData={{
                   id: medidaApiData.id,
                   tipo_medida: medidaData.tipo,
-                  numero_medida: typeof medidaApiData.numero_medida === 'string'
-                    ? medidaApiData.numero_medida
-                    : (medidaApiData.numero_medida && typeof medidaApiData.numero_medida === 'object' && 'display' in medidaApiData.numero_medida)
-                      ? String(medidaApiData.numero_medida.display)
-                      : `M-${params.medidaId}`,
+                  numero_medida: medidaApiData.numero_medida || `M-${params.medidaId}`,
                   estado: typeof medidaApiData.etapa_actual?.estado === 'string'
                     ? medidaApiData.etapa_actual.estado
                     : undefined,

@@ -10,6 +10,7 @@
  */
 
 import type { TEstadoEtapaMedida, TipoEtapa, TipoMedidaCodigo } from './estado-etapa'
+import type { MedidaDetailResponse as CanonicalMedidaDetailResponse } from '@/app/(runna)/legajo-mesa/types/medida-api'
 
 // ============================================================================
 // ENUMS
@@ -117,62 +118,26 @@ export interface EtapaMedida {
  * - etapa_actual with V2 fields (tipo_etapa, estado_especifico)
  * - historial_etapas with full stage history
  */
-export interface MedidaDetailResponse {
-  // Basic Information
-  id: number
-  numero: string
-  tipo_medida: TipoMedida
-  estado_vigencia: EstadoVigencia
-
-  // Legajo Reference
-  legajo: number
-  legajo_numero: string
-  legajo_persona_nombre: string
-  legajo_persona_apellido: string
-
-  // Dates
-  fecha_apertura: string
-  fecha_cierre: string | null
-
-  /**
-   * V2: Fecha de cese efectivo (MPE only)
-   * Enables POST_CESE stage for MPE
-   */
-  fecha_cese_efectivo: string | null
-
-  // Location
-  zona: number
-  zona_nombre: string
-
-  // Judicial Information
-  juzgado: string | null
-  numero_sac: string | null
-
-  // Current Stage (V2 Enhanced)
-  /**
-   * Current active stage with V2 fields:
-   * - tipo_etapa: Stage type enum
-   * - estado_especifico: Catalog-based estado (null for MPJ and MPI Cese)
-   */
-  etapa_actual: EtapaMedida | null
-
-  /**
-   * Historical stages (all stages including current)
-   * Ordered by fecha_creacion descending
-   * Use this to filter by tipo_etapa for each tab
-   */
-  historial_etapas: EtapaMedida[]
-
-  // Related Entities
-  plan_trabajo_id: number | null
+/**
+ * Contrato canónico del detalle de medida.
+ *
+ * Históricamente este módulo mantuvo una segunda interfaz incompatible con la
+ * respuesta real (`numero`, `legajo: number`, `numero_sac`). Eso obligaba a
+ * encadenar casts y ocultaba errores de integración. Conservamos sólo aliases
+ * opcionales para consumidores antiguos mientras todos los flujos comparten el
+ * contrato que usa el servicio de medidas.
+ */
+export type MedidaDetailResponse = CanonicalMedidaDetailResponse & {
+  numero?: string
+  legajo_numero?: string
+  legajo_persona_nombre?: string
+  legajo_persona_apellido?: string
+  zona?: number
+  zona_nombre?: string
+  numero_sac?: string | null
   oficios_count?: number
   intervenciones_count?: number
-
-  // Metadata
-  creado_por: number
-  creado_por_nombre: string
-  fecha_creacion: string
-  fecha_modificacion: string
+  creado_por_nombre?: string
 }
 
 /**

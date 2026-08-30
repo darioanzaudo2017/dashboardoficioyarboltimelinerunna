@@ -54,7 +54,7 @@ interface MedidaHeaderProps {
   /** Etapa actual de la medida */
   etapaActual?: {
     tipo_etapa?: string
-    estado?: string
+    estado?: string | null
   }
   isActive: boolean
   onViewPersonalData?: () => void

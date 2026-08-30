@@ -240,7 +240,7 @@ export default function LegajoDetail({ params, onClose, isFullPage = false }: Le
               color="inherit"
               size="small"
               startIcon={<RefreshIcon />}
-              onClick={loadLegajoData}
+              onClick={() => void loadLegajoData()}
             >
               Reintentar
             </Button>

@@ -45,6 +45,7 @@ export interface CreadoPorInfo {
 export interface EtapaMedida {
   id: number
   nombre: string
+  tipo_etapa?: "APERTURA" | "INNOVACION" | "PRORROGA" | "CESE" | "POST_CESE" | "PROCESO"
   estado: EstadoEtapa
   estado_display: string
   fecha_inicio_estado: string // ISO date string
