@@ -100,9 +100,21 @@ export const mergeDemandaEnhancements = (
   legajoDetail: LegajoDetailResponse,
   enhancements: DemandaEnhancementData
 ): EnhancedLegajoDetailResponse => {
+  const oficiosBase = legajoDetail.oficios || []
+  const oficioKeys = new Set(
+    oficiosBase
+      .filter((oficio) => oficio.demanda_id != null)
+      .map((oficio) => `${oficio.demanda_id}:${oficio.archivo_url || "sin-archivo"}`)
+  )
+  const oficiosNuevos = enhancements.oficios.filter((oficio) => {
+    if (oficio.demanda_id == null) return true
+    const key = `${oficio.demanda_id}:${oficio.archivo_url || "sin-archivo"}`
+    return !oficioKeys.has(key)
+  })
+
   return {
     ...legajoDetail,
-    oficios: [...(legajoDetail.oficios || []), ...enhancements.oficios],
+    oficios: [...oficiosBase, ...oficiosNuevos],
     documentos: [...(legajoDetail.documentos || []), ...enhancements.documentos],
   }
 }
