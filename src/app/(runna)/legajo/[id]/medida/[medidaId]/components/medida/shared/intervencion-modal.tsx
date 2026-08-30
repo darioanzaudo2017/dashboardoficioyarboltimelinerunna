@@ -830,14 +830,14 @@ export const IntervencionModal: React.FC<IntervencionModalProps> = ({
                             </Alert>
                         )}
 
-                        <Card elevation={2} sx={{ p: 2 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                        <Card elevation={2} sx={{ p: 1.5 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                                 <DescriptionIcon sx={{ color: 'primary.main', mr: 1 }} />
                                 <Typography variant="h6" sx={{ fontWeight: 600 }}>
                                     Detalles de la Intervención
                                 </Typography>
                             </Box>
-                            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 1.5, mb: 2 }}>
+                            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 1, mb: 1 }}>
                                 {tipoMedida === 'MPE' && (workflowPhase === 'apertura' || workflowPhase === 'innovacion') && (
                                     <>
                                         <TextField
@@ -964,51 +964,57 @@ export const IntervencionModal: React.FC<IntervencionModalProps> = ({
                                 )}
                             </Box>
 
-                            <TextField
-                                label="Intervención específica"
-                                multiline
-                                rows={2}
-                                fullWidth
-                                value={formData.intervencion_especifica}
-                                onChange={(e) => updateField('intervencion_especifica', e.target.value)}
-                                placeholder="Descripción específica de la intervención realizada..."
-                                required
-                                disabled={!canEdit}
-                                error={!!validationErrors.intervencion_especifica}
-                                helperText={validationErrors.intervencion_especifica || "Obligatorio"}
-                                sx={{ mb: 1.5 }}
-                            />
+                            <Box
+                                sx={{
+                                    display: 'grid',
+                                    gridTemplateColumns: { xs: '1fr', md: 'repeat(3, minmax(0, 1fr))' },
+                                    gap: 1,
+                                }}
+                            >
+                                <TextField
+                                    label="Intervención específica"
+                                    multiline
+                                    rows={1}
+                                    fullWidth
+                                    value={formData.intervencion_especifica}
+                                    onChange={(e) => updateField('intervencion_especifica', e.target.value)}
+                                    placeholder="Descripción específica de la intervención realizada..."
+                                    required
+                                    disabled={!canEdit}
+                                    error={!!validationErrors.intervencion_especifica}
+                                    helperText={validationErrors.intervencion_especifica || "Obligatorio"}
+                                />
 
-                            <TextField
-                                label={workflowPhase === 'cese' ? "Descripción detallada del cese" : "Descripción detallada"}
-                                multiline
-                                rows={2}
-                                fullWidth
-                                value={formData.descripcion_detallada}
-                                onChange={(e) => updateField('descripcion_detallada', e.target.value)}
-                                placeholder={workflowPhase === 'cese'
-                                    ? "Descripción detallada del proceso de cese..."
-                                    : "Descripción adicional o contexto de la intervención..."}
-                                disabled={!canEdit}
-                                helperText="Opcional - Proporcione contexto adicional si es necesario"
-                                sx={{ mb: 1.5 }}
-                            />
+                                <TextField
+                                    label={workflowPhase === 'cese' ? "Descripción detallada del cese" : "Descripción detallada"}
+                                    multiline
+                                    rows={1}
+                                    fullWidth
+                                    value={formData.descripcion_detallada}
+                                    onChange={(e) => updateField('descripcion_detallada', e.target.value)}
+                                    placeholder={workflowPhase === 'cese'
+                                        ? "Descripción detallada del proceso de cese..."
+                                        : "Descripción adicional o contexto de la intervención..."}
+                                    disabled={!canEdit}
+                                    helperText="Opcional - Proporcione contexto adicional si es necesario"
+                                />
 
-                            <TextField
-                                label={workflowPhase === 'cese' ? "Motivo de Cese" : "Motivo de vulneraciones"}
-                                multiline
-                                rows={2}
-                                fullWidth
-                                value={formData.motivo_vulneraciones}
-                                onChange={(e) => updateField('motivo_vulneraciones', e.target.value)}
-                                placeholder={workflowPhase === 'cese'
-                                    ? "Describa el motivo del cese de la medida..."
-                                    : "Descripción de vulneraciones de derechos detectadas..."}
-                                disabled={!canEdit}
-                                helperText={workflowPhase === 'cese'
-                                    ? "Opcional - Describa el motivo del cese"
-                                    : "Opcional - Describa las vulneraciones de derechos si aplica"}
-                            />
+                                <TextField
+                                    label={workflowPhase === 'cese' ? "Motivo de Cese" : "Motivo de vulneraciones"}
+                                    multiline
+                                    rows={1}
+                                    fullWidth
+                                    value={formData.motivo_vulneraciones}
+                                    onChange={(e) => updateField('motivo_vulneraciones', e.target.value)}
+                                    placeholder={workflowPhase === 'cese'
+                                        ? "Describa el motivo del cese de la medida..."
+                                        : "Descripción de vulneraciones de derechos detectadas..."}
+                                    disabled={!canEdit}
+                                    helperText={workflowPhase === 'cese'
+                                        ? "Opcional - Describa el motivo del cese"
+                                        : "Opcional - Describa las vulneraciones de derechos si aplica"}
+                                />
+                            </Box>
                         </Card>
                     </Box>
                 )

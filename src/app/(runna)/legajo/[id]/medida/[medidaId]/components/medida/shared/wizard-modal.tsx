@@ -154,12 +154,13 @@ export const WizardModal: React.FC<WizardModalProps> = ({
       fullWidth={fullWidth}
       PaperProps={{
         sx: {
-          maxHeight: "96vh",
+          maxHeight: "calc(100dvh - 16px)",
+          m: 1,
         },
       }}
     >
       {/* Header */}
-      <DialogTitle sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", pb: 1 }}>
+      <DialogTitle sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", py: 1 }}>
         <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
           {title}
         </Typography>
@@ -172,14 +173,14 @@ export const WizardModal: React.FC<WizardModalProps> = ({
       {showProgress && (
         <Box sx={{ px: 3 }}>
           <LinearProgress variant="determinate" value={progress} sx={{ height: 6, borderRadius: 3 }} />
-          <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: "block" }}>
+          <Typography variant="caption" color="text.secondary" sx={{ mt: 0.25, display: "block" }}>
             Paso {safeActiveStep + 1} de {steps.length}
           </Typography>
         </Box>
       )}
 
       {/* Stepper */}
-      <Box sx={{ px: 2.5, py: 1 }}>
+      <Box sx={{ px: 2.5, py: 0.5 }}>
         <Stepper activeStep={safeActiveStep} alternativeLabel>
           {steps.map((step, index) => (
             <Step key={step.label} completed={index < safeActiveStep}>
@@ -201,7 +202,7 @@ export const WizardModal: React.FC<WizardModalProps> = ({
       </Box>
 
       {/* Content */}
-      <DialogContent sx={{ px: 2.5, py: 1.5, overflowY: "auto" }}>
+      <DialogContent sx={{ px: 2.5, py: 1, overflowY: "auto" }}>
         <WizardContentBoundary resetKey={safeActiveStep}>
           {steps[safeActiveStep]?.content ?? (
             <Alert severity="warning">No hay contenido configurado para este paso.</Alert>
@@ -210,7 +211,7 @@ export const WizardModal: React.FC<WizardModalProps> = ({
       </DialogContent>
 
       {/* Actions */}
-      <DialogActions sx={{ px: 2.5, py: 1, gap: 1, flexWrap: "wrap", justifyContent: "space-between" }}>
+      <DialogActions sx={{ px: 2.5, py: 0.75, gap: 1, flexWrap: "wrap", justifyContent: "space-between" }}>
         <Box sx={{ display: "flex", gap: 1 }}>
           {/* Back Button */}
           {!isFirstStep && onBack && (
