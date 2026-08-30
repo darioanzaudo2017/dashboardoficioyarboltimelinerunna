@@ -25,7 +25,6 @@ import { EditableFields } from './actividad/EditableFields'
 import { QuickLinksSection } from './actividad/QuickLinksSection'
 import { CambiarEstadoSection } from './actividad/CambiarEstadoSection'
 import { ReabrirButton } from './actividad/ReabrirButton'
-import { TransferirDialog } from './actividad/TransferirDialog'
 import { VisarButton } from './actividad/VisarButton'
 import { VisarJzButton } from './actividad/VisarJzButton'
 import { UnifiedActivityTab } from './actividad/UnifiedActivityTab'
@@ -169,21 +168,6 @@ export const ActividadDetailModal: React.FC<ActividadDetailModalProps> = ({
           handleSuccess()
           onClose()
         }}
-      />
-
-      {/* Transfer */}
-      <TransferirDialog
-        actividad={actividad}
-        canTransfer={permissions.canTransfer}
-        onTransferir={(equipoDestinoId, responsableNuevoId, motivo) =>
-          actions.transferir(actividad.id, {
-            zona_destino: equipoDestinoId,
-            responsable_nuevo: responsableNuevoId,
-            motivo
-          })
-        }
-        loading={actions.loading}
-        onSuccess={handleSuccess}
       />
 
       {/* Reopen */}

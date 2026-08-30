@@ -100,7 +100,7 @@ const FileManagement = forwardRef<FileManagementHandle, FileManagementProps>(({ 
         window.dispatchEvent(event)
       }
 
-      toast.success("Informe generado y guardado exitosamente", {
+      toast.info("Informe agregado al formulario; se guardará al confirmar la evaluación", {
         position: "top-center",
         autoClose: 3000,
       })
@@ -138,7 +138,7 @@ const FileManagement = forwardRef<FileManagementHandle, FileManagementProps>(({ 
 
     setFiles((prev) => [...prev, newFile])
 
-    toast.success("Archivo subido exitosamente", {
+    toast.info("Archivo agregado al formulario; se guardará al confirmar la evaluación", {
       position: "top-center",
       autoClose: 3000,
     })

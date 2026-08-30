@@ -18,10 +18,6 @@ import {
   PersonAdd as PersonAddIcon,
   Description as DescriptionIcon,
   Gavel as GavelIcon,
-  AssignmentTurnedIn as AssignmentTurnedInIcon,
-  Assignment as AssignmentIcon,
-  Mail as MailIcon,
-  AttachFile as AttachFileIcon,
 } from "@mui/icons-material"
 
 interface ActionMenuProps {
@@ -43,9 +39,6 @@ interface ActionMenuProps {
 const ActionMenu: React.FC<ActionMenuProps> = ({
   legajoId,
   demandaId,
-  tieneMedidas = false,
-  tieneOficios = false,
-  tienePlanTrabajo = false,
   onViewDetail,
   onAssign,
   onEdit,
@@ -94,14 +87,9 @@ const ActionMenu: React.FC<ActionMenuProps> = ({
       label: "Editar Legajo",
       icon: <EditIcon fontSize="small" />,
       action: () => {
-        if (onEdit) {
-          onEdit(legajoId)
-        } else {
-          console.log("Edit legajo:", legajoId)
-          // TODO: Implementar edición de legajo
-        }
+        onEdit?.(legajoId)
       },
-      show: userPermissions.canEdit,
+      show: userPermissions.canEdit && Boolean(onEdit),
     },
     {
       label: "Ir a Demanda (PI)",
@@ -120,50 +108,9 @@ const ActionMenu: React.FC<ActionMenuProps> = ({
       label: "Registrar/Ver Oficio",
       icon: <GavelIcon fontSize="small" />,
       action: () => {
-        // TODO: Abrir modal de oficios o navegar a página de oficios
-        console.log("Registrar/Ver Oficio para legajo:", legajoId)
-        // router.push(`/legajo/${legajoId}/oficios`)
+        router.push(`/oficios?legajo=${legajoId}`)
       },
       show: true,
-    },
-    {
-      label: "Ir a Ratificación Judicial (MED-05)",
-      icon: <AssignmentTurnedInIcon fontSize="small" />,
-      action: () => {
-        // TODO: Navegar a MED-05 - Ratificación Judicial
-        console.log("Ir a MED-05 para legajo:", legajoId)
-        router.push(`/legajo/${legajoId}/medida/ratificacion`)
-      },
-      show: tieneMedidas,
-    },
-    {
-      label: "Ver Plan de Trabajo (PLTM)",
-      icon: <AssignmentIcon fontSize="small" />,
-      action: () => {
-        // TODO: Navegar a Plan de Trabajo
-        console.log("Ver PLTM para legajo:", legajoId)
-        router.push(`/legajo/${legajoId}/plan-trabajo`)
-      },
-      show: tienePlanTrabajo,
-      divider: true,
-    },
-    {
-      label: "Enviar Notificación Interna",
-      icon: <MailIcon fontSize="small" />,
-      action: () => {
-        // TODO: Abrir modal de notificación interna
-        console.log("Enviar notificación para legajo:", legajoId)
-      },
-      show: userPermissions.canSendNotification,
-    },
-    {
-      label: "Adjuntar Acuse",
-      icon: <AttachFileIcon fontSize="small" />,
-      action: () => {
-        // TODO: Abrir modal para adjuntar acuse
-        console.log("Adjuntar acuse para legajo:", legajoId)
-      },
-      show: tieneOficios,
     },
   ]
 
