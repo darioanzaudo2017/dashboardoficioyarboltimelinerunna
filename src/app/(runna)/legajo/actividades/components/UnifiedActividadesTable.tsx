@@ -1145,15 +1145,39 @@ export const UnifiedActividadesTable: React.FC<UnifiedActividadesTableProps> = (
                         <Typography variant="body2" fontWeight={500}>
                           {actividad.tipo_actividad_info?.nombre || "Sin tipo"}
                         </Typography>
-                        {actividad.subactividad && (
+                        {actividad.subtipo_actividad_info?.nombre && (
                           <Typography variant="caption" color="text.secondary">
-                            {actividad.subactividad}
+                            {actividad.subtipo_actividad_info.nombre}
                           </Typography>
                         )}
                         {actividad.descripcion && (
                           <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5, fontStyle: "italic" }}>
                             {actividad.descripcion.length > 50 ? `${actividad.descripcion.substring(0, 50)}...` : actividad.descripcion}
                           </Typography>
+                        )}
+                        {actividad.oficio_origen && (
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.75, flexWrap: "wrap" }}>
+                            <Tooltip
+                              title={[
+                                actividad.oficio_origen.categoria,
+                                actividad.oficio_origen.tipo,
+                              ].filter(Boolean).join(" · ") || "Oficio judicial"}
+                            >
+                              <Chip
+                                label={actividad.oficio_origen.tipo || "Oficio judicial"}
+                                size="small"
+                                variant="outlined"
+                                color="info"
+                                sx={{ maxWidth: 190, height: 20, fontSize: "0.65rem" }}
+                              />
+                            </Tooltip>
+                            <Chip
+                              label={actividad.oficio_origen.estado_respuesta === "CONTESTADO" ? "Oficio contestado" : "Oficio pendiente"}
+                              size="small"
+                              color={actividad.oficio_origen.estado_respuesta === "CONTESTADO" ? "success" : "warning"}
+                              sx={{ height: 20, fontSize: "0.65rem", fontWeight: 600 }}
+                            />
+                          </Box>
                         )}
                       </Box>
                       <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5, alignItems: "flex-end" }}>

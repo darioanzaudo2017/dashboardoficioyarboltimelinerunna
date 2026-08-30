@@ -519,8 +519,22 @@ export interface MedidaInfo extends MedidaBasicResponse {
 }
 
 // Demandas relacionadas
+export interface DemandaRelacionadaResumen {
+  id: number
+  codigo_demanda: string
+  fecha_creacion: string
+  estado_demanda: string
+  objetivo_de_demanda: string
+  nro_sac: string | null
+  nro_oficio_web: string | null
+  numero_expediente: string | null
+  medida_creada: boolean
+  tipo_medida_evaluado: string | null
+  [key: string]: unknown
+}
+
 export interface DemandasRelacionadas {
-  resultados: any[]
+  resultados: DemandaRelacionadaResumen[]
   resumen: {
     total_demandas: number
     activas: number

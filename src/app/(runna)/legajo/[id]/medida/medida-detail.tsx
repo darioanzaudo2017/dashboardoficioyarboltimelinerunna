@@ -94,9 +94,9 @@ const convertMedidaToMedidaData = (
     nro_sac: medida.nro_sac || undefined,
     urgencia: medida.urgencia?.nombre || undefined,
     estado_actual: medida.etapa_actual?.estado_display || undefined,
-    origen_demanda: demanda?.bloque_datos_remitente_info?.nombre || "",
-    motivo: demanda?.motivo_ingreso_info?.nombre || demanda?.descripcion || "",
-    actores_intervinientes: demanda?.institucion_info?.nombre || "",
+    origen_demanda: demanda?.bloque_datos_remitente?.nombre || "Creación manual",
+    motivo: demanda?.motivo_ingreso?.nombre || demanda?.descripcion || "",
+    actores_intervinientes: demanda?.institucion?.nombre || "",
     equipos: legajo.asignaciones_activas?.[0]?.user_responsable?.nombre_completo || "",
     articulacion: "",
     etapas: {
@@ -217,27 +217,34 @@ export default function MedidaDetail({ params, onClose, isFullPage = false }: Me
   const [isLegajoLoading, setIsLegajoLoading] = useState(true)
   const [legajoError, setLegajoError] = useState<string | null>(null)
 
-  // Extract demanda ID from legajo data
+  // Resolver la demanda que originó esta medida. El SAC es el vínculo más
+  // preciso; si no existe, se prioriza una demanda no archivada antes del
+  // fallback histórico.
   const demandaId = useMemo(() => {
     const demandas = legajoData?.demandas_relacionadas?.resultados || []
     if (demandas.length === 0) return null
 
-    const activeDemanda = demandas.find((d: any) => d.estado === 'ACTIVA') || demandas[0]
-    return activeDemanda?.id || null
-  }, [legajoData])
+    const demandaMismoSac = medidaApiData?.nro_sac
+      ? demandas.find((demanda) => demanda.nro_sac === medidaApiData.nro_sac)
+      : null
+    const demandaActiva = demandas.find((demanda) =>
+      !['ARCHIVADA', 'SUBIDO_A_PODER_JUDICIAL'].includes(demanda.estado_demanda)
+    )
+    return demandaMismoSac?.id || demandaActiva?.id || demandas[0]?.id || null
+  }, [legajoData, medidaApiData?.nro_sac])
 
   // Load demanda full-detail data using shared hook (for seguimiento dispositivo)
   const { data: demandaData } = useDemandaFullDetail(demandaId)
 
   const workflowLegajoData = useMemo(() => {
     if (!legajoData) return undefined
-    const remitente = demandaData?.bloque_datos_remitente_info?.nombre || demandaData?.institucion_info?.nombre
+    const remitente = demandaData?.bloque_datos_remitente?.nombre || demandaData?.institucion?.nombre
     return {
       numero: legajoData.legajo?.numero || "",
       persona_nombre: legajoData.persona?.nombre || "",
       persona_apellido: legajoData.persona?.apellido || "",
       zona_nombre: legajoData.asignaciones_activas?.[0]?.zona?.nombre || "",
-      origen_demanda: demandaId ? `${remitente || "Demanda"} (#${demandaId})` : "",
+      origen_demanda: demandaId ? `${remitente || "Demanda"} (#${demandaId})` : "Creación manual",
       tecnico_cargo: legajoData.asignaciones_activas?.[0]?.user_responsable?.nombre_completo || "",
     }
   }, [demandaData, demandaId, legajoData])

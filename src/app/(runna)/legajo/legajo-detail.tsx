@@ -264,6 +264,10 @@ export default function LegajoDetail({ params, onClose, isFullPage = false }: Le
   // Prepare breadcrumb items
   const breadcrumbItems = [...getDefaultBreadcrumbs()]
   const puedeEditarPersona = isAdmin || legajoData.permisos_usuario?.puede_editar
+  const sacSugeridos = Array.from(new Set([
+    ...(legajoData.demandas_relacionadas?.resultados || []).map((demanda) => demanda.nro_sac),
+    ...(legajoData.historial_medidas || []).map((medida) => medida.nro_sac),
+  ].filter((sac): sac is string => Boolean(sac?.trim()))))
 
   return (
     <Box
@@ -431,6 +435,7 @@ export default function LegajoDetail({ params, onClose, isFullPage = false }: Le
       <CrearMedidaDialog
         open={openCrearMedidaDialog}
         legajoId={Number(params.id)}
+        sacOptions={sacSugeridos}
         onClose={() => setOpenCrearMedidaDialog(false)}
         onSuccess={handleCrearMedidaSuccess}
       />

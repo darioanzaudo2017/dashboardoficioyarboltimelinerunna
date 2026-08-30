@@ -11,6 +11,7 @@ import {
   CircularProgress,
   Typography,
   Divider,
+  Autocomplete,
 } from "@mui/material"
 import AddIcon from "@mui/icons-material/Add"
 import BaseDialog from "@/components/shared/BaseDialog"
@@ -41,6 +42,7 @@ interface Juzgado {
 interface CrearMedidaDialogProps {
   open: boolean
   legajoId: number
+  sacOptions?: string[]
   onClose: () => void
   onSuccess: (medida: MedidaDetailResponse) => void | Promise<void>
 }
@@ -48,6 +50,7 @@ interface CrearMedidaDialogProps {
 export const CrearMedidaDialog: React.FC<CrearMedidaDialogProps> = ({
   open,
   legajoId,
+  sacOptions = [],
   onClose,
   onSuccess,
 }) => {
@@ -302,13 +305,25 @@ export const CrearMedidaDialog: React.FC<CrearMedidaDialogProps> = ({
 
             {/* Número SAC */}
             <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Número SAC"
+              <Autocomplete
+                freeSolo
+                options={sacOptions}
                 value={formData.nro_sac ?? ""}
-                onChange={handleChange("nro_sac")}
-                helperText="Número del Sistema de Administración de Causas (máx. 50 caracteres)"
-                inputProps={{ maxLength: 50 }}
+                onChange={(_, value) => setFormData((prev) => ({ ...prev, nro_sac: value || null }))}
+                onInputChange={(_, value) => setFormData((prev) => ({ ...prev, nro_sac: value || null }))}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    fullWidth
+                    label="Número SAC"
+                    helperText={
+                      sacOptions.length
+                        ? "Seleccione un SAC ya asociado al legajo o escriba uno nuevo."
+                        : "Número del Sistema de Administración de Causas (máx. 100 caracteres)."
+                    }
+                    inputProps={{ ...params.inputProps, maxLength: 100 }}
+                  />
+                )}
               />
             </Grid>
           </Grid>

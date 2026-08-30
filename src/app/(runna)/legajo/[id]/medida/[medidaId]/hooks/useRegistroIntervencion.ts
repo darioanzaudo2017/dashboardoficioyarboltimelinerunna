@@ -964,12 +964,8 @@ export const useRegistroIntervencion = ({
       errors.motivo_id = "El motivo es obligatorio"
     }
 
-    const motivoTieneSubmotivos = !!formData.motivo_id && subMotivos.some(
-      (subMotivo) => subMotivo.motivo_id === formData.motivo_id
-    )
     if (
       (workflowPhase === 'apertura' || workflowPhase === 'innovacion')
-      && motivoTieneSubmotivos
       && !formData.sub_motivo_id
     ) {
       errors.sub_motivo_id = "El submotivo es obligatorio"

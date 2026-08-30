@@ -521,6 +521,9 @@ export interface OficioOrigen {
   numero_expediente: string | null
   nro_oficio_web: string | null
   objetivo: string
+  categoria: string | null
+  tipo: string | null
+  estado_respuesta: 'CONTESTADO' | 'PENDIENTE'
   adjuntos: Array<{
     id: number
     url: string

@@ -49,7 +49,7 @@ const DEMANDA_ESTADOS: NonNullable<DemandaEstado>[] = ["ACTIVA", "CERRADA", "DER
 const MEDIDA_TIPOS = [
   { value: "MPI", label: "Medida de Protección Integral" },
   { value: "MPE", label: "Medida de Protección Excepcional" },
-  { value: "MPJ", label: "Medida de Protección Judicial" },
+  { value: "MPJ", label: "Medida Penal Juvenil" },
 ]
 
 const MEDIDA_ESTADOS = [
