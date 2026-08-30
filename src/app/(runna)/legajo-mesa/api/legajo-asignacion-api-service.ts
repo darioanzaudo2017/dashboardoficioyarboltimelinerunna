@@ -193,7 +193,7 @@ interface UsuarioCompleto {
   username: string
   first_name: string
   last_name: string
-  email: string
+  email?: string
   is_active: boolean
   is_superuser?: boolean
   is_staff?: boolean

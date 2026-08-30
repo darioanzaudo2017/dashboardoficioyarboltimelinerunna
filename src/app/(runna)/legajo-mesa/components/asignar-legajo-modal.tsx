@@ -55,11 +55,13 @@ interface RawUsuario {
   last_name: string
   email?: string
   is_active?: boolean
+  zonas?: Array<{ zona: number }>
 }
 
 interface UsuarioOption {
   id: number
   nombre_completo: string
+  zona_ids: number[]
 }
 
 const toNombreCompleto = (u: RawUsuario): string =>
@@ -95,6 +97,7 @@ const AsignarLegajoModal: React.FC<AsignarLegajoModalProps> = ({
       extractArray(usuariosData).map((u) => ({
         id: u.id,
         nombre_completo: toNombreCompleto(u),
+        zona_ids: (u.zonas ?? []).map((relacion) => relacion.zona),
       })),
     [usuariosData]
   )
@@ -215,7 +218,22 @@ const AsignarLegajoModal: React.FC<AsignarLegajoModalProps> = ({
     usuariosSeleccionados: number[]
     onZonasChange: (ids: number[]) => void
     onUsuariosChange: (ids: number[]) => void
-  }) => (
+  }) => {
+    const usuariosDisponibles = usuarios.filter((usuario) =>
+      usuario.zona_ids.some((zonaId) => zonasSeleccionadas.includes(zonaId))
+    )
+
+    const actualizarZonas = (ids: number[]) => {
+      onZonasChange(ids)
+      onUsuariosChange(
+        usuariosSeleccionados.filter((usuarioId) => {
+          const usuario = usuarios.find((item) => item.id === usuarioId)
+          return usuario?.zona_ids.some((zonaId) => ids.includes(zonaId))
+        })
+      )
+    }
+
+    return (
     <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 2 }}>
       <Typography
         variant="subtitle1"
@@ -235,7 +253,7 @@ const AsignarLegajoModal: React.FC<AsignarLegajoModalProps> = ({
             getOptionLabel={(option) => option.nombre}
             isOptionEqualToValue={(option, value) => option.id === value.id}
             value={zonas.filter((z) => zonasSeleccionadas.includes(z.id))}
-            onChange={(_, newValue) => onZonasChange(newValue.map((z) => z.id))}
+            onChange={(_, newValue) => actualizarZonas(newValue.map((z) => z.id))}
             renderInput={(params) => (
               <TextField {...params} placeholder="Seleccione zonas" size="small" />
             )}
@@ -249,20 +267,25 @@ const AsignarLegajoModal: React.FC<AsignarLegajoModalProps> = ({
           </Typography>
           <Autocomplete
             multiple
-            options={usuarios}
+            options={usuariosDisponibles}
             getOptionLabel={(option) => option.nombre_completo}
             isOptionEqualToValue={(option, value) => option.id === value.id}
-            value={usuarios.filter((u) => usuariosSeleccionados.includes(u.id))}
+            value={usuariosDisponibles.filter((u) => usuariosSeleccionados.includes(u.id))}
             onChange={(_, newValue) => onUsuariosChange(newValue.map((u) => u.id))}
             renderInput={(params) => (
-              <TextField {...params} placeholder="Seleccione usuarios" size="small" />
+              <TextField
+                {...params}
+                placeholder={zonasSeleccionadas.length ? "Seleccione usuarios" : "Seleccione una zona primero"}
+                size="small"
+              />
             )}
-            disabled={isSubmitting}
+            disabled={isSubmitting || zonasSeleccionadas.length === 0}
           />
         </Box>
       </Box>
     </Paper>
-  )
+    )
+  }
 
   return (
     <Modal open={open} onClose={onClose} aria-labelledby="asignar-legajo-modal">
