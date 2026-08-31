@@ -14,6 +14,7 @@ import {
   getUrgenciaNombre,
   unwrapLocalizacionActual,
 } from "@/app/(runna)/legajo-mesa/utils/legajo-detail-normalizers"
+import { calculateAge } from "@/utils/dateUtils"
 
 interface LegajoHeaderProps {
   legajoData: LegajoDetailResponse
@@ -52,24 +53,9 @@ export const LegajoHeader: React.FC<LegajoHeaderProps> = ({ legajoData, onViewAl
     return colors[index] || colors[0]
   }
 
-  // Calculate edad
-  const calcularEdad = (fechaNacimiento: string | null | undefined): number | null => {
-    if (!fechaNacimiento) return null
-    try {
-      const fecha = new Date(fechaNacimiento)
-      const hoy = new Date()
-      let edad = hoy.getFullYear() - fecha.getFullYear()
-      const mes = hoy.getMonth() - fecha.getMonth()
-      if (mes < 0 || (mes === 0 && hoy.getDate() < fecha.getDate())) {
-        edad--
-      }
-      return edad
-    } catch {
-      return null
-    }
-  }
-
-  const edad = calcularEdad(persona?.fecha_nacimiento) || persona?.edad_aproximada || persona?.edad_calculada
+  const edad = persona?.fecha_nacimiento
+    ? calculateAge(persona.fecha_nacimiento)
+    : persona?.edad_aproximada ?? persona?.edad_calculada ?? null
 
   // Build address string
   const buildAddress = () => {
@@ -163,7 +149,12 @@ export const LegajoHeader: React.FC<LegajoHeaderProps> = ({ legajoData, onViewAl
                 size="small"
                 variant="outlined"
               />
-              <Chip icon={<PersonIcon />} label={`${edad || "N/A"} años`} size="small" variant="outlined" />
+              <Chip
+                icon={<PersonIcon />}
+                label={edad !== null ? `${edad} años` : "Edad sin datos válidos"}
+                size="small"
+                variant="outlined"
+              />
               {urgenciaNombre === "ALTA" && <Chip label="URGENTE" color="error" size="small" />}
               {asignacion?.zona && (
                 <Chip

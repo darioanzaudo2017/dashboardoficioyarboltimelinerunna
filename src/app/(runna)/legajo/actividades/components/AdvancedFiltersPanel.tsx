@@ -199,6 +199,10 @@ export const AdvancedFiltersPanel: React.FC<AdvancedFiltersPanelProps> = ({
 
   // Count active advanced filters
   const advancedFilterCount = [
+    filters.actor,
+    filters.origen,
+    filters.estado,
+    filters.ordering && filters.ordering !== '-fecha_creacion' ? filters.ordering : undefined,
     filters.nnya_nombre,
     filters.nnya_dni,
     filters.numero_legajo,
@@ -307,9 +311,27 @@ export const AdvancedFiltersPanel: React.FC<AdvancedFiltersPanelProps> = ({
             </Button>
           </Grid>
 
+          <Grid item xs={12} sx={{ display: { xs: 'block', sm: 'none' } }}>
+            <Button
+              type="button"
+              fullWidth
+              variant={expanded ? 'contained' : 'outlined'}
+              color={advancedFilterCount > 0 ? 'primary' : 'inherit'}
+              startIcon={<FilterListIcon />}
+              endIcon={expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+              onClick={() => setExpanded((open) => !open)}
+              aria-expanded={expanded}
+              aria-controls="activity-filters-panel"
+              sx={{ height: 42, textTransform: 'none', fontWeight: 600 }}
+            >
+              {expanded ? 'Ocultar filtros' : 'Más filtros'}
+              {advancedFilterCount > 0 && ` (${advancedFilterCount})`}
+            </Button>
+          </Grid>
+
           {/* Actor - only show if user can see all actors */}
           {canSeeAllActors && (
-            <Grid item xs={12} sm={6} md={2}>
+            <Grid item xs={12} sm={6} md={2} sx={{ display: { xs: expanded ? 'block' : 'none', sm: 'block' } }}>
               <FormControl fullWidth size="small">
                 <InputLabel>Equipo</InputLabel>
                 <Select
@@ -328,7 +350,7 @@ export const AdvancedFiltersPanel: React.FC<AdvancedFiltersPanelProps> = ({
           )}
 
           {/* Origen */}
-          <Grid item xs={12} sm={6} md={2}>
+          <Grid item xs={12} sm={6} md={2} sx={{ display: { xs: expanded ? 'block' : 'none', sm: 'block' } }}>
             <FormControl fullWidth size="small">
               <InputLabel>Origen</InputLabel>
               <Select
@@ -347,7 +369,7 @@ export const AdvancedFiltersPanel: React.FC<AdvancedFiltersPanelProps> = ({
 
           {variant === 'global' && (
             <>
-              <Grid item xs={12} sm={6} md={2}>
+              <Grid item xs={12} sm={6} md={2} sx={{ display: { xs: expanded ? 'block' : 'none', sm: 'block' } }}>
                 <FormControl fullWidth size="small">
                   <InputLabel>Categoría de oficio</InputLabel>
                   <Select
@@ -373,7 +395,7 @@ export const AdvancedFiltersPanel: React.FC<AdvancedFiltersPanelProps> = ({
                 </FormControl>
               </Grid>
 
-              <Grid item xs={12} sm={6} md={2}>
+              <Grid item xs={12} sm={6} md={2} sx={{ display: { xs: expanded ? 'block' : 'none', sm: 'block' } }}>
                 <FormControl fullWidth size="small">
                   <InputLabel>Tipo de oficio</InputLabel>
                   <Select
@@ -394,7 +416,7 @@ export const AdvancedFiltersPanel: React.FC<AdvancedFiltersPanelProps> = ({
                 </FormControl>
               </Grid>
 
-              <Grid item xs={12} sm={6} md={2}>
+              <Grid item xs={12} sm={6} md={2} sx={{ display: { xs: expanded ? 'block' : 'none', sm: 'block' } }}>
                 <FormControl fullWidth size="small">
                   <InputLabel>Estado del oficio</InputLabel>
                   <Select
@@ -412,7 +434,13 @@ export const AdvancedFiltersPanel: React.FC<AdvancedFiltersPanelProps> = ({
           )}
 
           {/* Ordering */}
-          <Grid item xs={12} sm={6} md={canSeeAllActors ? 1.5 : 2.5}>
+          <Grid
+            item
+            xs={12}
+            sm={6}
+            md={canSeeAllActors ? 1.5 : 2.5}
+            sx={{ display: { xs: expanded ? 'block' : 'none', sm: 'block' } }}
+          >
             <FormControl fullWidth size="small">
               <InputLabel>Ordenar por</InputLabel>
               <Select
@@ -431,7 +459,13 @@ export const AdvancedFiltersPanel: React.FC<AdvancedFiltersPanelProps> = ({
           </Grid>
 
           {/* Advanced Filters Toggle */}
-          <Grid item xs={12} sm={6} md={canSeeAllActors ? 1.5 : 2.5}>
+          <Grid
+            item
+            xs={12}
+            sm={6}
+            md={canSeeAllActors ? 1.5 : 2.5}
+            sx={{ display: { xs: 'none', sm: 'block' } }}
+          >
             <Button
               type="button"
               fullWidth
@@ -448,7 +482,7 @@ export const AdvancedFiltersPanel: React.FC<AdvancedFiltersPanelProps> = ({
         </Grid>
 
         {/* Estado Multi-Select Chips */}
-        <Box sx={{ mb: 2 }}>
+        <Box sx={{ mb: 2, display: { xs: expanded ? 'block' : 'none', sm: 'block' } }}>
           <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
             Filtrar por estado (clic para activar/desactivar):
           </Typography>
@@ -485,7 +519,7 @@ export const AdvancedFiltersPanel: React.FC<AdvancedFiltersPanelProps> = ({
         </Box>
 
         {/* Advanced Filters Panel */}
-        <Collapse in={expanded}>
+        <Collapse in={expanded} id="activity-filters-panel">
           <Paper
             elevation={0}
             sx={{

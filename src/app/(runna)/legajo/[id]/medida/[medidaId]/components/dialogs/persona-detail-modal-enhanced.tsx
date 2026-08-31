@@ -62,6 +62,7 @@ import { PersonasRelacionadasSection } from "../personas-relacionadas"
 import VulnerabilityEditor from "./vulnerability-editor"
 import type { LegajoDetailResponse } from "@/app/(runna)/legajo-mesa/types/legajo-api"
 import { getUrgenciaNombre } from "@/app/(runna)/legajo-mesa/utils/legajo-detail-normalizers"
+import { calculateAge } from "@/utils/dateUtils"
 import { toast } from "react-toastify"
 import { useQueryClient, useQuery } from "@tanstack/react-query"
 import { fetchDropdownData } from "@/components/forms/utils/fetchFormCase"
@@ -117,22 +118,6 @@ const formatFecha = (fecha: string | null | undefined): string => {
     })
   } catch {
     return fecha || "No registrado"
-  }
-}
-
-const calcularEdad = (fechaNacimiento: string | null | undefined): number | null => {
-  if (!fechaNacimiento) return null
-  try {
-    const fecha = new Date(fechaNacimiento)
-    const hoy = new Date()
-    let edad = hoy.getFullYear() - fecha.getFullYear()
-    const mes = hoy.getMonth() - fecha.getMonth()
-    if (mes < 0 || (mes === 0 && hoy.getDate() < fecha.getDate())) {
-      edad--
-    }
-    return edad
-  } catch {
-    return null
   }
 }
 
@@ -604,8 +589,9 @@ export default function PersonaDetailModalEnhanced({
   }
 
   // Calculate edad from display data
-  const edad =
-    calcularEdad(displayData.fecha_nacimiento) || displayData.edad_aproximada || displayData.edad_calculada
+  const edad = displayData.fecha_nacimiento
+    ? calculateAge(displayData.fecha_nacimiento)
+    : displayData.edad_aproximada ?? displayData.edad_calculada ?? null
 
   // Get avatar color from display data
   const avatarColor = getAvatarColor(displayData.nombre)
@@ -650,7 +636,12 @@ export default function PersonaDetailModalEnhanced({
               )}
               <Box sx={{ display: "flex", gap: 1, mt: 1, flexWrap: "wrap" }}>
                 <Chip label={`DNI: ${displayData.dni || "N/A"}`} size="small" variant="outlined" />
-                <Chip label={`${edad || "N/A"} años`} size="small" variant="outlined" color="primary" />
+                <Chip
+                  label={edad !== null ? `${edad} años` : "Edad sin datos válidos"}
+                  size="small"
+                  variant="outlined"
+                  color="primary"
+                />
                 {urgenciaNombre === "ALTA" && <Chip label="URGENTE" color="error" size="small" />}
                 {asignaciones[0]?.zona && (
                   <Chip label={asignaciones[0].zona.nombre} size="small" variant="outlined" color="secondary" />
@@ -912,7 +903,7 @@ export default function PersonaDetailModalEnhanced({
                     </Typography>
                   </Box>
                   <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                    Edad: {edad || "No calculada"} años
+                    {edad !== null ? `Edad: ${edad} años` : "Edad: dato inválido o no disponible"}
                   </Typography>
                 </Paper>
               </Grid>

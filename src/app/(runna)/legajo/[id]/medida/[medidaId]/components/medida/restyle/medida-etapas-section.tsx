@@ -489,11 +489,20 @@ const PhaseRow: React.FC<PhaseRowProps> = ({ phase, etapasOfPhase, isCurrent, on
   return (
     <Box
       onClick={onOpen}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault()
+          onOpen()
+        }
+      }}
       sx={{
         border: `1px solid ${MEDIDA_COLORS.border}`,
         borderRadius: "8px",
         display: "flex",
         alignItems: "center",
+        flexWrap: { xs: "wrap", sm: "nowrap" },
         gap: "10px",
         p: "10px 14px",
         cursor: "pointer",
@@ -518,7 +527,7 @@ const PhaseRow: React.FC<PhaseRowProps> = ({ phase, etapasOfPhase, isCurrent, on
       >
         ◆
       </Box>
-      <Typography sx={{ fontSize: 13, fontWeight: 600, color: MEDIDA_COLORS.text }}>
+      <Typography sx={{ fontSize: 13, fontWeight: 600, color: MEDIDA_COLORS.text, flex: 1, minWidth: 0 }}>
         {PHASE_LABEL[phase]}
       </Typography>
       {count > 1 && (
@@ -529,7 +538,7 @@ const PhaseRow: React.FC<PhaseRowProps> = ({ phase, etapasOfPhase, isCurrent, on
         />
       )}
       {fecha && <Typography sx={{ fontSize: 11, color: MEDIDA_COLORS.text3 }}>{fecha}</Typography>}
-      <Box sx={{ display: "flex", gap: "8px", ml: "auto", alignItems: "center" }}>
+      <Box sx={{ display: "flex", gap: "8px", ml: { xs: 0, sm: "auto" }, width: { xs: "100%", sm: "auto" }, minWidth: 0, alignItems: "center" }}>
         <Chip
           label={estadoLabel}
           size="small"
@@ -537,7 +546,8 @@ const PhaseRow: React.FC<PhaseRowProps> = ({ phase, etapasOfPhase, isCurrent, on
             height: 20,
             fontSize: 10,
             fontWeight: 600,
-            maxWidth: 200,
+            maxWidth: { xs: "calc(100% - 26px)", sm: 200 },
+            "& .MuiChip-label": { overflow: "hidden", textOverflow: "ellipsis" },
             bgcolor: isCurrent ? "#F0F9FF" : count > 0 ? "#F0FDF4" : MEDIDA_COLORS.surface2,
             color: isCurrent ? "#075985" : count > 0 ? "#166534" : MEDIDA_COLORS.text3,
             border: `1px solid ${isCurrent ? "#7DD3FC" : count > 0 ? "#86EFAC" : MEDIDA_COLORS.border}`,
@@ -568,9 +578,11 @@ export const MedidaEtapasSection: React.FC<MedidaEtapasSectionProps> = ({
 
   const paperSx = {
     mb: 3,
-    p: "16px 20px",
+    p: { xs: "12px", sm: "16px 20px" },
     borderRadius: "12px",
     border: `1px solid ${MEDIDA_COLORS.border}`,
+    maxWidth: "100%",
+    overflow: "hidden",
   } as const
 
   // Group etapas by workflow phase (declared before any early return so hooks/order stay stable).
@@ -672,7 +684,7 @@ export const MedidaEtapasSection: React.FC<MedidaEtapasSectionProps> = ({
         onClose={() => setModalPhase(null)}
         fullWidth
         maxWidth="lg"
-        PaperProps={{ sx: { borderRadius: "12px" } }}
+        PaperProps={{ sx: { borderRadius: { xs: 0, sm: "12px" }, m: { xs: 0, sm: 4 }, width: { xs: "100%", sm: "calc(100% - 64px)" }, height: { xs: "100%", sm: "auto" }, maxHeight: { xs: "100%", sm: "calc(100% - 64px)" } } }}
       >
         <Box
           sx={{
@@ -690,6 +702,7 @@ export const MedidaEtapasSection: React.FC<MedidaEtapasSectionProps> = ({
           <IconButton
             onClick={() => setModalPhase(null)}
             size="small"
+            aria-label="Cerrar gestión de etapa"
             sx={{
               ml: "auto",
               color: "#fff",
@@ -701,7 +714,7 @@ export const MedidaEtapasSection: React.FC<MedidaEtapasSectionProps> = ({
             <CloseIcon sx={{ fontSize: 18 }} />
           </IconButton>
         </Box>
-        <DialogContent sx={{ p: "20px" }}>
+        <DialogContent sx={{ p: { xs: "12px", sm: "20px" }, overflowX: "hidden" }}>
           {modalPhase && workflowMedidaData?.id ? (
             <UnifiedWorkflowTab
               medidaData={workflowMedidaData as WorkflowMedidaData & { id: number }}

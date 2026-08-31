@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation"
 import MultiStepForm, { type FormData } from "../../../components/forms/MultiStepForm"
 import {
   Typography,
-  CircularProgress,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -20,7 +19,6 @@ import {
   LinearProgress,
   Fade,
 } from "@mui/material"
-import { useMutation } from "@tanstack/react-query"
 import { toast } from "react-toastify"
 import { track, AnalyticsEvent } from "@/utils/analytics"
 import { useDraftStore } from "@/components/forms/utils/userDraftStore"
@@ -50,10 +48,7 @@ const Home: React.FC = () => {
 
   // Check for existing draft on component mount
   useEffect(() => {
-    const checkForDraft = async () => {
-      // Simulate loading time for better UX
-      await new Promise((resolve) => setTimeout(resolve, 800))
-
+    const checkForDraft = () => {
       const draft = getDraft(formId)
       if (draft && isDraftNotEmpty(draft)) {
         console.log("Draft found:", draft)
@@ -69,8 +64,10 @@ const Home: React.FC = () => {
   // Helper function to check if a draft has meaningful content
   const isDraftNotEmpty = (draft: FormData): boolean => {
     // Check if any top-level string/number fields have values
-    const hasBasicFields = Object.entries(draft).some(([key, value]) => {
-      return typeof value === "string" || typeof value === "number" || typeof value === "boolean"
+    const hasBasicFields = Object.values(draft).some((value) => {
+      if (typeof value === "string") return value.trim().length > 0
+      if (typeof value === "number") return Number.isFinite(value)
+      return value === true
     })
 
     // Check if adultosConvivientes array has any items with content
@@ -114,34 +111,25 @@ const Home: React.FC = () => {
     router.push("/mesadeentrada")
   }
 
-  // The mutation receives the response data from MultiStepForm's submission
-  const mutation = useMutation({
-    mutationFn: async (data: DemandaCreatedResponse) => data,
-    onSuccess: (data: DemandaCreatedResponse) => {
-      console.log("Demanda created successfully:", data)
-      track(AnalyticsEvent.NUEVO_INGRESO_REGISTRADO, {
-        demanda_id: (data as any)?.id ?? (data as any)?.demanda_id ?? null,
-      })
-      setError(null)
+  const handleSubmit = (data: FormData | DemandaCreatedResponse) => {
+    // MultiStepForm sólo invoca este callback después de que el POST real fue
+    // confirmado. Verificamos la respuesta antes de mostrar un éxito para no
+    // convertir una respuesta incompleta en una creación aparente.
+    if (!("demanda" in data) || !Number.isInteger(data.demanda?.id) || data.demanda.id <= 0) {
+      const message = "La demanda fue procesada, pero el servidor devolvió una respuesta incompleta. Recargue la Mesa de Entrada antes de reintentar."
+      console.error(message, data)
+      setError(message)
+      toast.error(message)
+      return
+    }
 
-      // Clear the draft after successful submission
-      clearDraft(formId)
-
-      // Store the response and show success modal
-      setCreatedDemandaData(data)
-      setShowSuccessModal(true)
-    },
-    onError: (error: any) => {
-      console.error("Error with form data:", error)
-      setError("Error al procesar el formulario. Por favor, intente nuevamente.")
-      toast.error("Error al procesar el formulario. Por favor, intente nuevamente.")
-    },
-  })
-
-  const handleSubmit = (data: any) => {
-    console.log("Form data received from MultiStepForm:", data)
-    // The data received here is now the full DemandaCreatedResponse from the API
-    mutation.mutate(data as DemandaCreatedResponse)
+    track(AnalyticsEvent.NUEVO_INGRESO_REGISTRADO, {
+      demanda_id: data.demanda.id,
+    })
+    setError(null)
+    clearDraft(formId)
+    setCreatedDemandaData(data)
+    setShowSuccessModal(true)
   }
 
   const handleNavigateToDemanda = (demandaId: number) => {
@@ -237,14 +225,6 @@ const Home: React.FC = () => {
           </Box>
           <Typography variant="body1" sx={{ mb: 2, textAlign: "center" }}>
             Cargando formulario...
-          </Typography>
-        </Card>
-      ) : mutation.isPending ? (
-        <Card sx={{ p: 4, textAlign: "center" }}>
-          <CircularProgress size={60} thickness={4} sx={{ mb: 3 }} />
-          <Typography variant="h6">Procesando su solicitud</Typography>
-          <Typography variant="body2" color="text.secondary">
-            Esto puede tomar unos momentos...
           </Typography>
         </Card>
       ) : (

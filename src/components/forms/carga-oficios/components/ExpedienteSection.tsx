@@ -133,7 +133,7 @@ const ExpedienteSection: React.FC<ExpedienteSectionProps> = ({ readOnly = false,
             render={({ field, fieldState: { error } }) => (
               <TextField
                 {...field}
-                label="Autos Caratulados *"
+                label="Autos Caratulados"
                 fullWidth
                 required
                 disabled={readOnly}
@@ -165,7 +165,7 @@ const ExpedienteSection: React.FC<ExpedienteSectionProps> = ({ readOnly = false,
               <TextField
                 {...field}
                 value={field.value || ""}
-                label="Presuntos Delitos *"
+                label="Presuntos Delitos"
                 fullWidth
                 required
                 disabled={readOnly}

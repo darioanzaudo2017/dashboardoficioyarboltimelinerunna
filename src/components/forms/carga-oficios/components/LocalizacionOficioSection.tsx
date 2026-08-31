@@ -56,15 +56,13 @@ const LocalizacionOficioSection: React.FC<LocalizacionOficioSectionProps> = ({
 
   return (
     <Box>
-      <Alert
-        severity="info"
-        icon={<LocationIcon />}
-        sx={{ mb: 3 }}
-      >
-        <Typography variant="body2">
-          Ingrese la dirección del NNyA (Niño, Niña y Adolescente). Todos los campos son opcionales.
-        </Typography>
-      </Alert>
+      {!readOnly && (
+        <Alert severity="info" icon={<LocationIcon />} sx={{ mb: 3 }}>
+          <Typography variant="body2">
+            Ingrese la dirección del NNyA (Niño, Niña y Adolescente). Todos los campos son opcionales.
+          </Typography>
+        </Alert>
+      )}
 
       <Grid container spacing={3}>
         {/* Row 1: Calle and Tipo de Calle */}

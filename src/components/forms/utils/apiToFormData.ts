@@ -61,7 +61,6 @@ export const transformApiDataToFormData = (apiData: any): FormData => {
     nro_sac: apiData.nro_sac || null,
     nro_suac: apiData.nro_suac || null,
     nro_historia_clinica: apiData.nro_historia_clinica || null,
-    nro_oficio_web: apiData.nro_oficio_web || null,
     autos_caratulados: apiData.autos_caratulados || "",
     descripcion: apiData.descripcion || "",
     presuntaVulneracion: {

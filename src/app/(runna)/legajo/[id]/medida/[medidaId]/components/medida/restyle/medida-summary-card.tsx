@@ -10,7 +10,7 @@
 import type React from "react"
 import { Box, Paper, Typography, Skeleton } from "@mui/material"
 import { MEDIDA_COLORS, TIPO_BADGE, STAT_STYLES, type TipoMedidaKey } from "./medida-theme"
-import { useActividadStats, type ActividadStats } from "../../../hooks/useActividadStats"
+import { useActividadStats } from "../../../hooks/useActividadStats"
 
 interface MedidaSummaryCardProps {
   tipo: TipoMedidaKey
@@ -40,11 +40,12 @@ const StatCard: React.FC<{ def: StatDef; total: number }> = ({ def, total }) => 
     <Box
       sx={{
         flex: 1,
-        minWidth: 100,
+        minWidth: 0,
+        flexBasis: { xs: "calc(50% - 5px)", sm: 100 },
         borderRadius: "8px",
         border: `1px solid ${s.border}`,
         backgroundColor: s.bg,
-        p: "12px 14px",
+        p: { xs: "10px", sm: "12px 14px" },
         display: "flex",
         flexDirection: "column",
         gap: "4px",
@@ -93,6 +94,7 @@ export const MedidaSummaryCard: React.FC<MedidaSummaryCardProps> = ({
         mb: 3,
         borderRadius: "12px",
         overflow: "hidden",
+        maxWidth: "100%",
         border: `1px solid ${MEDIDA_COLORS.border}`,
       }}
     >
@@ -100,7 +102,7 @@ export const MedidaSummaryCard: React.FC<MedidaSummaryCardProps> = ({
       <Box
         sx={{
           backgroundColor: MEDIDA_COLORS.navy,
-          px: "20px",
+          px: { xs: "14px", sm: "20px" },
           py: "14px",
           display: "flex",
           alignItems: "center",
@@ -124,7 +126,7 @@ export const MedidaSummaryCard: React.FC<MedidaSummaryCardProps> = ({
           {(tipoDisplay || tipo).toUpperCase()}
         </Box>
         <Typography sx={{ fontSize: 14, fontWeight: 600, color: "#fff" }}>{numero}</Typography>
-        <Box sx={{ ml: "auto", display: "flex", alignItems: "center", gap: "6px" }}>
+        <Box sx={{ ml: { xs: 0, sm: "auto" }, width: { xs: "100%", sm: "auto" }, display: "flex", alignItems: "center", gap: "6px" }}>
           <Box
             component="span"
             sx={{
@@ -146,7 +148,7 @@ export const MedidaSummaryCard: React.FC<MedidaSummaryCardProps> = ({
         sx={{
           display: "flex",
           gap: "10px",
-          p: "16px 20px",
+          p: { xs: "12px", sm: "16px 20px" },
           borderBottom: `1px solid ${MEDIDA_COLORS.border}`,
           flexWrap: "wrap",
         }}
@@ -156,16 +158,16 @@ export const MedidaSummaryCard: React.FC<MedidaSummaryCardProps> = ({
               <Skeleton
                 key={i}
                 variant="rounded"
-                sx={{ flex: 1, minWidth: 100, height: 78, borderRadius: "8px" }}
+                sx={{ flex: 1, minWidth: 0, flexBasis: { xs: "calc(50% - 5px)", sm: 100 }, height: 78, borderRadius: "8px" }}
               />
             ))
           : statDefs.map((def) => <StatCard key={def.key} def={def} total={stats.total} />)}
       </Box>
 
       {/* Progress bar */}
-      <Box sx={{ display: "flex", alignItems: "center", gap: "14px", p: "12px 20px" }}>
+      <Box sx={{ display: "flex", alignItems: "center", flexWrap: { xs: "wrap", sm: "nowrap" }, gap: { xs: "8px", sm: "14px" }, p: { xs: "12px", sm: "12px 20px" } }}>
         <Typography
-          sx={{ fontSize: 12, fontWeight: 600, color: MEDIDA_COLORS.text2, whiteSpace: "nowrap" }}
+          sx={{ fontSize: 12, fontWeight: 600, color: MEDIDA_COLORS.text2, whiteSpace: "nowrap", width: { xs: "100%", sm: "auto" } }}
         >
           Progreso del plan
         </Typography>
@@ -199,7 +201,7 @@ export const MedidaSummaryCard: React.FC<MedidaSummaryCardProps> = ({
         >
           {progress}%
         </Typography>
-        <Typography sx={{ fontSize: 11, color: MEDIDA_COLORS.text3, whiteSpace: "nowrap" }}>
+        <Typography sx={{ fontSize: 11, color: MEDIDA_COLORS.text3, width: { xs: "100%", sm: "auto" }, textAlign: { xs: "right", sm: "left" } }}>
           {stats.realizadas} de {stats.total} actividades completadas
         </Typography>
       </Box>

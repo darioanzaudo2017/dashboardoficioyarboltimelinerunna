@@ -14,11 +14,10 @@ import {
 } from "@mui/material"
 import { Visibility, VisibilityOff } from "@mui/icons-material"
 import { useRouter } from "next/navigation"
-import { decodeToken, login } from "@/utils/auth"
+import { getSession, login } from "@/utils/auth"
 import { useUser } from "@/utils/auth/userZustand"
 import { errorMessages } from "@/utils/errorMessages"
 import { track, AnalyticsEvent } from "@/utils/analytics"
-import axiosInstance from "@/app/api/utils/axiosInstance"
 import type { UserPermissions } from "@/utils/auth/userZustand"
 import Image from "next/image"
 
@@ -69,21 +68,23 @@ export default function Login() {
         return;
       }
 
-      // Use axiosInstance with the token for this specific request
-      const userResponse = await axiosInstance.get<UserPermissions>('/user/me/', {
-        headers: {
-          Authorization: `Bearer ${result.accessToken}`
-        }
-      });
-
-      if (!userResponse.data) {
+      // Resolve the user server-side so the login response never exposes tokens
+      // to browser JavaScript.
+      const authenticatedUser = await getSession(true)
+      if (!authenticatedUser || typeof authenticatedUser === "string") {
         throw new Error('No user data received from API');
       }
 
-      setUser(userResponse.data);
+      setUser(authenticatedUser as UserPermissions);
       // El identify del usuario lo hace PostHogProvider vía Zustand.
       track(AnalyticsEvent.LOGIN_EXITOSO);
-      router.push("/mesadeentrada");
+      const requestedPath = typeof window !== "undefined"
+        ? new URLSearchParams(window.location.search).get("next")
+        : null
+      const destination = requestedPath?.startsWith("/") && !requestedPath.startsWith("//")
+        ? requestedPath
+        : "/mesadeentrada"
+      router.push(destination);
     } catch (error: any) {
       console.error("Error during login:", error);
       const statusCode = error?.response?.status || "Desconocido";

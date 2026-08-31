@@ -114,7 +114,7 @@ const OficioJudicialMPEStep: React.FC<OficioJudicialMPEStepProps> = ({
               rules={{ required: "La fecha del oficio es obligatoria" }}
               render={({ field, fieldState: { error } }) => (
                 <DatePicker
-                  label="Fecha del Oficio *"
+                  label="Fecha del Oficio"
                   disabled={readOnly}
                   value={parseDateSafely(field.value)}
                   onChange={(date) => field.onChange(formatDateSafely(date))}
@@ -138,7 +138,7 @@ const OficioJudicialMPEStep: React.FC<OficioJudicialMPEStepProps> = ({
               rules={{ required: "La fecha de ingreso a SENAF es obligatoria" }}
               render={({ field, fieldState: { error } }) => (
                 <DatePicker
-                  label="Fecha Ingreso SENAF *"
+                  label="Fecha Ingreso SENAF"
                   disabled={readOnly}
                   value={parseDateSafely(field.value)}
                   onChange={(date) => field.onChange(formatDateSafely(date))}

@@ -40,9 +40,8 @@ import PersonalInfoTab from "./personal-info-tab"
 import EducationTab from "./education-tab"
 import HealthTab from "./health-tab"
 import VulnerabilityTab from "./vulnerability-tab"
-import { differenceInYears } from "date-fns"
 import type { DropdownData, FormData } from "../../types/formTypes"
-import { parseDateSafely } from "../../utils/dateUtils"
+import { calculateAge } from "@/utils/dateUtils"
 
 interface NNYACardProps {
   index: number
@@ -84,18 +83,6 @@ const NNYACard: React.FC<NNYACardProps> = ({
   const watchedField = watchedFields?.[index] || {}
   const fullName = `${watchedField.nombre || ""} ${watchedField.apellido || ""}`.trim()
   const hasName = fullName.length > 0
-
-  // Calculate age from birth date
-  const calculateAge = (birthDate: string | null) => {
-    if (!birthDate) return null
-    try {
-      const date = parseDateSafely(birthDate)
-      if (!date) return null
-      return differenceInYears(new Date(), date)
-    } catch (e) {
-      return null
-    }
-  }
 
   const age = calculateAge(watchedField.fechaNacimiento)
   const hasVulnerabilities = (watchedField.condicionesVulnerabilidad || []).length > 0

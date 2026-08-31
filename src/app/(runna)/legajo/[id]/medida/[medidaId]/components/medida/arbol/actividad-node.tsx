@@ -162,6 +162,7 @@ export const ActividadNode: React.FC<{ actividad: TActividadPlanTrabajo }> = ({ 
   const nombreActividad = actividad.subtipo_actividad_info?.nombre
     ? `${nombrePrincipal} — ${actividad.subtipo_actividad_info.nombre}`
     : nombrePrincipal
+  const isPendiente = actividad.estado === "PENDIENTE"
 
   return (
     <Accordion
@@ -188,8 +189,17 @@ export const ActividadNode: React.FC<{ actividad: TActividadPlanTrabajo }> = ({ 
               label={actividad.estado_display}
               size="small"
               color={estadoColor(actividad.estado)}
-              variant="outlined"
-              sx={{ height: 18, fontSize: "0.65rem" }}
+              variant={isPendiente ? "filled" : "outlined"}
+              sx={{
+                height: 24,
+                fontSize: "0.75rem",
+                fontWeight: 700,
+                ...(isPendiente && {
+                  bgcolor: "#8A4B08",
+                  color: "#fff",
+                  "&:hover": { bgcolor: "#713B05" },
+                }),
+              }}
             />
             <Chip
               label={ACTOR_LABELS[actividad.actor]}

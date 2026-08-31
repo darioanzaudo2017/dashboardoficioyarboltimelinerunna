@@ -19,7 +19,7 @@ import {
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { toast, ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
-import { NavigateNext, NavigateBefore, Send, WarningAmber } from "@mui/icons-material"
+import { NavigateNext, NavigateBefore, Send } from "@mui/icons-material"
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider"
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFnsV3"
 import { es } from "date-fns/locale"
@@ -32,6 +32,7 @@ import OficioJudicialMPEStep from "./steps/OficioJudicialMPEStep"
 import { CargaOficiosForm } from "./carga-oficios"
 import { submitFormData } from "./utils/api"
 import type { DropdownData, FormData } from "./types/formTypes"
+export type { FormData } from "./types/formTypes"
 import type { FormVariant, ObjetivoDemanda } from "./carga-oficios/types/carga-oficios.types"
 import { useDraftStore } from "./utils/userDraftStore"
 import { fetchDropdownData } from "./utils/fetchFormCase"
@@ -100,6 +101,7 @@ const getFormVariantFromObjetivo = (objetivo: ObjetivoDemanda | null | undefined
 interface MultiStepFormProps {
   initialData?: FormData
   readOnly?: boolean
+  mode?: "form" | "review"
   onSubmit: (data: FormData) => void
   id?: string
   form?: string
@@ -125,6 +127,7 @@ const FormSkeleton = () => {
 const MultiStepForm: React.FC<MultiStepFormProps> = ({
   initialData,
   readOnly = false,
+  mode = "form",
   onSubmit,
   id,
   form,
@@ -159,7 +162,8 @@ const MultiStepForm: React.FC<MultiStepFormProps> = ({
   // Get saved draft if it exists
   const savedDraft = getDraft(formId)
 
-  const isReadOnly = readOnly
+  const isReviewMode = mode === "review"
+  const isReadOnly = readOnly || isReviewMode
 
   const methods = useForm<FormData>({
     mode: "onChange",
@@ -273,7 +277,7 @@ const MultiStepForm: React.FC<MultiStepFormProps> = ({
     setActiveStep((prevActiveStep) => prevActiveStep - 1)
   }
 
-  const handleStepClick = async (stepIndex) => {
+  const handleStepClick = async (stepIndex: number) => {
     // Don't do anything if clicking the current step
     if (stepIndex === activeStep) return
 
@@ -354,7 +358,7 @@ const MultiStepForm: React.FC<MultiStepFormProps> = ({
   })
 
   // Add this new function to handle the final step button click
-  const handleFinalSubmit = (e) => {
+  const handleFinalSubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault() // Prevent default button behavior
     handleFormSubmit() // Call the form submission handler
   }
@@ -400,6 +404,14 @@ const MultiStepForm: React.FC<MultiStepFormProps> = ({
         .read-only-form .MuiFormControlLabel-root .MuiBox-root {
           background-color: transparent !important;
         }
+
+        .review-form .MuiFormLabel-asterisk {
+          display: none !important;
+        }
+
+        .review-form .MuiFormHelperText-root {
+          display: none !important;
+        }
       `
       document.head.appendChild(style)
 
@@ -438,19 +450,31 @@ const MultiStepForm: React.FC<MultiStepFormProps> = ({
 
   return (
     <FormProvider {...methods}>
-      <form onSubmit={handleFormSubmit} className={isReadOnly ? "read-only-form" : ""}>
+      <form
+        onSubmit={handleFormSubmit}
+        className={[isReadOnly ? "read-only-form" : "", isReviewMode ? "review-form" : ""]
+          .filter(Boolean)
+          .join(" ")}
+      >
         <Box sx={{ bgcolor: "background.paper", p: 3, borderBottom: "1px solid", borderColor: "divider" }}>
-          {/* Progress indicator */}
-          <Box sx={{ width: "100%", mb: 1 }}>
-            <LinearProgress
-              variant="determinate"
-              value={(activeStep / (currentSteps.length - 1)) * 100}
-              sx={{ height: 6, borderRadius: 3 }}
-            />
-          </Box>
+          {!isReviewMode && (
+            <Box sx={{ width: "100%", mb: 1 }}>
+              <LinearProgress
+                variant="determinate"
+                value={currentSteps.length > 1 ? (activeStep / (currentSteps.length - 1)) * 100 : 100}
+                sx={{ height: 6, borderRadius: 3 }}
+              />
+            </Box>
+          )}
+
+          {isReviewMode && (
+            <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: currentSteps.length > 1 ? 1 : 0 }}>
+              Secciones del registro
+            </Typography>
+          )}
 
           {/* Stepper */}
-          <Stepper
+          {(!isReviewMode || currentSteps.length > 1) && <Stepper
             activeStep={activeStep}
             alternativeLabel={!isMobile}
             orientation={isMobile ? "vertical" : "horizontal"}
@@ -471,7 +495,7 @@ const MultiStepForm: React.FC<MultiStepFormProps> = ({
               <Step key={step.label} sx={{ cursor: "pointer" }} onClick={() => handleStepClick(index)}>
                 <StepLabel>
                   {step.label}
-                  {!isMobile && (
+                  {!isMobile && !isReviewMode && (
                     <Typography variant="caption" display="block" color="text.secondary" sx={{ mt: 0.5 }}>
                       {step.description}
                     </Typography>
@@ -479,25 +503,24 @@ const MultiStepForm: React.FC<MultiStepFormProps> = ({
                 </StepLabel>
               </Step>
             ))}
-          </Stepper>
+          </Stepper>}
         </Box>
 
         {isReadOnly && (
           <Alert
-            severity="warning"
-            icon={<WarningAmber />}
+            severity="info"
             sx={{
               m: 3,
               borderRadius: 1,
-              backgroundColor: "warning.lighter",
+              backgroundColor: "info.lighter",
               "& .MuiAlert-message": {
-                color: "warning.dark",
+                color: "info.dark",
               },
             }}
           >
-            <Typography variant="subtitle2">Modo de solo lectura</Typography>
+            <Typography variant="subtitle2">Consulta de información</Typography>
             <Typography variant="body2">
-              Este formulario está en modo de solo lectura. No se pueden realizar modificaciones.
+              Los datos se muestran sin opciones de edición.
             </Typography>
           </Alert>
         )}
@@ -538,8 +561,22 @@ const MultiStepForm: React.FC<MultiStepFormProps> = ({
               {/* Standard Flow content steps */}
               {formVariant === "STANDARD" && !isOnObjetivoStep && (
                 <>
-                  {contentStepIndex === 0 && <Step1Form dropdownData={dropdownData} readOnly={isReadOnly} id={demandaId} />}
-                  {contentStepIndex === 1 && <Step2Form dropdownData={dropdownData} readOnly={isReadOnly} id={demandaId} />}
+                  {contentStepIndex === 0 && (
+                    <Step1Form
+                      control={methods.control}
+                      readOnly={isReadOnly}
+                      reviewMode={isReviewMode}
+                      id={demandaId}
+                    />
+                  )}
+                  {contentStepIndex === 1 && (
+                    <Step2Form
+                      control={methods.control}
+                      dropdownData={dropdownData}
+                      readOnly={isReadOnly}
+                      id={demandaId}
+                    />
+                  )}
                   {contentStepIndex === 2 && (
                     <Step3Form
                       dropdownData={dropdownData}
@@ -553,7 +590,7 @@ const MultiStepForm: React.FC<MultiStepFormProps> = ({
 
               {/* CARGA_OFICIOS Flow content step */}
               {formVariant === "CARGA_OFICIOS" && !isOnObjetivoStep && contentStepIndex === 0 && (
-                <CargaOficiosForm dropdownData={dropdownData} readOnly={isReadOnly} />
+                <CargaOficiosForm dropdownData={dropdownData} readOnly={isReadOnly} reviewMode={isReviewMode} />
               )}
 
               {/* OFICIO_JUDICIAL Flow content step */}
@@ -564,7 +601,7 @@ const MultiStepForm: React.FC<MultiStepFormProps> = ({
           )}
         </Box>
 
-        <Box
+        {(!isReviewMode || currentSteps.length > 1) && <Box
           sx={{
             display: "flex",
             justifyContent: "space-between",
@@ -588,7 +625,7 @@ const MultiStepForm: React.FC<MultiStepFormProps> = ({
 
           {/* Removed the draft saving indicator */}
 
-          <Button
+          {(!isReviewMode || activeStep < currentSteps.length - 1) && <Button
             variant="contained"
             color="primary"
             onClick={activeStep === currentSteps.length - 1 ? (isReadOnly ? () => {} : handleFinalSubmit) : handleNext}
@@ -609,8 +646,8 @@ const MultiStepForm: React.FC<MultiStepFormProps> = ({
                   ? "Enviando..."
                   : "Enviar"
               : "Siguiente"}
-          </Button>
-        </Box>
+          </Button>}
+        </Box>}
       </form>
       <ToastContainer
         position="top-right"

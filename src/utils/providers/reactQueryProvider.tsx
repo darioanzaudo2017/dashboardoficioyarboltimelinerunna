@@ -11,7 +11,7 @@ const ReactQueryProvider = ({ children }: { children: React.ReactNode }) => {
           queries: {
             // Caching configuration
             staleTime: 2 * 60 * 1000, // Consider data fresh for 2 minutes
-            cacheTime: 5 * 60 * 1000, // Keep unused data in cache for 5 minutes
+            gcTime: 5 * 60 * 1000, // Keep unused data in cache for 5 minutes
 
             // Refetch configuration
             refetchOnWindowFocus: false, // Don't refetch when window regains focus

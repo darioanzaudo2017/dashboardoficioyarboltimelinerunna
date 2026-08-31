@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useRef, useState, useEffect } from "react"
+import { useState } from "react"
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -65,7 +65,11 @@ export function EnviarRespuestaForm({ demandaId }: EnviarRespuestaFormProps) {
   const { openUrl: openPdfUrl, PdfModal } = usePdfViewer()
 
   // Fetch data using TanStack Query
-  const { data: respuestasData, isLoading: isLoadingRespuestas } = useApiQuery<Respuesta[]>(
+  const {
+    data: respuestasData,
+    isLoading: isLoadingRespuestas,
+    refetch: fetchRespuestas,
+  } = useApiQuery<Respuesta[]>(
     "respuesta/",
     { demanda: demandaId }
   )
@@ -318,7 +322,7 @@ export function EnviarRespuestaForm({ demandaId }: EnviarRespuestaFormProps) {
           )}
         </Box>
 
-        {isLoading ? (
+        {isLoadingRespuestas ? (
           <Box sx={{ display: "flex", justifyContent: "center", p: 2 }}>
             <CircularProgress />
           </Box>
@@ -341,10 +345,10 @@ export function EnviarRespuestaForm({ demandaId }: EnviarRespuestaFormProps) {
                   field: "fecha_y_hora",
                   headerName: "Fecha y Hora",
                   width: 180,
-                  valueFormatter: (params) => {
-                    if (!params.value || typeof params.value !== "string") return "Fecha inválida"
+                  valueFormatter: (value: string | null | undefined) => {
+                    if (!value || typeof value !== "string") return "Fecha inválida"
 
-                    let dateString = params.value
+                    let dateString = value
 
                     // Si viene con microsegundos extra, recortarlos a 3 dígitos
                     // Esto convierte, por ejemplo, 2025-03-19T18:06:55.787656Z -> 2025-03-19T18:06:55.787Z
@@ -357,7 +361,7 @@ export function EnviarRespuestaForm({ demandaId }: EnviarRespuestaFormProps) {
                     try {
                       const date = new Date(dateString)
                       if (isNaN(date.getTime())) {
-                        console.error("Fecha inválida:", params.value)
+                        console.error("Fecha inválida:", value)
                         return "Fecha inválida"
                       }
                       // Formatear en español
@@ -369,7 +373,7 @@ export function EnviarRespuestaForm({ demandaId }: EnviarRespuestaFormProps) {
                         minute: "2-digit",
                       })
                     } catch (error) {
-                      console.error("Error al formatear fecha:", error, params.value)
+                      console.error("Error al formatear fecha:", error, value)
                       return "Fecha inválida"
                     }
                   },
@@ -463,8 +467,8 @@ export function EnviarRespuestaForm({ demandaId }: EnviarRespuestaFormProps) {
                   field: "etiqueta",
                   headerName: "Etiqueta",
                   width: 150,
-                  valueGetter: (params) => {
-                    const etiquetaId = params.value as number | undefined
+                  valueGetter: (value: number | null | undefined) => {
+                    const etiquetaId = value ?? undefined
                     if (!etiquetaId) return ""
                     const etiqueta = etiquetas.find((e) => e.id === etiquetaId)
                     return etiqueta ? etiqueta.nombre : `ID: ${etiquetaId}`

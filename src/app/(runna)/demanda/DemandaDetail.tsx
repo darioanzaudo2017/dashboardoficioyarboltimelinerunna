@@ -565,6 +565,7 @@ export default function DemandaDetail({ params, onClose, isFullPage = false }: D
                   // carga lo básico. Sólo bloqueamos en estados terminales
                   // (ARCHIVADA, ADMITIDA, PENDIENTE_AUTORIZACION, SUBIDO_A_PODER_JUDICIAL).
                   readOnly={isEditingBlocked}
+                  mode={isEditingBlocked ? "review" : "form"}
                   id={params.id}
                   demandaId={Number.parseInt(params.id)}
                 />

@@ -46,7 +46,7 @@ const CircuitoSelector: React.FC<CircuitoSelectorProps> = ({
           color: error ? "error.main" : "text.secondary",
         }}
       >
-        Circuito <span style={{ color: "#d32f2f" }}>*</span>
+        Circuito {!disabled && <span style={{ color: "#d32f2f" }}>*</span>}
       </Typography>
 
       <ToggleButtonGroup

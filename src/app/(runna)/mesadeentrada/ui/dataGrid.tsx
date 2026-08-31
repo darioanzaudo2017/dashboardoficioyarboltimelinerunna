@@ -108,6 +108,7 @@ const CustomToolbar = ({ onExportXlsx }: { onExportXlsx: () => void }) => {
       </Button>
       <IconButton
         size="small"
+        aria-label="Actualizar Mesa de Entradas"
         sx={{
           ml: "auto",
           "&:hover": {
@@ -1548,6 +1549,7 @@ const DemandaTableContent: React.FC = () => {
           <IconButton
             size="small"
             onClick={() => refetch()}
+            aria-label="Actualizar Mesa de Entradas"
             sx={{
               color: institutionalColors.azulPrincipal,
               border: `1px solid ${rgba.primary(0.15)}`,

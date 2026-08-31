@@ -120,28 +120,27 @@ const LoadingSkeleton: React.FC = () => {
 interface CargaOficiosFormInternalProps {
   dropdownData: DropdownData
   readOnly?: boolean
+  reviewMode?: boolean
 }
 
 const CargaOficiosForm: React.FC<CargaOficiosFormInternalProps> = ({
   dropdownData,
   readOnly = false,
+  reviewMode = false,
 }) => {
   const { control, watch, setValue } = useFormContext<CargaOficiosFormData>()
 
   // Get CARGA_OFICIOS specific dropdowns from main dropdownData
   const {
     categorias,
-    tipos,
     isLoading: isLoadingDropdowns,
     isError: isDropdownError,
-    getTiposByCategoria,
   } = useCargaOficiosDropdowns({
     categorias: dropdownData.categoria_informacion_judicial || [],
     tipos: dropdownData.tipo_informacion_judicial || [],
   })
 
   // Watch form values
-  const watchedCircuito = watch("tipo_medida_evaluado")
   const watchedCategoria = watch("categoria_informacion_judicial")
   const watchedAdjuntos = watch("adjuntos") || []
 
@@ -178,19 +177,6 @@ const CargaOficiosForm: React.FC<CargaOficiosFormInternalProps> = ({
     },
   })
 
-  // Sync adjuntos with form state
-  useEffect(() => {
-    if (JSON.stringify(watchedAdjuntos) !== JSON.stringify(adjuntosManager.files)) {
-      // Form was updated externally (e.g., draft restore)
-      // This would require reinitializing the adjuntos manager
-    }
-  }, [watchedAdjuntos])
-
-  // Filtered tipos based on selected categoria
-  const filteredTipos = useMemo(() => {
-    return getTiposByCategoria(watchedCategoria)
-  }, [watchedCategoria, getTiposByCategoria])
-
   // Filter bloques_datos_remitente to show only judicial types (12 IDs)
   // CARGA_OFICIOS only allows judicial organizations as origin
   const bloquesJudiciales = useMemo(() => {
@@ -213,8 +199,7 @@ const CargaOficiosForm: React.FC<CargaOficiosFormInternalProps> = ({
 
   return (
     <Box sx={{ maxWidth: "1200px", mx: "auto", p: 2 }}>
-      {/* Header */}
-      <Paper
+      {!reviewMode && <Paper
         elevation={0}
         sx={{
           p: 3,
@@ -234,7 +219,7 @@ const CargaOficiosForm: React.FC<CargaOficiosFormInternalProps> = ({
           Complete la información del oficio judicial. Los campos marcados con{" "}
           <strong>*</strong> son obligatorios.
         </Typography>
-      </Paper>
+      </Paper>}
 
       {/* Section 1: Clasificación */}
       <FormSection title="Clasificación de la Medida" icon={CategoryIcon}>
@@ -265,7 +250,7 @@ const CargaOficiosForm: React.FC<CargaOficiosFormInternalProps> = ({
               rules={{ required: "La fecha del oficio es obligatoria" }}
               render={({ field, fieldState: { error } }) => (
                 <DatePicker
-                  label="Fecha del Oficio *"
+                  label="Fecha del Oficio"
                   disabled={readOnly}
                   value={parseDateSafely(field.value)}
                   onChange={(date) => field.onChange(formatDateSafely(date))}
@@ -290,7 +275,7 @@ const CargaOficiosForm: React.FC<CargaOficiosFormInternalProps> = ({
               rules={{ required: "La fecha de ingreso a SENAF es obligatoria" }}
               render={({ field, fieldState: { error } }) => (
                 <DatePicker
-                  label="Fecha Ingreso SENAF *"
+                  label="Fecha Ingreso SENAF"
                   disabled={readOnly}
                   value={parseDateSafely(field.value)}
                   onChange={(date) => field.onChange(formatDateSafely(date))}
@@ -334,7 +319,7 @@ const CargaOficiosForm: React.FC<CargaOficiosFormInternalProps> = ({
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      label="Tipo de Oficio *"
+                      label="Tipo de Oficio"
                       required
                       error={!!error}
                       helperText={
@@ -401,16 +386,16 @@ const CargaOficiosForm: React.FC<CargaOficiosFormInternalProps> = ({
       </FormSection>
 
       {/* Section 5: Vínculos con Legajos y Medidas */}
-      <FormSection title="Vínculos con Legajos y Medidas" icon={LinkIcon}>
-        <VinculosManager
-          dropdownData={dropdownData}
-          readOnly={readOnly}
-          oficioMode
-        />
-      </FormSection>
+      {reviewMode ? (
+        <VinculosManager dropdownData={dropdownData} readOnly oficioMode />
+      ) : (
+        <FormSection title="Vínculos con Legajos y Medidas" icon={LinkIcon}>
+          <VinculosManager dropdownData={dropdownData} readOnly={readOnly} oficioMode />
+        </FormSection>
+      )}
 
       {/* Section 6: Adjuntos */}
-      <FormSection title="Documentos Adjuntos" icon={AttachFileIcon}>
+      {reviewMode ? (
         <AdjuntosSection
           files={adjuntosManager.files}
           onFilesChange={(files) => {
@@ -424,7 +409,21 @@ const CargaOficiosForm: React.FC<CargaOficiosFormInternalProps> = ({
           readOnly={readOnly}
           isUploading={adjuntosManager.isUploading}
         />
-      </FormSection>
+      ) : (
+        <FormSection title="Documentos Adjuntos" icon={AttachFileIcon}>
+          <AdjuntosSection
+            files={adjuntosManager.files}
+            onFilesChange={(files) => {
+              adjuntosManager.clearFiles()
+              files.forEach((file) => {
+                if (file instanceof File) adjuntosManager.addFile(file)
+              })
+            }}
+            readOnly={readOnly}
+            isUploading={adjuntosManager.isUploading}
+          />
+        </FormSection>
+      )}
     </Box>
   )
 }

@@ -48,21 +48,15 @@ export const useFilterOptions = (): FilterOptions => {
         queryKey: ['filter-options', 'zonas'],
         queryFn: () => get<FilterOption[]>("zonas/"),
         staleTime: 10 * 60 * 1000, // Consider fresh for 10 minutes
-        cacheTime: 30 * 60 * 1000, // Keep in cache for 30 minutes
+        gcTime: 30 * 60 * 1000, // Keep in cache for 30 minutes
         retry: 1,
-        onError: (error: any) => {
-          console.error("Error fetching zonas:", error)
-        },
       },
       {
         queryKey: ['filter-options', 'localidades'],
         queryFn: () => get<FilterOption[]>("localidad/"),
         staleTime: 10 * 60 * 1000,
-        cacheTime: 30 * 60 * 1000,
+        gcTime: 30 * 60 * 1000,
         retry: 1,
-        onError: (error: any) => {
-          console.error("Error fetching localidades:", error)
-        },
       },
       // TODO: Add other endpoints when available
       // - jefes zonales

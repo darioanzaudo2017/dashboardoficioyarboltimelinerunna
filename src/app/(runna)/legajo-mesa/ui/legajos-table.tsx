@@ -149,6 +149,7 @@ const CustomToolbar = ({ onExportXlsx, onRefresh }: { onExportXlsx: () => void; 
         <IconButton
           size="small"
           onClick={onRefresh}
+          aria-label="Actualizar bandeja de legajos"
           sx={{
             color: "#94a3b8",
             "&:hover": { bgcolor: "#f1f5f9", color: "#475569" },

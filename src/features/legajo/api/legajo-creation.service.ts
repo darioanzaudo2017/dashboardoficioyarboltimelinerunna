@@ -3,8 +3,8 @@
  * Endpoints: POST /api/legajos/, PUT /api/evaluaciones/{id}/autorizar/
  */
 
-import { create } from '@/app/api/apiService'
 import axiosInstance from '@/app/api/utils/axiosInstance'
+import axios from 'axios'
 import { toast } from 'react-toastify'
 import type {
   CreateLegajoManualRequest,
@@ -12,6 +12,10 @@ import type {
   AutorizarAdmisionRequest,
   AutorizarAdmisionResponse,
 } from '../types/legajo-creation.types'
+
+interface ApiErrorPayload {
+  detail?: string | Record<string, unknown>
+}
 
 /**
  * Create legajo manually
@@ -24,12 +28,11 @@ export const createLegajo = async (
   data: CreateLegajoManualRequest
 ): Promise<CreateLegajoResponse> => {
   try {
-    console.log('Creating legajo with data:', data)
+    const { data: response } = await axiosInstance.post<CreateLegajoResponse>('legajos/', data)
 
-    // Call API - create() already adds trailing slash
-    const response = await create<CreateLegajoResponse>('legajos/', data)
-
-    console.log('Legajo created successfully:', response)
+    if (!Number.isInteger(response?.id) || response.id <= 0 || !response.numero?.trim()) {
+      throw new Error('El servidor no confirmó la creación del legajo con un identificador y número válidos')
+    }
 
     // Show success toast
     toast.success(`Legajo ${response.numero} creado exitosamente`, {
@@ -43,19 +46,21 @@ export const createLegajo = async (
     })
 
     return response
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const apiError = axios.isAxiosError<ApiErrorPayload>(error) ? error : null
     console.error('Error creating legajo:', error)
     console.error('Error details:', {
-      message: error?.message,
-      response: error?.response?.data,
-      status: error?.response?.status,
+      message: error instanceof Error ? error.message : String(error),
+      response: apiError?.response?.data,
+      status: apiError?.response?.status,
     })
 
     // Handle specific error cases
-    if (error.response?.status === 409) {
+    if (apiError?.response?.status === 409) {
       // Conflict - NNyA already has legajo
-      const errorDetail = error.response?.data?.detail || 'El NNyA ya tiene un legajo asignado'
-      toast.error(errorDetail, {
+      const errorDetail = apiError.response.data?.detail
+      const message = typeof errorDetail === 'string' ? errorDetail : 'El NNyA ya tiene un legajo asignado'
+      toast.error(message, {
         position: 'top-center',
         autoClose: 5000,
         hideProgressBar: false,
@@ -64,10 +69,11 @@ export const createLegajo = async (
         draggable: true,
         theme: 'colored',
       })
-    } else if (error.response?.status === 403) {
+    } else if (apiError?.response?.status === 403) {
       // Forbidden - Permission denied
-      const errorDetail = error.response?.data?.detail || 'No tiene permisos para crear legajos en esta zona'
-      toast.error(errorDetail, {
+      const errorDetail = apiError.response.data?.detail
+      const message = typeof errorDetail === 'string' ? errorDetail : 'No tiene permisos para crear legajos en esta zona'
+      toast.error(message, {
         position: 'top-center',
         autoClose: 5000,
         hideProgressBar: false,
@@ -76,9 +82,9 @@ export const createLegajo = async (
         draggable: true,
         theme: 'colored',
       })
-    } else if (error.response?.status === 400) {
+    } else if (apiError?.response?.status === 400) {
       // Bad request - Validation error
-      const errorDetail = error.response?.data?.detail || 'Error de validación en los datos'
+      const errorDetail = apiError.response.data?.detail || 'Error de validación en los datos'
       const errorMsg = typeof errorDetail === 'string'
         ? errorDetail
         : 'Por favor, verifique los datos ingresados'
@@ -94,7 +100,10 @@ export const createLegajo = async (
       })
     } else {
       // Generic error
-      toast.error('Error al crear legajo. Por favor, intente nuevamente.', {
+      const message = error instanceof Error && error.message.startsWith('El servidor no confirmó')
+        ? error.message
+        : 'Error al crear legajo. Por favor, intente nuevamente.'
+      toast.error(message, {
         position: 'top-center',
         autoClose: 5000,
         hideProgressBar: false,
@@ -122,8 +131,6 @@ export const autorizarAdmisionYCrearLegajos = async (
   data: AutorizarAdmisionRequest = {}
 ): Promise<AutorizarAdmisionResponse> => {
   try {
-    console.log(`Authorizing admision for demanda ${demandaId}:`, data)
-
     // Use axiosInstance directly because the put() wrapper appends /${id}/ to the URL,
     // but the demandaId is already part of the endpoint path
     const { data: response } = await axiosInstance.put<AutorizarAdmisionResponse>(
@@ -135,17 +142,16 @@ export const autorizarAdmisionYCrearLegajos = async (
       }
     )
 
-    console.log('Admision authorized successfully:', response)
-
     // Check if response has legajos_creados field (expected structure)
     // or if it's just an evaluation response (actual structure)
     // Note: apiService.put() returns data directly, not wrapped in response.data
     if (response.legajos_creados !== undefined) {
       // Expected response structure with legajos
-      const { total_creados, total_existentes } = response
-      const successMsg = total_existentes > 0
-        ? `${total_creados} legajo(s) creado(s), ${total_existentes} vinculado(s) a legajos existentes`
-        : `${total_creados} legajo(s) creado(s) exitosamente`
+      const totalCreados = response.total_creados ?? response.legajos_creados.length
+      const totalExistentes = response.total_existentes ?? response.legajos_existentes?.length ?? 0
+      const successMsg = totalExistentes > 0
+        ? `${totalCreados} legajo(s) creado(s), ${totalExistentes} vinculado(s) a legajos existentes`
+        : `${totalCreados} legajo(s) creado(s) exitosamente`
 
       toast.success(successMsg, {
         position: 'top-center',
@@ -158,7 +164,7 @@ export const autorizarAdmisionYCrearLegajos = async (
       })
 
       // Show individual legajo creation toasts
-      response.legajos_creados.forEach((legajo: any) => {
+      response.legajos_creados.forEach((legajo) => {
         toast.info(`Legajo ${legajo.numero} creado para ${legajo.nnya.nombre} ${legajo.nnya.apellido}`, {
           position: 'top-right',
           autoClose: 3000,
@@ -186,30 +192,32 @@ export const autorizarAdmisionYCrearLegajos = async (
     }
 
     return response
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const apiError = axios.isAxiosError<ApiErrorPayload>(error) ? error : null
     console.error(`Error authorizing admision for demanda ${demandaId}:`, error)
     console.error('Error details:', {
-      message: error?.message,
-      response: error?.response?.data,
-      status: error?.response?.status,
+      message: error instanceof Error ? error.message : String(error),
+      response: apiError?.response?.data,
+      status: apiError?.response?.status,
     })
 
     // Handle specific error cases
-    if (error.response?.status === 403) {
+    if (apiError?.response?.status === 403) {
       toast.error('Solo Directores pueden autorizar admisión', {
         position: 'top-center',
         autoClose: 5000,
         theme: 'colored',
       })
-    } else if (error.response?.status === 404) {
+    } else if (apiError?.response?.status === 404) {
       toast.error('Demanda o evaluación no encontrada', {
         position: 'top-center',
         autoClose: 5000,
         theme: 'colored',
       })
-    } else if (error.response?.status === 400) {
-      const errorDetail = error.response?.data?.detail || 'Error en la validación de datos'
-      toast.error(errorDetail, {
+    } else if (apiError?.response?.status === 400) {
+      const errorDetail = apiError.response.data?.detail
+      const message = typeof errorDetail === 'string' ? errorDetail : 'Error en la validación de datos'
+      toast.error(message, {
         position: 'top-center',
         autoClose: 5000,
         theme: 'colored',

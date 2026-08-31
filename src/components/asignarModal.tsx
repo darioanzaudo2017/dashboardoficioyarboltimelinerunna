@@ -5,7 +5,6 @@ import { useState, useEffect, useMemo } from "react"
 import {
   Box,
   Typography,
-  Button,
   FormControl,
   FormControlLabel,
   Switch,
@@ -29,12 +28,7 @@ import {
 import { create, get } from "@/app/api/apiService"
 import { useConditionalData, extractArray } from "@/hooks/useApiQuery"
 import { toast } from "react-toastify"
-
-// Function to get the current user's ID
-function getCurrentUserId(): number {
-  // Replace this with your actual method of getting the current user's ID
-  return 1 // Temporary placeholder, replace with actual user ID
-}
+import { useUser } from "@/utils/auth/userZustand"
 
 interface AsignarModalProps {
   open: boolean
@@ -95,6 +89,7 @@ interface DemandaZona {
 }
 
 const AsignarModal: React.FC<AsignarModalProps> = ({ open, onClose, demandaId, onSuccess }) => {
+  const currentUser = useUser((state) => state.user)
   const [value, setValue] = useState(0)
   const [selectedZona, setSelectedZona] = useState<number | null>(null)
   const [comentarios, setComentarios] = useState("")
@@ -131,8 +126,6 @@ const AsignarModal: React.FC<AsignarModalProps> = ({ open, onClose, demandaId, o
   // Extract data from response (memoize to prevent infinite loops)
   const zonas = useMemo(() => mainData?.zonas || [], [mainData?.zonas])
   const demandaZonas = useMemo(() => mainData?.demanda_zonas || [], [mainData?.demanda_zonas])
-  const users = useMemo(() => mainData?.users || [], [mainData?.users])
-
   // Obtener la última demanda zona activa
   const lastActiveDemandaZona = useMemo(() => {
     // Filtrar las demandas activas y ordenarlas por ID (asumiendo que IDs más altos son más recientes)
@@ -235,7 +228,9 @@ const AsignarModal: React.FC<AsignarModalProps> = ({ open, onClose, demandaId, o
           esta_activo: true,
           recibido: true,
           comentarios: comentarios,
-          enviado_por: getCurrentUserId(),
+          // El backend debe tomar el actor de la sesión. Se conserva el campo solo
+          // cuando existe una identidad autenticada para compatibilidad transitoria.
+          ...(currentUser?.id ? { enviado_por: currentUser.id } : {}),
           recibido_por: null,
           zona: selectedZona,
           user_responsable: selectedUsers.length === 1 ? selectedUsers[0] : null,
@@ -347,7 +342,6 @@ const AsignarModal: React.FC<AsignarModalProps> = ({ open, onClose, demandaId, o
                         <TextField {...params} placeholder="Seleccione una zona" size="small" fullWidth />
                       )}
                       disabled={isLoading}
-                      disableClearable
                     />
                   </FormControl>
 

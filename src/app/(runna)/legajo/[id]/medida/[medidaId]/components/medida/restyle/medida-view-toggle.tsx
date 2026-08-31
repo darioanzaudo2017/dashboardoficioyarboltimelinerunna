@@ -48,8 +48,9 @@ interface MedidaViewToggleProps {
 
 export const MedidaViewToggle: React.FC<MedidaViewToggleProps> = ({ mode, onChange }) => {
   return (
-    <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+    <Box sx={{ display: "flex", justifyContent: { xs: "stretch", sm: "flex-end" }, mb: 2, width: { xs: "100%", sm: "auto" } }}>
       <ToggleButtonGroup
+        aria-label="Vista del detalle de la medida"
         value={mode}
         exclusive
         size="small"
@@ -57,21 +58,23 @@ export const MedidaViewToggle: React.FC<MedidaViewToggleProps> = ({ mode, onChan
           if (next) onChange(next)
         }}
         sx={{
+          width: { xs: "100%", sm: "auto" },
           "& .MuiToggleButton-root": {
             textTransform: "none",
             fontWeight: 600,
             fontSize: "0.8rem",
             px: 1.5,
             gap: 0.75,
+            flex: { xs: 1, sm: "initial" },
           },
         }}
       >
-        <ToggleButton value="nuevo">
+        <ToggleButton value="nuevo" aria-label="Mostrar vista resumida de la medida">
           <AutoAwesomeIcon sx={{ fontSize: 16 }} />
           Vista nueva
         </ToggleButton>
-        <Tooltip title="Acciones de flujo de trabajo (apertura, prórroga, cese)">
-          <ToggleButton value="clasico">
+        <Tooltip title="Mostrar la vista clásica del detalle">
+          <ToggleButton value="clasico" aria-label="Mostrar vista clásica de la medida">
             <ViewListIcon sx={{ fontSize: 16 }} />
             Vista clásica
           </ToggleButton>

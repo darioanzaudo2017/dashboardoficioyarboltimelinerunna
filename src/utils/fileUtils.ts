@@ -54,7 +54,16 @@ export const formatFileSize = (bytes: number, decimals: number = 2): string => {
  * getFileExtension("noextension") // ""
  */
 export const getFileExtension = (filename: string): string => {
-  return filename.split(".").pop()?.toLowerCase() || ""
+  const basename = filename.trim().split(/[\\/]/).pop() || ""
+  const lastDot = basename.lastIndexOf(".")
+
+  // A leading dot denotes a hidden file, not an extension. A trailing dot does
+  // not provide an extension either.
+  if (lastDot <= 0 || lastDot === basename.length - 1) {
+    return ""
+  }
+
+  return basename.slice(lastDot + 1).toLowerCase()
 }
 
 /**

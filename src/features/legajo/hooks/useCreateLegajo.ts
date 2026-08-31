@@ -28,8 +28,6 @@ export const useCreateLegajo = () => {
     mutationFn: (data: CreateLegajoManualRequest) => createLegajo(data),
 
     onSuccess: (response) => {
-      console.log('Legajo created successfully, invalidating queries and navigating')
-
       track(AnalyticsEvent.LEGAJO_CREADO, { legajo_id: response.id })
 
       // Invalidate legajos queries to refresh lists
@@ -43,7 +41,7 @@ export const useCreateLegajo = () => {
       router.push(`/legajo/${response.id}`)
     },
 
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       console.error('Mutation error in useCreateLegajo:', error)
       // Error toasts are already handled in the service
       // Additional error handling can be added here if needed
@@ -64,9 +62,7 @@ export const useAutorizarAdmision = () => {
         m.autorizarAdmisionYCrearLegajos(demandaId)
       ),
 
-    onSuccess: (response, variables) => {
-      console.log('Admision authorized successfully:', response)
-
+    onSuccess: (_response, variables) => {
       track(AnalyticsEvent.ADMISION_AUTORIZADA, { demanda_id: variables.demandaId })
 
       // Invalidate multiple queries
@@ -78,7 +74,7 @@ export const useAutorizarAdmision = () => {
       // This can be handled in the component using this hook
     },
 
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       console.error('Error in useAutorizarAdmision:', error)
       // Error handling done in service
     },

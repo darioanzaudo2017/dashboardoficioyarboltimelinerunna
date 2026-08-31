@@ -22,7 +22,7 @@ import { create } from "@/app/api/apiService"
 import axiosInstance from "@/app/api/utils/axiosInstance"
 import { useUser } from "@/utils/auth/userZustand"
 import { fetchUsuarios } from "@/app/(runna)/legajo-mesa/api/legajo-asignacion-api-service"
-import type { Usuario } from "@/app/(runna)/legajo-mesa/types/asignacion-types"
+import { normalizeApiText } from "@/components/evaluacion/utils/evaluacion-data-mappers"
 
 // Dynamic imports para evitar errores SSR con Next.js
 const DownloadPDFButton = dynamic(() => import("./pdf/download-pdf-button"), {
@@ -44,13 +44,13 @@ const DownloadDocxButton = dynamic(() => import("./pdf/download-docx-button"), {
 })
 
 interface ActionButtonsProps {
-  generatePDF: (data: any) => Promise<any>
   data: any
   onPDFGenerated?: (blob: Blob, fileName: string) => void
   // Add these new props
   descripcionSituacion?: string
   valoracionProfesional?: string
   justificacionTecnico?: string
+  justificacionDirector?: string
   demandaId?: number | null
   nnyaIds?: (string | number)[]
   adjuntos?: any[]
@@ -99,12 +99,12 @@ const derivarCargo = (usuario: any): string => {
 }
 
 export default function ActionButtons({
-  generatePDF,
   data,
   onPDFGenerated,
   descripcionSituacion,
   valoracionProfesional,
   justificacionTecnico,
+  justificacionDirector,
   demandaId,
   nnyaIds,
   adjuntos = [],
@@ -250,9 +250,20 @@ export default function ActionButtons({
       console.log("New files from FileManagement:", newFiles.length)
 
       // Get user data for all authorization actions
-      const localidad_usuario = data?.InformacionGeneral?.Localidad || "string"
-      const nombre_usuario = data?.InformacionGeneral?.NombreApellido || "string"
-      const rol_usuario = data?.InformacionGeneral?.CargoFuncion || "string"
+      const localidad_usuario = normalizeApiText(data?.InformacionGeneral?.Localidad)
+      const nombre_usuario =
+        [user?.first_name, user?.last_name].map(normalizeApiText).filter(Boolean).join(" ") ||
+        normalizeApiText(user?.username) ||
+        normalizeApiText(data?.InformacionGeneral?.NombreApellido)
+      const rol_usuario = (user ? derivarCargo(user) : "") || normalizeApiText(data?.InformacionGeneral?.CargoFuncion)
+
+      if (!normalizeApiText(descripcionSituacion) || !normalizeApiText(valoracionProfesional)) {
+        toast.warning("Completá la descripción de la situación y la valoración profesional antes de continuar", {
+          position: "top-center",
+          autoClose: 4000,
+        })
+        return
+      }
 
       if (action === "autorizar tomar medida") {
         if (selectedChildrenIds.length === 0) {
@@ -286,9 +297,9 @@ export default function ActionButtons({
         })
 
         // Append all other fields
-        formData.append("descripcion_de_la_situacion", descripcionSituacion || "Blank")
-        formData.append("valoracion_profesional_final", valoracionProfesional || "Blank")
-        formData.append("justificacion_tecnico", justificacionTecnico || "Blank")
+        formData.append("descripcion_de_la_situacion", normalizeApiText(descripcionSituacion))
+        formData.append("valoracion_profesional_final", normalizeApiText(valoracionProfesional))
+        formData.append("justificacion_tecnico", normalizeApiText(justificacionTecnico))
         formData.append("solicitud_tecnico", "TOMAR MEDIDA")
         formData.append("tipo_medida_evaluado", tipoMedidaEvaluado)
         formData.append("demanda", String(demandaId))
@@ -329,9 +340,9 @@ export default function ActionButtons({
         })
 
         // Append all other fields
-        formData.append("descripcion_de_la_situacion", descripcionSituacion || "Blank")
-        formData.append("valoracion_profesional_final", valoracionProfesional || "Blank")
-        formData.append("justificacion_tecnico", justificacionTecnico || "Blank")
+        formData.append("descripcion_de_la_situacion", normalizeApiText(descripcionSituacion))
+        formData.append("valoracion_profesional_final", normalizeApiText(valoracionProfesional))
+        formData.append("justificacion_tecnico", normalizeApiText(justificacionTecnico))
         formData.append("solicitud_tecnico", "ARCHIVAR")
         formData.append("demanda", String(demandaId))
         formData.append("localidad_usuario", localidad_usuario)
@@ -360,11 +371,14 @@ export default function ActionButtons({
         const formData = new FormData()
 
         // Append all fields
-        formData.append("descripcion_de_la_situacion", descripcionSituacion || "El niño refiere problemas de alimentación y estudio.")
-        formData.append("valoracion_profesional_final", valoracionProfesional || "Se propone acompañamiento psicosocial.")
-        formData.append("justificacion_tecnico", justificacionTecnico || "Informe de trabajador social adjunto.")
-        formData.append("justificacion_director", "Aprobado por coordinación.")
-        formData.append("solicitud_tecnico", "TOMAR MEDIDA")
+        formData.append("descripcion_de_la_situacion", normalizeApiText(descripcionSituacion))
+        formData.append("valoracion_profesional_final", normalizeApiText(valoracionProfesional))
+        formData.append("justificacion_tecnico", normalizeApiText(justificacionTecnico))
+        formData.append("justificacion_director", normalizeApiText(justificacionDirector))
+        const solicitudTecnico = normalizeApiText(data?.SolicitudTecnico)
+        if (solicitudTecnico) {
+          formData.append("solicitud_tecnico", solicitudTecnico)
+        }
         formData.append("decision_director", action === "autorizar" ? "AUTORIZAR" : "NO AUTORIZAR")
         formData.append("demanda", String(demandaId))
         formData.append("localidad_usuario", localidad_usuario)

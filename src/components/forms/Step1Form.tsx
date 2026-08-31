@@ -170,12 +170,12 @@ const FormSection = ({
   )
 }
 
-interface Step1FormProps {
-  dropdownData: DropdownData
+const Step1Form: React.FC<{
+  control: Control<FormData>
   readOnly?: boolean
-}
-
-const Step1Form: React.FC<{ control: Control<FormData>; readOnly?: boolean; id?: number }> = ({ control, readOnly = false, id }) => {
+  reviewMode?: boolean
+  id?: number
+}> = ({ control, readOnly = false, reviewMode = false, id }) => {
   // PDF Viewer hook
   const { openUrl: openPdfUrl, PdfModal } = usePdfViewer()
 
@@ -385,14 +385,16 @@ const Step1Form: React.FC<{ control: Control<FormData>; readOnly?: boolean; id?:
   return (
     <>
       <Box sx={{ maxWidth: "1200px", mx: "auto", p: 2 }}>
-        <Paper elevation={0} sx={{ p: 3, mb: 4, borderRadius: "12px", bgcolor: "primary.light", color: "white" }}>
-          <Typography variant="h5" gutterBottom>
-            Registro de Demanda
-          </Typography>
-          <Typography variant="body2">
-            Complete todos los campos requeridos para registrar una nueva demanda en el sistema.
-          </Typography>
-        </Paper>
+        {!reviewMode && (
+          <Paper elevation={0} sx={{ p: 3, mb: 4, borderRadius: "12px", bgcolor: "primary.light", color: "white" }}>
+            <Typography variant="h5" gutterBottom>
+              Registro de Demanda
+            </Typography>
+            <Typography variant="body2">
+              Complete todos los campos requeridos para registrar una nueva demanda en el sistema.
+            </Typography>
+          </Paper>
+        )}
 
         {/* Sección de Información Básica */}
         <FormSection title="Información Básica">

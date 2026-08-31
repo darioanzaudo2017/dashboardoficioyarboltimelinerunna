@@ -13,22 +13,19 @@ export function validateSearchMinimumData(data: Partial<DuplicateSearchRequest>)
   errors: string[]
 } {
   const errors: string[] = []
+  const nombre = data.nombre?.trim() || ""
+  const apellido = data.apellido?.trim() || ""
 
   // Nombre y apellido son obligatorios
-  if (!data.nombre || data.nombre.trim().length === 0) {
+  if (!nombre) {
     errors.push("El nombre es obligatorio para buscar duplicados")
-  }
-
-  if (!data.apellido || data.apellido.trim().length === 0) {
-    errors.push("El apellido es obligatorio para buscar duplicados")
-  }
-
-  // Validar longitud mínima
-  if (data.nombre && data.nombre.trim().length < 2) {
+  } else if (nombre.length < 2) {
     errors.push("El nombre debe tener al menos 2 caracteres")
   }
 
-  if (data.apellido && data.apellido.trim().length < 2) {
+  if (!apellido) {
+    errors.push("El apellido es obligatorio para buscar duplicados")
+  } else if (apellido.length < 2) {
     errors.push("El apellido debe tener al menos 2 caracteres")
   }
 

@@ -69,20 +69,28 @@ export default function OficiosPage() {
   const totalOficiosEncontrados = resultados.reduce((acc, r) => acc + r.oficios.length, 0)
 
   return (
-    <Box sx={{ p: 3, maxWidth: 1000, mx: "auto" }}>
-      <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>
+    <Box component="main" sx={{ p: { xs: 2, sm: 3 }, maxWidth: 1000, mx: "auto" }}>
+      <Typography component="h1" variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>
         Búsqueda rápida de Oficios
       </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Buscá por SAC/expediente/oficio web del oficio, SAC de la medida, número de medida o número de
-        legajo. Un oficio queda <strong>Contestado</strong> cuando todas sus actividades vinculadas llegaron a
-        la condición correspondiente: <strong>Completada</strong> si no necesita visado o{' '}
-        <strong>Visado Aprobado</strong> cuando requiere la cadena JZ/Dirección y Legales. Las actividades
-        canceladas no acreditan una respuesta.
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+        Buscá por identificador del oficio, SAC, número de medida o número de legajo.
       </Typography>
+      <Box
+        component="details"
+        sx={{ mb: 2, color: "text.secondary", "& summary": { cursor: "pointer", fontSize: "0.82rem", fontWeight: 600 } }}
+      >
+        <summary>¿Cuándo se considera contestado un oficio?</summary>
+        <Typography variant="body2" sx={{ mt: 1, pl: 1 }}>
+          Cuando todas sus actividades vinculadas están <strong>Completadas</strong> o, si requieren la cadena de
+          revisión de Jefatura/Dirección y Legales, en <strong>Visado Aprobado</strong>. Las actividades canceladas
+          no acreditan una respuesta.
+        </Typography>
+      </Box>
 
       <TextField
         fullWidth
+        label="Buscar oficio"
         placeholder="Ej: 43534, 34534, MED-2026-045, LEG-2026-0093..."
         value={query}
         onChange={(e) => setQuery(e.target.value)}

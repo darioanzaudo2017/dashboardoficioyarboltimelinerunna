@@ -11,6 +11,7 @@ import {
 import { useUser } from "@/utils/auth/userZustand"
 import { SectionCard } from "../medida/shared/section-card"
 import { usePersonaLocalizacion } from "../../hooks/usePersonaData"
+import { calculateAge, formatDateLocaleAR, isValidDate } from "@/utils/dateUtils"
 
 interface DatosPersonalesSectionProps {
   legajoData: LegajoDetailResponse
@@ -74,17 +75,16 @@ export const DatosPersonalesSection: React.FC<DatosPersonalesSectionProps> = ({ 
 
   const formatFecha = (fecha: string | null | undefined) => {
     if (!fecha) return "No registrado"
-    try {
-      const date = new Date(fecha)
-      return date.toLocaleDateString("es-AR", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      })
-    } catch {
-      return fecha
-    }
+    return isValidDate(fecha) ? formatDateLocaleAR(fecha) : "Dato inválido"
   }
+
+  const edad = persona?.fecha_nacimiento
+    ? calculateAge(persona.fecha_nacimiento)
+    : persona?.edad_aproximada ?? persona?.edad_calculada ?? null
+  const fechaNacimiento = formatFecha(persona?.fecha_nacimiento)
+  const fechaNacimientoLabel = persona?.fecha_nacimiento && edad === null
+    ? `Dato inválido (${fechaNacimiento})`
+    : fechaNacimiento
 
   const formatSituacionDNI = (situacion: string | null | undefined) => {
     if (!situacion) return "N/A"
@@ -149,7 +149,9 @@ export const DatosPersonalesSection: React.FC<DatosPersonalesSectionProps> = ({ 
               </Box>
               <Box sx={{ mb: 1 }}>
                 <Typography variant="caption" color="text.secondary" display="block">Fecha de nacimiento:</Typography>
-                <Typography variant="body2">{formatFecha(persona?.fecha_nacimiento)} ({persona?.edad_aproximada || persona?.edad_calculada || "N/A"} años)</Typography>
+                <Typography variant="body2">
+                  {fechaNacimientoLabel} · {edad !== null ? `${edad} años` : "edad sin datos válidos"}
+                </Typography>
               </Box>
             </Grid>
 

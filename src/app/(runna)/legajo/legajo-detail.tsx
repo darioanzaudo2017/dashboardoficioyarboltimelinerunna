@@ -1,30 +1,18 @@
 "use client"
-import { useState, useMemo } from "react"
+import { useState } from "react"
 import type React from "react"
 
-import { CircularProgress, Typography, IconButton, Box, Alert, Button, Tabs, Tab, Menu, MenuItem, ListItemIcon, ListItemText, Divider, AlertTitle } from "@mui/material"
+import { CircularProgress, Typography, IconButton, Box, Alert, Button, Tabs, Tab, AlertTitle } from "@mui/material"
 import CloseIcon from "@mui/icons-material/Close"
 import ArticleIcon from "@mui/icons-material/Article"
-import AddIcon from "@mui/icons-material/Add"
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown"
-import SecurityIcon from "@mui/icons-material/Security"
-import FamilyRestroomIcon from "@mui/icons-material/FamilyRestroom"
-import GavelIcon from "@mui/icons-material/Gavel"
 import RefreshIcon from "@mui/icons-material/Refresh"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
 import AccountTreeIcon from "@mui/icons-material/AccountTree"
 import { useRouter } from "next/navigation"
 import { useQuery } from "@tanstack/react-query"
-import { updateLegajoDatosPersonales } from "../legajo-mesa/api/legajos-api-service"
-import {
-  fetchBaseLegajoDetail,
-  fetchDemandaEnhancements,
-  mergeDemandaEnhancements,
-} from "../legajo-mesa/api/legajo-enhanced-service"
-import type { LegajoDetailResponse, PersonaDetailData } from "../legajo-mesa/types/legajo-api"
+import { fetchLegajoDetail, updateLegajoDatosPersonales } from "../legajo-mesa/api/legajos-api-service"
+import type { PersonaDetailData } from "../legajo-mesa/types/legajo-api"
 import { useUser } from "@/utils/auth/userZustand"
-import { AddIntervencionDialog, NewIntervencion } from "./[id]/medida/[medidaId]/components/dialogs/add-intervencion-dialog"
-import { AttachmentDialog } from "./[id]/medida/[medidaId]/components/dialogs/attachement-dialog"
 import { EditDatosPersonalesDialog } from "./[id]/medida/[medidaId]/components/dialogs/edit-datos-personales-dialog"
 import { CrearMedidaDialog } from "./[id]/medida/[medidaId]/components/dialogs/crear-medida-dialog"
 import { DatosPersonalesSection } from "./[id]/medida/[medidaId]/components/legajo/datos-personales-section"
@@ -44,7 +32,6 @@ import PersonaDetailModalEnhanced from "./[id]/medida/[medidaId]/components/dial
 
 // Importar tipos
 import { getMedidasByLegajo } from "../legajo-mesa/api/medidas-api-service"
-import type { MedidaBasicResponse } from "../legajo-mesa/types/medida-api"
 
 interface LegajoDetailProps {
   params: {
@@ -56,15 +43,10 @@ interface LegajoDetailProps {
 
 export default function LegajoDetail({ params, onClose, isFullPage = false }: LegajoDetailProps) {
   const [activeTab, setActiveTab] = useState(0)
-  const [openAttachmentDialog, setOpenAttachmentDialog] = useState(false)
-  const [selectedAttachment, setSelectedAttachment] = useState("")
-  const [openAddIntervencionDialog, setOpenAddIntervencionDialog] = useState(false)
   const [openEditDatosDialog, setOpenEditDatosDialog] = useState(false)
   const [openCrearMedidaDialog, setOpenCrearMedidaDialog] = useState(false)
   const [openPersonaCompletaModal, setOpenPersonaCompletaModal] = useState(false)
   const [medidasRefreshTrigger, setMedidasRefreshTrigger] = useState(0)
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-  const openMedidaMenu = Boolean(anchorEl)
 
   const router = useRouter()
   const { user } = useUser()
@@ -72,35 +54,21 @@ export default function LegajoDetail({ params, onClose, isFullPage = false }: Le
   // Admins (is_superuser o is_staff) tienen acceso completo
   const isAdmin = user?.is_superuser || user?.is_staff
 
-  // Main legajo data query (fast, non-blocking)
+  // El detalle canónico ya incluye oficios, demandas relacionadas y el
+  // repositorio de documentos. Mantener una única consulta evita el anterior
+  // patrón N+1 que pedía full-detail por cada demanda relacionada.
   const {
-    data: baseLegajoData,
+    data: legajoData,
     isLoading,
     error: queryError,
     refetch: loadLegajoData,
   } = useQuery({
     queryKey: ['legajo', params.id],
-    queryFn: () => fetchBaseLegajoDetail(Number(params.id), { include_history: false }),
+    queryFn: () => fetchLegajoDetail(Number(params.id), { include_history: false }),
     enabled: !!params.id,
     staleTime: 2 * 60 * 1000, // Consider data fresh for 2 minutes
     retry: 1,
   })
-
-  // Background enhancement query (non-blocking, loads in parallel)
-  const { data: enhancements, isLoading: isLoadingDemandaDetails } = useQuery({
-    queryKey: ['legajo-enhancements', params.id],
-    queryFn: () => fetchDemandaEnhancements(baseLegajoData!),
-    enabled: !!baseLegajoData,
-    staleTime: 5 * 60 * 1000, // Consider fresh for 5 minutes
-    retry: false, // Don't retry enhancements - they're optional
-  })
-
-  // Merge base data with enhancements
-  const legajoData = useMemo(() => {
-    if (!baseLegajoData) return null
-    if (!enhancements) return baseLegajoData
-    return mergeDemandaEnhancements(baseLegajoData, enhancements)
-  }, [baseLegajoData, enhancements])
 
   // Prefetch medidas data in parallel (eliminates queuing)
   const { data: prefetchedMedidas } = useQuery({
@@ -127,22 +95,6 @@ export default function LegajoDetail({ params, onClose, isFullPage = false }: Le
     router.push(`/legajo/${params.id}`)
   }
 
-  const handleTomarMedida = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget)
-  }
-
-  const handleCloseMedidaMenu = () => {
-    setAnchorEl(null)
-  }
-
-  const handleSelectMedidaType = (type: 'MPI' | 'MPE' | 'MPJ') => {
-    handleCloseMedidaMenu()
-    console.log(`Creating ${type} medida`)
-
-    // Open the crear medida dialog
-    setOpenCrearMedidaDialog(true)
-  }
-
   const handleCrearMedidaSuccess = () => {
     // Trigger refresh of medidas section
     setMedidasRefreshTrigger(prev => prev + 1)
@@ -155,38 +107,8 @@ export default function LegajoDetail({ params, onClose, isFullPage = false }: Le
     setActiveTab(newValue)
   }
 
-  const handleViewLastReport = () => {
-    console.log("View last report clicked")
-    // Implement the action for viewing the last report
-  }
-
-  const handleViewMoreInterventions = () => {
-    setActiveTab(0) // Switch to General tab (includes datos personales)
-  }
-
   const handleViewAllPersonalData = () => {
     setOpenPersonaCompletaModal(true)
-  }
-
-  const handleOpenAttachment = (fileName: string) => {
-    setSelectedAttachment(fileName)
-    setOpenAttachmentDialog(true)
-  }
-
-  const handleDownloadAttachment = () => {
-    console.log(`Downloading ${selectedAttachment}...`)
-    // Implement download functionality
-    setOpenAttachmentDialog(false)
-  }
-
-  const handleAddIntervencion = () => {
-    setOpenAddIntervencionDialog(true)
-  }
-
-  const handleSaveIntervencion = (_intervencion: NewIntervencion) => {
-    // TODO: Implement intervencion saving via API
-    console.log("Save intervencion - to be implemented with API call")
-    setOpenAddIntervencionDialog(false)
   }
 
   const handleEditDatosPersonales = () => {
@@ -378,7 +300,7 @@ export default function LegajoDetail({ params, onClose, isFullPage = false }: Le
         {/* TAB 2: Oficios */}
         {activeTab === 2 && (
           <>
-            <OficiosSection legajoData={legajoData} isLoadingEnhancements={isLoadingDemandaDetails} />
+            <OficiosSection legajoData={legajoData} />
           </>
         )}
 
@@ -412,19 +334,6 @@ export default function LegajoDetail({ params, onClose, isFullPage = false }: Le
       </Box>
 
       {/* Dialogs */}
-      <AttachmentDialog
-        open={openAttachmentDialog}
-        fileName={selectedAttachment}
-        onClose={() => setOpenAttachmentDialog(false)}
-        onDownload={handleDownloadAttachment}
-      />
-
-      <AddIntervencionDialog
-        open={openAddIntervencionDialog}
-        onClose={() => setOpenAddIntervencionDialog(false)}
-        onSave={handleSaveIntervencion}
-      />
-
       <EditDatosPersonalesDialog
         open={openEditDatosDialog}
         persona={legajoData?.persona || null}

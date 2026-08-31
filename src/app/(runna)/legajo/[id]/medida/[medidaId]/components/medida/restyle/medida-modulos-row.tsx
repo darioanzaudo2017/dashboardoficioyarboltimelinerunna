@@ -55,9 +55,9 @@ export const MedidaModulosRow: React.FC<MedidaModulosRowProps> = ({ modules, def
   return (
     <Paper
       elevation={0}
-      sx={{ mb: 3, borderRadius: "12px", border: `1px solid ${MEDIDA_COLORS.border}`, overflow: "hidden" }}
+      sx={{ mb: 3, maxWidth: "100%", borderRadius: "12px", border: `1px solid ${MEDIDA_COLORS.border}`, overflow: "hidden" }}
     >
-      <Box sx={{ p: "14px 20px" }}>
+      <Box sx={{ p: { xs: "12px", sm: "14px 20px" } }}>
         <Typography
           sx={{
             fontSize: 10,
@@ -100,6 +100,7 @@ export const MedidaModulosRow: React.FC<MedidaModulosRowProps> = ({ modules, def
                   fontWeight: 500,
                   userSelect: "none",
                   transition: "all .15s",
+                  width: { xs: "100%", sm: "auto" },
                   ...(isOpen && { outline: `2px solid ${v.color}`, outlineOffset: 1 }),
                 }}
               >
@@ -129,7 +130,7 @@ export const MedidaModulosRow: React.FC<MedidaModulosRowProps> = ({ modules, def
         const isOpen = openKeys.has(m.key)
         return (
           <Collapse key={m.key} in={isOpen} unmountOnExit>
-            <Box sx={{ borderTop: `1px solid ${MEDIDA_COLORS.border}`, p: "16px 20px" }}>
+            <Box sx={{ borderTop: `1px solid ${MEDIDA_COLORS.border}`, p: { xs: "12px", sm: "16px 20px" }, maxWidth: "100%", overflowX: "auto" }}>
               {isOpen ? m.content : null}
             </Box>
           </Collapse>

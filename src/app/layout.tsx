@@ -21,8 +21,8 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-  title: "Runna",
-  description: "Pagina de registro unico nacional de niños y niñoas",
+  title: "RUNNA | Registro Único Nominal",
+  description: "Sistema de gestión del Registro Único Nominal de Niñas, Niños y Adolescentes de Córdoba",
 };
 
 export default function RootLayout({
@@ -33,15 +33,7 @@ export default function RootLayout({
   const isSupabaseMode = process.env.NEXT_PUBLIC_USE_SUPABASE === 'true';
 
   return (
-    <html lang="en" className={`${poppins.variable} ${roboto.variable}`}>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html lang="es-AR" className={`${poppins.variable} ${roboto.variable}`}>
       <body className={`${poppins.className} antialiased`}>
         <PostHogProvider>
         <ThemeProvider>

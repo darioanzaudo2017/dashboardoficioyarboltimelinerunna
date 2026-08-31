@@ -8,7 +8,7 @@ import { useApiQuery } from '@/hooks/useApiQuery'
 export interface UseDemandaFullDetailOptions {
   enabled?: boolean
   staleTime?: number
-  cacheTime?: number
+  gcTime?: number
 }
 
 /**
@@ -29,7 +29,7 @@ export const useDemandaFullDetail = (
   const {
     enabled = true,
     staleTime = 5 * 60 * 1000, // 5 minutes - consider data fresh
-    cacheTime = 10 * 60 * 1000, // 10 minutes - keep in cache
+    gcTime = 10 * 60 * 1000, // 10 minutes - keep in cache
   } = options
 
   return useApiQuery<any>(
@@ -38,7 +38,7 @@ export const useDemandaFullDetail = (
     {
       enabled: !!demandaId && enabled,
       staleTime,
-      cacheTime,
+      gcTime,
       // Prevent refetch on window focus for this heavy endpoint
       refetchOnWindowFocus: false,
     }

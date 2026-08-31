@@ -20,6 +20,26 @@ export const getCurrentDateISO = (): string => {
   return new Date().toISOString().split("T")[0]
 }
 
+const ISO_DATE_ONLY_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/
+
+/**
+ * Date-only values represent calendar dates, not UTC instants. Parsing them with
+ * `new Date("YYYY-MM-DD")` moves the date to the previous day in Argentina.
+ */
+const toDateObject = (date: Date | string): Date => {
+  if (date instanceof Date) {
+    return date
+  }
+
+  const match = ISO_DATE_ONLY_PATTERN.exec(date)
+  if (!match) {
+    return new Date(date)
+  }
+
+  const [, year, month, day] = match
+  return new Date(Number(year), Number(month) - 1, Number(day))
+}
+
 /**
  * Format date for Argentina locale (es-AR) - Date only
  *
@@ -33,7 +53,7 @@ export const getCurrentDateISO = (): string => {
  * formatDateLocaleAR(new Date()) // "25/12/2025"
  */
 export const formatDateLocaleAR = (date: Date | string): string => {
-  const dateObj = typeof date === "string" ? new Date(date) : date
+  const dateObj = toDateObject(date)
   return dateObj.toLocaleDateString("es-AR", {
     day: "2-digit",
     month: "2-digit",
@@ -51,7 +71,7 @@ export const formatDateLocaleAR = (date: Date | string): string => {
  * formatDateTimeLocaleAR("2025-12-25T14:30:00Z") // "25/12/2025 14:30"
  */
 export const formatDateTimeLocaleAR = (date: Date | string): string => {
-  const dateObj = typeof date === "string" ? new Date(date) : date
+  const dateObj = toDateObject(date)
   return dateObj.toLocaleDateString("es-AR", {
     day: "2-digit",
     month: "2-digit",
@@ -73,7 +93,7 @@ export const formatDateTimeLocaleAR = (date: Date | string): string => {
  * formatDateLocaleES("2025-12-25") // "25/12/2025"
  */
 export const formatDateLocaleES = (date: Date | string): string => {
-  const dateObj = typeof date === "string" ? new Date(date) : date
+  const dateObj = toDateObject(date)
   return dateObj.toLocaleDateString("es-ES", {
     day: "2-digit",
     month: "2-digit",
@@ -91,7 +111,7 @@ export const formatDateLocaleES = (date: Date | string): string => {
  * formatDateTimeLocaleES("2025-12-25T14:30:00Z") // "25/12/2025 14:30"
  */
 export const formatDateTimeLocaleES = (date: Date | string): string => {
-  const dateObj = typeof date === "string" ? new Date(date) : date
+  const dateObj = toDateObject(date)
   return dateObj.toLocaleDateString("es-ES", {
     day: "2-digit",
     month: "2-digit",
@@ -111,7 +131,7 @@ export const formatDateTimeLocaleES = (date: Date | string): string => {
  * parseISODate("2025-12-25") // Date object
  */
 export const parseISODate = (isoDate: string): Date => {
-  return new Date(isoDate)
+  return toDateObject(isoDate)
 }
 
 /**
@@ -125,6 +145,49 @@ export const parseISODate = (isoDate: string): Date => {
  * isValidDate("invalid") // false
  */
 export const isValidDate = (dateString: string): boolean => {
-  const date = new Date(dateString)
+  const trimmedDate = dateString.trim()
+  if (!trimmedDate) {
+    return false
+  }
+
+  const dateOnlyMatch = ISO_DATE_ONLY_PATTERN.exec(trimmedDate)
+  if (dateOnlyMatch) {
+    const [, year, month, day] = dateOnlyMatch
+    const date = toDateObject(trimmedDate)
+
+    return (
+      date.getFullYear() === Number(year) &&
+      date.getMonth() === Number(month) - 1 &&
+      date.getDate() === Number(day)
+    )
+  }
+
+  const date = new Date(trimmedDate)
   return !isNaN(date.getTime())
+}
+
+/**
+ * Calcula una edad sólo cuando la fecha es consistente. Las fechas futuras o
+ * edades fuera de un rango humano razonable se consideran datos inválidos.
+ */
+export const calculateAge = (
+  birthDate: string | null | undefined,
+  referenceDate: Date = new Date(),
+  maxAge: number = 120,
+): number | null => {
+  if (!birthDate || !isValidDate(birthDate)) return null
+
+  const birth = toDateObject(birthDate)
+  if (birth.getTime() > referenceDate.getTime()) return null
+
+  let age = referenceDate.getFullYear() - birth.getFullYear()
+  const monthDifference = referenceDate.getMonth() - birth.getMonth()
+  if (
+    monthDifference < 0 ||
+    (monthDifference === 0 && referenceDate.getDate() < birth.getDate())
+  ) {
+    age -= 1
+  }
+
+  return age >= 0 && age <= maxAge ? age : null
 }

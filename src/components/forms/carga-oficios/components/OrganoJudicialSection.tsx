@@ -77,7 +77,7 @@ const OrganoJudicialSection: React.FC<OrganoJudicialSectionProps> = ({
                 renderInput={(params) => (
                   <TextField
                     {...params}
-                    label="Tipo Órgano Judicial *"
+                    label="Tipo Órgano Judicial"
                     required
                     error={!!error}
                     helperText={error?.message}
@@ -111,7 +111,7 @@ const OrganoJudicialSection: React.FC<OrganoJudicialSectionProps> = ({
                 renderInput={(params) => (
                   <TextField
                     {...params}
-                    label="Circunscripción Judicial *"
+                    label="Circunscripción Judicial"
                     required
                     error={!!error}
                     helperText={
@@ -149,7 +149,7 @@ const OrganoJudicialSection: React.FC<OrganoJudicialSectionProps> = ({
                 renderInput={(params) => (
                   <TextField
                     {...params}
-                    label="Órgano Judicial *"
+                    label="Órgano Judicial"
                     required
                     error={!!error}
                     helperText={

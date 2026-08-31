@@ -5,7 +5,14 @@ import EvaluacionTabs from "@/components/evaluacion/evaluacion-tabs"
 import DemandaContextCard from "@/components/evaluacion/demanda-context-card"
 import { Box, CircularProgress, Alert } from "@mui/material"
 import { get } from "@/app/api/apiService"
-import { getCurrentDateISO } from "@/utils/dateUtils"
+import {
+  getDemandInstitution,
+  getEvaluacionDate,
+  getNamedValue,
+  getOficioClassification,
+  mapEvaluacionActividad,
+  normalizeApiText,
+} from "@/components/evaluacion/utils/evaluacion-data-mappers"
 
 // Función para obtener los datos de la demanda
 // REFACTORED: Use apiService.get() instead of axiosInstance
@@ -15,16 +22,21 @@ const fetchDemandaData = async (id: string) => {
 
 // Modificar la función transformApiData para manejar correctamente los datos JSON
 const transformApiData = (apiData: any) => {
+  const institution = getDemandInstitution(apiData)
+  const oficioClassification = getOficioClassification(apiData)
+
   // Extraer información general
   const informacionGeneral = {
-    Localidad: apiData.latest_evaluacion?.localidad_usuario || apiData.localidad_usuario || "",
-    Fecha: apiData.fecha_ingreso_senaf || getCurrentDateISO(),
-    CargoFuncion: apiData.latest_evaluacion?.rol_usuario || (Array.isArray(apiData.rol_usuario) ? apiData.rol_usuario.join(", ") : (apiData.rol_usuario || "")),
-    NombreApellido: apiData.latest_evaluacion?.nombre_usuario || apiData.nombre_usuario || "",
+    Localidad: normalizeApiText(apiData.latest_evaluacion?.localidad_usuario) || normalizeApiText(apiData.localidad_usuario),
+    Fecha: getEvaluacionDate(apiData),
+    CargoFuncion: normalizeApiText(apiData.latest_evaluacion?.rol_usuario) || (Array.isArray(apiData.rol_usuario) ? apiData.rol_usuario.map(normalizeApiText).filter(Boolean).join(", ") : normalizeApiText(apiData.rol_usuario)),
+    NombreApellido: normalizeApiText(apiData.latest_evaluacion?.nombre_usuario) || normalizeApiText(apiData.nombre_usuario),
     NumerosDemanda: apiData.id ? `${apiData.id}` : "",
-    BloqueDatosRemitente: typeof apiData.bloque_datos_remitente === 'object' && apiData.bloque_datos_remitente?.nombre ? ` ${apiData.bloque_datos_remitente.nombre}` : "",
-    TipoInstitucion: typeof apiData.tipo_institucion === 'object' && apiData.tipo_institucion?.nombre ? apiData.tipo_institucion.nombre : (apiData.tipo_institucion ? "Institución" : ""),
-    Institucion: typeof apiData.institucion === 'object' && apiData.institucion?.nombre ? apiData.institucion.nombre : (apiData.institucion || ""),
+    BloqueDatosRemitente: getNamedValue(apiData.bloque_datos_remitente),
+    TipoInstitucion: institution.tipoInstitucion,
+    Institucion: institution.institucion,
+    CategoriaOficio: oficioClassification.categoriaOficio,
+    TipoOficio: oficioClassification.tipoOficio,
     fecha_oficio_documento: apiData.fecha_oficio_documento || "",
     fecha_ingreso_senaf: apiData.fecha_ingreso_senaf || "",
     etiqueta: typeof apiData.etiqueta === 'object' && apiData.etiqueta?.nombre ? apiData.etiqueta.nombre : (apiData.etiqueta ? String(apiData.etiqueta) : ""),
@@ -42,7 +54,8 @@ const transformApiData = (apiData: any) => {
     })) : [],
     // Add missing fields that might be needed by tabs
     bloque_datos_remitente: typeof apiData.bloque_datos_remitente === 'object' && apiData.bloque_datos_remitente?.nombre ? apiData.bloque_datos_remitente.nombre : (apiData.bloque_datos_remitente || ""),
-    tipo_institucion: typeof apiData.tipo_institucion === 'object' && apiData.tipo_institucion?.nombre ? apiData.tipo_institucion.nombre : (apiData.tipo_institucion || ""),
+    tipo_institucion: institution.tipoInstitucion,
+    institucion: institution.institucion,
     registrado_por_user_zona: typeof apiData.registrado_por_user_zona === 'object' && apiData.registrado_por_user_zona?.nombre ? apiData.registrado_por_user_zona.nombre : (apiData.registrado_por_user_zona || ""),
   }
 
@@ -70,18 +83,7 @@ const transformApiData = (apiData: any) => {
 
   // Extraer actividades
   const actividades = Array.isArray(apiData.actividades)
-    ? apiData.actividades.map((act: any) => ({
-      FechaHora: act.fecha_y_hora_manual || act.fecha_y_hora || "",
-      TipoActividad: typeof act.tipo === 'object' && act.tipo?.nombre ? act.tipo.nombre : (typeof act.tipo === 'string' ? act.tipo : "Visita"),
-      Institucion: typeof act.institucion === 'object' && act.institucion?.nombre ? act.institucion.nombre : (typeof act.institucion === 'string' ? act.institucion : "SENAF"),
-      Descripcion: act.descripcion || "",
-      by_user: act.by_user || null,
-      adjuntos: Array.isArray(act.adjuntos) ? act.adjuntos : [],
-      fecha_y_hora_manual: act.fecha_y_hora_manual || "",
-      // Add additional fields that might be needed
-      id: act.id,
-      demanda: act.demanda,
-    }))
+    ? apiData.actividades.map(mapEvaluacionActividad)
     : []
 
   // Procesar personas para extraer NNyA y adultos
@@ -211,16 +213,17 @@ const transformApiData = (apiData: any) => {
           ? JSON.parse(apiData.latest_evaluacion)
           : apiData.latest_evaluacion
 
-      valoracionProfesional = evaluacionData.valoracion_profesional_final || ""
-      justificacionTecnico = evaluacionData.justificacion_tecnico || ""
-      justificacionDirector = evaluacionData.justificacion_director || ""
-      solicitudTecnico = evaluacionData.solicitud_tecnico || ""
-      tipoMedidaEvaluado = evaluacionData.tipo_medida_evaluado || ""
-      decisionDirector = evaluacionData.decision_director || ""
+      valoracionProfesional = normalizeApiText(evaluacionData.valoracion_profesional_final)
+      justificacionTecnico = normalizeApiText(evaluacionData.justificacion_tecnico)
+      justificacionDirector = normalizeApiText(evaluacionData.justificacion_director)
+      solicitudTecnico = normalizeApiText(evaluacionData.solicitud_tecnico)
+      tipoMedidaEvaluado = normalizeApiText(evaluacionData.tipo_medida_evaluado)
+      decisionDirector = normalizeApiText(evaluacionData.decision_director)
 
       // Solo sobrescribir descripcionSituacion si hay un valor real (no placeholder "Blank")
-      if (evaluacionData.descripcion_de_la_situacion && String(evaluacionData.descripcion_de_la_situacion).trim().toLowerCase() !== "blank") {
-        descripcionSituacion = evaluacionData.descripcion_de_la_situacion
+      const descripcionEvaluacion = normalizeApiText(evaluacionData.descripcion_de_la_situacion)
+      if (descripcionEvaluacion) {
+        descripcionSituacion = descripcionEvaluacion
       }
     } catch (error) {
       console.error("Error parsing latest_evaluacion:", error)
@@ -280,11 +283,6 @@ export default function EvaluacionContent() {
         </Alert>
       </Box>
     )
-  }
-
-  // Debug: Log the transformed data to see what's being passed to tabs
-  if (transformedData) {
-    console.log("Transformed data for tabs:", transformedData)
   }
 
   if (isLoading) {

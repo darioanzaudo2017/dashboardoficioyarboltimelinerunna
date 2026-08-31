@@ -1,7 +1,7 @@
 "use client"
 
 import React from 'react'
-import { Box, Container, Typography } from '@mui/material'
+import { Box, Container } from '@mui/material'
 import { GlobalActividadesTable } from './components/GlobalActividadesTable'
 import { getDefaultBreadcrumbs, NavigationBreadcrumbs } from '../[id]/medida/[medidaId]/components/navigation-breadcrumbs'
 
@@ -25,10 +25,10 @@ export default function ActividadesPage() {
   ]
 
   return (
-    <Box sx={{ minHeight: '100vh', backgroundColor: '#f5f5f5', py: 3 }}>
-      <Container maxWidth="xl">
+    <Box sx={{ minHeight: '100vh', backgroundColor: '#f5f5f5', py: { xs: 1.5, sm: 3 } }}>
+      <Container maxWidth="xl" sx={{ px: { xs: 1.5, sm: 3 } }}>
         {/* Breadcrumbs */}
-        <Box sx={{ mb: 3 }}>
+        <Box sx={{ mb: { xs: 1.5, sm: 3 } }}>
           <NavigationBreadcrumbs
             items={breadcrumbItems}
             currentPage="Mis Actividades"

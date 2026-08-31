@@ -47,6 +47,7 @@ import { LineaVigentes } from "./components/LineaVigentes"
 export default function IndicadoresPage() {
   const [desde, setDesde] = useState("")
   const [hasta, setHasta] = useState("")
+  const periodoInvalido = Boolean(desde && hasta && desde > hasta)
 
   const { isLoading, error, medidas, todas, totalSinFiltro } = useIndicadoresData({
     desde: desde || undefined,
@@ -77,7 +78,7 @@ export default function IndicadoresPage() {
     <Box sx={{ p: 3, maxWidth: 1200, mx: "auto" }}>
       <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 0.5 }}>
         <BarChartIcon color="primary" fontSize="large" />
-        <Typography variant="h5" sx={{ fontWeight: 700 }}>
+        <Typography component="h1" variant="h5" sx={{ fontWeight: 700 }}>
           Indicadores SPPD
         </Typography>
       </Stack>
@@ -85,6 +86,11 @@ export default function IndicadoresPage() {
         27 indicadores del sistema de monitoreo de intervenciones (IP1-IP27). Los indicadores DEA
         se marcan como no aplicables porque Córdoba no cuenta con ese tipo de dispositivo.
       </Typography>
+
+      <Alert severity="warning" variant="outlined" sx={{ mb: 2 }}>
+        Datos operativos para seguimiento. Las definiciones que aproximan intervenciones mediante
+        medidas registradas deben homologarse antes de utilizar este tablero como reporte oficial.
+      </Alert>
 
       <Paper elevation={0} sx={{ p: 2, mb: 3, borderRadius: 2, border: "1px solid", borderColor: "divider" }}>
         <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap" useFlexGap>
@@ -108,10 +114,18 @@ export default function IndicadoresPage() {
             InputLabelProps={{ shrink: true }}
           />
           <Typography variant="caption" color="text.secondary">
-            {medidas.length} de {totalSinFiltro} medidas en el período seleccionado
+            {isLoading
+              ? "Cargando medidas…"
+              : `${medidas.length} de ${totalSinFiltro} medidas en el período seleccionado`}
           </Typography>
         </Stack>
       </Paper>
+
+      {periodoInvalido && (
+        <Alert severity="warning" sx={{ mb: 3 }}>
+          La fecha “Desde” no puede ser posterior a la fecha “Hasta”.
+        </Alert>
+      )}
 
       {error && (
         <Alert severity="error" sx={{ mb: 3 }}>
@@ -127,7 +141,7 @@ export default function IndicadoresPage() {
         </Stack>
       )}
 
-      {!isLoading && !error && (
+      {!isLoading && !error && !periodoInvalido && (
         <>
           {/* Complementario (no es un IP numerado): evolución de medidas vigentes */}
           <IndicadorCard
@@ -140,7 +154,7 @@ export default function IndicadoresPage() {
           {/* IP1 / IP1.3 */}
           <IndicadorCard
             codigo="IP1 / IP1.3"
-            titulo="NNyA con intervenciones en el período"
+            titulo="NNyA con medidas registradas en el período"
             total={nnyaTotales.length}
             totalLabel="NNyA"
           >
@@ -163,7 +177,7 @@ export default function IndicadoresPage() {
           </IndicadorCard>
 
           {/* IP2 */}
-          <IndicadorCard codigo="IP2" titulo="NNyA con intervenciones según caracterización" total={nnyaTotales.length} totalLabel="NNyA">
+          <IndicadorCard codigo="IP2" titulo="NNyA con medidas según caracterización" total={nnyaTotales.length} totalLabel="NNyA">
             <Grid container spacing={3}>
               <Grid item xs={12} sm={6}>
                 <DesglosePie

@@ -14,39 +14,16 @@ import type {
 
 /**
  * Get all urgencias vulneracion for dropdown
- * Endpoint TBD - adjust according to actual backend
- *
  * @returns Array of urgencias
  */
 export const getUrgencias = async (): Promise<UrgenciaVulneracion[]> => {
   try {
-    // ⚠️ ADVERTENCIA: No existe un endpoint específico para catálogo de urgencias en API
-    // /api/vulneracion/ retorna TVulneracion[] (vulneraciones de demandas), NO catálogos
-    //
-    // Opciones:
-    // 1. Crear endpoint backend: /api/urgencias/ o /api/catalogo/urgencias/
-    // 2. Usar datos mock temporales
-    // 3. Obtener de /api/registro-demanda-form-dropdowns/
-
-    console.warn('⚠️ Endpoint de urgencias no existe - usando datos mock temporales')
-
-    // MOCK DATA TEMPORAL - Reemplazar cuando exista el endpoint real
-    // Orden correcto: Alta (1) = más urgente, Baja (3) = menos urgente
-    const mockUrgencias: UrgenciaVulneracion[] = [
-      { id: 1, nombre: 'Alta', descripcion: 'Urgencia alta' },
-      { id: 2, nombre: 'Media', descripcion: 'Urgencia media' },
-      { id: 3, nombre: 'Baja', descripcion: 'Urgencia baja' },
-    ]
-
-    return mockUrgencias
-
-    // Descomentar cuando exista el endpoint real:
-    // const response = await get<UrgenciaVulneracion[]>('urgencias/')
-    // console.log('Urgencias fetched:', response)
-    // return response
+    const response = await get<
+      UrgenciaVulneracion[] | { results: UrgenciaVulneracion[] }
+    >('urgencia-vulneracion/')
+    return extractArray(response)
   } catch (error) {
     console.error('Error fetching urgencias:', error)
-    // Return empty array on error
     return []
   }
 }

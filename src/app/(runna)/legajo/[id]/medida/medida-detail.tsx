@@ -5,7 +5,6 @@ import CloseIcon from "@mui/icons-material/Close"
 import AccountTreeIcon from "@mui/icons-material/AccountTree"
 import { useRouter } from "next/navigation"
 import { MedidaData } from "./[medidaId]/types/medidas"
-import { AddTaskDialog, NewTask } from "./[medidaId]/components/dialogs/add-task-dialog"
 import { getDefaultBreadcrumbs, NavigationBreadcrumbs } from "./[medidaId]/components/navigation-breadcrumbs"
 import { MedidaHeader } from "./[medidaId]/components/medida/medida-header"
 import { MPEHeader } from "./[medidaId]/components/medida/mpe-header"
@@ -23,8 +22,6 @@ import { PlanEvaluacionSection } from "./[medidaId]/components/medida/plan-evalu
 import { EvaluacionFamiliarSection } from "./[medidaId]/components/medida/evaluacion-familiar-section"
 import { LegajosAfectadosSection } from "./[medidaId]/components/medida/legajos-afectados-section"
 import { CierreSection } from "./[medidaId]/components/medida/cierre-section"
-import { UltimoInformeSection } from "./[medidaId]/components/medida/ultimo-informe-section"
-import { AttachmentDialog } from "./[medidaId]/components/dialogs/attachement-dialog"
 import { NotaAvalSection } from "./[medidaId]/components/medida/nota-aval-section"
 import { InformeJuridicoSection } from "./[medidaId]/components/medida/informe-juridico-section"
 import { RatificacionJudicialSection } from "./[medidaId]/components/medida/ratificacion-judicial-section"
@@ -251,17 +248,6 @@ export default function MedidaDetail({ params, onClose, isFullPage = false }: Me
   }, [demandaData, demandaId, legajoData])
 
   // UI state
-  const [openAddTaskDialog, setOpenAddTaskDialog] = useState(false)
-  const [editingTaskIndex, setEditingTaskIndex] = useState<number | null>(null)
-  const [newTask, setNewTask] = useState<NewTask>({
-    tarea: "",
-    objetivo: "",
-    plazo: "",
-  })
-  const [activeStep, setActiveStep] = useState(1)
-  const [openAttachmentDialog, setOpenAttachmentDialog] = useState(false)
-  const [selectedAttachment, setSelectedAttachment] = useState("")
-
   // New restyled dashboard vs. classic header+tabs layout (persisted, default "nuevo")
   const [viewMode, setViewMode] = useMedidaViewMode()
 
@@ -311,27 +297,6 @@ export default function MedidaDetail({ params, onClose, isFullPage = false }: Me
     return convertMedidaToMedidaData(medidaApiData, legajoData, demandaData)
   }, [medidaApiData, legajoData, demandaData])
 
-  // Update active step based on medida estado
-  useEffect(() => {
-    if (!medidaApiData) return
-
-    if (medidaApiData.estado_vigencia === "CERRADA") {
-      setActiveStep(2)
-    } else if (medidaApiData.etapa_actual) {
-      // Map estado to step
-      const estadoMap: Record<string, number> = {
-        PENDIENTE_REGISTRO_INTERVENCION: 0,
-        PENDIENTE_APROBACION_REGISTRO: 1,
-        PENDIENTE_NOTA_AVAL: 1,
-        PENDIENTE_INFORME_JURIDICO: 1,
-        PENDIENTE_RATIFICACION_JUDICIAL: 1,
-      }
-      setActiveStep(estadoMap[medidaApiData.etapa_actual.estado] ?? 1)
-    } else {
-      setActiveStep(0)
-    }
-  }, [medidaApiData])
-
   // Combined loading and error states
   const isLoading = isMedidaLoading || isLegajoLoading
   const error = (() => {
@@ -353,113 +318,8 @@ export default function MedidaDetail({ params, onClose, isFullPage = false }: Me
     return null
   })()
 
-  // Handlers for task management
-  const handleAddTask = () => {
-    setEditingTaskIndex(null)
-    setNewTask({
-      tarea: "",
-      objetivo: "",
-      plazo: "",
-    })
-    setOpenAddTaskDialog(true)
-  }
-
-  const handleEditTask = (index: number) => {
-    if (medidaData) {
-      let task
-      if (medidaData.tipo === "MPI" && "plan_accion" in medidaData.etapas) {
-        task = medidaData.etapas.plan_accion[index]
-      } else if (medidaData.tipo === "MPE" && "plan_evaluacion" in medidaData.etapas) {
-        task = medidaData.etapas.plan_evaluacion[index]
-      }
-
-      if (task) {
-        setNewTask({
-          tarea: task.tarea,
-          objetivo: task.objetivo,
-          plazo: task.plazo,
-        })
-        setEditingTaskIndex(index)
-        setOpenAddTaskDialog(true)
-      }
-    }
-  }
-
-  const handleCloseAddTaskDialog = () => {
-    setOpenAddTaskDialog(false)
-  }
-
-  const handleSaveTask = (task: NewTask) => {
-    if (!medidaData) return
-
-    const updatedMedidaData = { ...medidaData } as MedidaData
-
-    if (editingTaskIndex !== null) {
-      // Update existing task
-      if (medidaData.tipo === "MPI" && "plan_accion" in updatedMedidaData.etapas) {
-        updatedMedidaData.etapas.plan_accion[editingTaskIndex] = {
-          ...updatedMedidaData.etapas.plan_accion[editingTaskIndex],
-          ...task,
-        }
-      } else if (medidaData.tipo === "MPE" && "plan_evaluacion" in updatedMedidaData.etapas) {
-        updatedMedidaData.etapas.plan_evaluacion[editingTaskIndex] = {
-          ...updatedMedidaData.etapas.plan_evaluacion[editingTaskIndex],
-          ...task,
-        }
-      }
-    } else {
-      // Add new task
-      const newTask = {
-        estado: false,
-        ...task,
-        fecha: new Date().toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "2-digit" }),
-      }
-
-      if (medidaData.tipo === "MPI" && "plan_accion" in updatedMedidaData.etapas) {
-        updatedMedidaData.etapas.plan_accion.push(newTask)
-      } else if (medidaData.tipo === "MPE" && "plan_evaluacion" in updatedMedidaData.etapas) {
-        updatedMedidaData.etapas.plan_evaluacion.push(newTask)
-      }
-    }
-
-    // TODO: These local task updates don't persist to API
-    // This functionality should be migrated to use API mutations
-    // setMedidaData(updatedMedidaData)
-    setOpenAddTaskDialog(false)
-  }
-
-  // Handlers for attachments
-  const handleOpenAttachment = (fileName: string) => {
-    setSelectedAttachment(fileName)
-    setOpenAttachmentDialog(true)
-  }
-
-  const handleDownloadAttachment = (fileName: string) => {
-    console.log(`Downloading ${fileName}...`)
-    // Implement download functionality
-  }
-
-  // Other handlers
-  const handleCloseMeasure = () => {
-    console.log("Close measure clicked")
-    // TODO: This should call an API endpoint to close the medida
-    // The medida detail will automatically refresh via React Query
-    setActiveStep(2)
-  }
-
-  const handleViewForm = () => {
-    console.log("View form clicked")
-    // Implement the action for viewing the form
-  }
-
-  const handleAddSeguimiento = () => {
-    console.log("Add seguimiento clicked")
-    // Implement the action for adding a seguimiento
-  }
-
   const handleViewPersonalData = () => {
-    console.log("View personal data clicked")
-    // Implement the action for viewing personal data
+    router.push(`/legajo/${params.id}`)
   }
 
   // Loading and error states
@@ -528,6 +388,8 @@ export default function MedidaDetail({ params, onClose, isFullPage = false }: Me
       sx={{
         position: "relative",
         width: "100%",
+        minWidth: 0,
+        overflowX: "hidden",
         height: "100%",
         ...(isFullPage && {
           display: "flex",
@@ -537,7 +399,8 @@ export default function MedidaDetail({ params, onClose, isFullPage = false }: Me
     >
       <Box
         sx={{
-          p: 3,
+          p: { xs: 1.5, sm: 3 },
+          minWidth: 0,
           ...(isFullPage && {
             maxWidth: "1200px",
             width: "100%",
@@ -589,7 +452,16 @@ export default function MedidaDetail({ params, onClose, isFullPage = false }: Me
           onChange={refetchMedida}
         />
 
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 1 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexDirection: { xs: "column", sm: "row" },
+            flexWrap: "wrap",
+            gap: 1,
+          }}
+        >
           {/* Toggle: new restyled dashboard vs. classic header + tabs layout. */}
           <MedidaViewToggle mode={viewMode} onChange={setViewMode} />
 
@@ -599,7 +471,7 @@ export default function MedidaDetail({ params, onClose, isFullPage = false }: Me
               size="small"
               startIcon={<AccountTreeIcon />}
               onClick={() => router.push(`/legajo/${params.id}/medida/${params.medidaId}/arbol`)}
-              sx={{ textTransform: "none", fontWeight: 600 }}
+              sx={{ textTransform: "none", fontWeight: 600, width: { xs: "100%", sm: "auto" }, mb: 2 }}
             >
               Ver Árbol de la Medida
             </Button>
@@ -728,7 +600,7 @@ export default function MedidaDetail({ params, onClose, isFullPage = false }: Me
               medidaId={medidaApiData?.id}
               estadoVigencia={medidaApiData?.estado_vigencia}
               etapaActual={medidaApiData?.etapa_actual ?? undefined}
-              isActive={activeStep !== 2}
+              isActive={medidaApiData?.estado_vigencia !== "CERRADA"}
               onViewPersonalData={handleViewPersonalData}
               onMedidaRefetch={refetchMedida}
             />
@@ -773,21 +645,6 @@ export default function MedidaDetail({ params, onClose, isFullPage = false }: Me
         ))}
       </Box>
 
-      {/* Dialogs */}
-      <AddTaskDialog
-        open={openAddTaskDialog}
-        initialTask={newTask}
-        onClose={handleCloseAddTaskDialog}
-        onSave={handleSaveTask}
-        isEditing={editingTaskIndex !== null}
-      />
-
-      <AttachmentDialog
-        open={openAttachmentDialog}
-        fileName={selectedAttachment}
-        onClose={() => setOpenAttachmentDialog(false)}
-        onDownload={() => handleDownloadAttachment(selectedAttachment)}
-      />
     </Box>
   )
 }

@@ -1,10 +1,20 @@
 "use server";
-import axiosInstance from '@/app/api/utils/axiosInstance';
+import axios from 'axios';
 import jwt from 'jsonwebtoken';
 import { cookies } from "next/headers";
-import { getCookie, setCookie } from "cookies-next";
 import { JwtPayload } from "jsonwebtoken";
 import { UserPermissions } from './userZustand';
+
+const authClient = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://web-runna-v2legajos.up.railway.app/api',
+});
+
+const authCookieOptions = {
+  httpOnly: true,
+  sameSite: 'lax' as const,
+  path: '/',
+  secure: process.env.NODE_ENV === 'production',
+};
 
 const decodeJwtPayload = (token: string): JwtPayload | null => {
   const decoded = jwt.decode(token);
@@ -17,14 +27,14 @@ export async function decodeToken(accessToken?: string) {
     if (!token) return null;
 
     return decodeJwtPayload(token);
-  } catch (e) {
+  } catch {
     return null;
   }
 }
 
 export async function login(username: string, password: string) {
   try {
-    const response = await axiosInstance.post('/token/', { username, password });
+    const response = await authClient.post('/token/', { username, password });
 
     const tokens = {
       refresh: response.data.refresh,
@@ -34,20 +44,14 @@ export async function login(username: string, password: string) {
     const cookieStore = cookies();
 
     cookieStore.set("refreshToken", tokens.refresh, {
-      httpOnly: true,
-      sameSite: "lax",
-      path: "/",
-      secure: true,
+      ...authCookieOptions,
     });
 
     cookieStore.set("accessToken", tokens.access, {
-      httpOnly: true,
-      sameSite: "lax",
-      path: "/",
-      secure: true,
+      ...authCookieOptions,
     });
 
-    return { success: true, accessToken: tokens.access };
+    return { success: true };
   } catch (error: any) {
     // Return error details to be handled on the client side
     return {
@@ -69,16 +73,12 @@ export const getSession = async (returnUserData: boolean = false): Promise<strin
       return null;
     }
 
-    // If we just need the token, return it immediately
-    if (!returnUserData) {
-      return accessToken;
-    }
-
-    // The backend validates the signature on /user/me/. Here we only inspect
-    // expiration to decide whether a refresh is needed.
+    // The backend validates the signature. Here we only inspect expiration to
+    // avoid sending a token that is already known to be stale.
     const decoded = decodeJwtPayload(accessToken);
     if (!decoded) return null;
     const currentTime = Math.floor(Date.now() / 1000);
+    let validAccessToken = accessToken;
 
     // If token is expired, try to refresh it
     if (decoded.exp && decoded.exp < currentTime) {
@@ -88,31 +88,34 @@ export const getSession = async (returnUserData: boolean = false): Promise<strin
       }
 
       try {
-        const response = await axiosInstance.post('/token/refresh/', {
+        const response = await authClient.post('/token/refresh/', {
           refresh: refreshToken
         });
 
-        const newAccessToken = response.data.access;
-        cookieStore.set('accessToken', newAccessToken, {
-          httpOnly: true,
-          sameSite: 'lax',
-          path: '/',
-          secure: true,
-        });
-        return newAccessToken;
+        validAccessToken = response.data.access;
+        cookieStore.set('accessToken', validAccessToken, authCookieOptions);
+        if (response.data.refresh) {
+          cookieStore.set('refreshToken', response.data.refresh, authCookieOptions);
+        }
       } catch (error) {
         console.error('Error refreshing token:', error);
         return null;
       }
     }
 
+    if (!returnUserData) {
+      return validAccessToken;
+    }
+
     // Get user data
     try {
-      const response = await axiosInstance.get<UserPermissions>('/user/me/');
+      const response = await authClient.get<UserPermissions>('/user/me/', {
+        headers: { Authorization: `Bearer ${validAccessToken}` },
+      });
       return response.data;
     } catch (error) {
       console.error('Error fetching user data:', error);
-      return accessToken; // Return the token if we can't get user data
+      return null;
     }
   } catch (error) {
     console.error('Error in getSession:', error);
@@ -142,19 +145,17 @@ export async function refreshToken(): Promise<string | null> {
       return null;
     }
 
-    const response = await axiosInstance.post('/token/refresh/', {
+    const response = await authClient.post('/token/refresh/', {
       refresh: refreshTokenValue
     });
 
     const newAccessToken = response.data.access;
 
     if (newAccessToken) {
-      cookieStore.set('accessToken', newAccessToken, {
-        httpOnly: true,
-        sameSite: 'lax',
-        path: '/',
-        secure: true,
-      });
+      cookieStore.set('accessToken', newAccessToken, authCookieOptions);
+      if (response.data.refresh) {
+        cookieStore.set('refreshToken', response.data.refresh, authCookieOptions);
+      }
 
       return newAccessToken;
     }

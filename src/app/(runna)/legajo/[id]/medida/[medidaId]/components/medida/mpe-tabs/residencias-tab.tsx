@@ -15,7 +15,8 @@ import {
     Card,
     CardContent,
     Grid,
-    Autocomplete
+    Autocomplete,
+    Alert,
 } from "@mui/material"
 import { useState, useMemo, useEffect } from "react"
 import AttachFileIcon from "@mui/icons-material/AttachFile"
@@ -23,33 +24,15 @@ import DeleteIcon from "@mui/icons-material/Delete"
 import { InformacionEducativaSection } from "../shared/InformacionEducativaSection"
 import { InformacionSaludSection } from "../shared/InformacionSaludSection"
 import { TalleresSection } from "../shared/TalleresSection"
-import { mapEducacionFromDemanda, mapSaludFromDemandaEnhanced } from "../../../utils/seguimiento-mapper"
+import {
+    mapEducacionFromDemanda,
+    mapSaludFromDemandaEnhanced,
+} from "../../../utils/seguimiento-mapper"
 import { seguimientoDispositivoService } from "../../../api/seguimiento-dispositivo-api-service"
 import { useParams } from "next/navigation"
 import { toast } from "react-toastify"
 import type { TipoSituacion, SituacionNNyA, CambioLugarResguardo, NotaSeguimiento, TLocalCentroVida } from "../../../types/seguimiento-dispositivo"
-
-interface SituacionCritica {
-    id: number
-    tipo: string
-    fecha: string
-    residencia: string
-}
-
-const mockSituaciones: SituacionCritica[] = [
-    {
-        id: 1,
-        tipo: "RSA",
-        fecha: "12/12/2025",
-        residencia: "San Martin"
-    },
-    {
-        id: 2,
-        tipo: "RSA",
-        fecha: "12/12/2025",
-        residencia: "San Martin"
-    }
-]
+import { formatDateLocaleAR, formatDateTimeLocaleAR } from "@/utils/dateUtils"
 
 // Cambio de Lugar de Resguardo Section (shared between MPE and MPJ)
 const CambioLugarResguardoSection = ({ medidaId, legajoId }: { medidaId: number; legajoId?: number }) => {
@@ -62,43 +45,61 @@ const CambioLugarResguardoSection = ({ medidaId, legajoId }: { medidaId: number;
   const [autorizadoPor, setAutorizadoPor] = useState("")
   const [loading, setLoading] = useState(false)
   const [loadingLocales, setLoadingLocales] = useState(false)
+  const [localesError, setLocalesError] = useState(false)
+  const [cambiosError, setCambiosError] = useState(false)
   const today = new Date().toISOString().split('T')[0]
 
-  // Fetch locations on mount
   useEffect(() => {
-    fetchLocales()
+    let cancelled = false
+
+    const fetchLocales = async () => {
+      setLoadingLocales(true)
+      setLocalesError(false)
+      try {
+        const data = await seguimientoDispositivoService.listLocalesCentroVida()
+        if (!cancelled) setLocales(Array.isArray(data) ? data : [])
+      } catch (error) {
+        console.error('Error fetching locales:', error)
+        if (!cancelled) {
+          setLocales([])
+          setLocalesError(true)
+        }
+      } finally {
+        if (!cancelled) setLoadingLocales(false)
+      }
+    }
+
+    void fetchLocales()
+    return () => {
+      cancelled = true
+    }
   }, [])
 
-  // Fetch existing cambios on mount
   useEffect(() => {
-    fetchCambios()
+    let cancelled = false
+
+    const fetchCambios = async () => {
+      setLoading(true)
+      setCambiosError(false)
+      try {
+        const data = await seguimientoDispositivoService.listCambiosLugar(medidaId, legajoId)
+        if (!cancelled) setCambios(Array.isArray(data) ? data : [])
+      } catch (error) {
+        console.error('Error fetching cambios de lugar:', error)
+        if (!cancelled) {
+          setCambios([])
+          setCambiosError(true)
+        }
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+
+    void fetchCambios()
+    return () => {
+      cancelled = true
+    }
   }, [medidaId, legajoId])
-
-  const fetchLocales = async () => {
-    setLoadingLocales(true)
-    try {
-      const data = await seguimientoDispositivoService.listLocalesCentroVida()
-      setLocales(Array.isArray(data) ? data : [])
-    } catch (error) {
-      console.error('Error fetching locales:', error)
-      setLocales([])
-    } finally {
-      setLoadingLocales(false)
-    }
-  }
-
-  const fetchCambios = async () => {
-    setLoading(true)
-    try {
-      const data = await seguimientoDispositivoService.listCambiosLugar(medidaId, legajoId)
-      setCambios(Array.isArray(data) ? data : [])
-    } catch (error) {
-      console.error('Error fetching cambios de lugar:', error)
-      setCambios([])
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const handleSave = async () => {
     if (!lugarOrigen || !lugarDestino || !fecha) {
@@ -134,26 +135,6 @@ const CambioLugarResguardoSection = ({ medidaId, legajoId }: { medidaId: number;
     }
   }
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('es-AR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    })
-  }
-
-  const formatDateTime = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleString('es-AR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
-
   return (
     <Box>
       <Typography variant="h5" sx={{ fontWeight: 700, mb: 1, color: '#1976d2' }}>
@@ -162,6 +143,12 @@ const CambioLugarResguardoSection = ({ medidaId, legajoId }: { medidaId: number;
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
         Registre los cambios de ubicación del NNyA en diferentes residencias
       </Typography>
+
+      {localesError && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          No se pudieron cargar las residencias disponibles. No es posible registrar un cambio en este momento.
+        </Alert>
+      )}
 
       {/* Form to add new cambio */}
       <Paper elevation={3} sx={{ p: 3, borderRadius: 3, mb: 4, bgcolor: '#fafafa' }}>
@@ -219,7 +206,7 @@ const CambioLugarResguardoSection = ({ medidaId, legajoId }: { medidaId: number;
                   label="Lugar de Destino"
                   placeholder="Seleccione el nuevo lugar"
                   helperText="Seleccione el lugar al que se trasladará el NNyA"
-                  error={!lugarDestino || (lugarOrigen && lugarDestino && lugarOrigen.id === lugarDestino.id)}
+                  error={!lugarDestino || Boolean(lugarOrigen && lugarOrigen.id === lugarDestino.id)}
                 />
               )}
               renderOption={(props, option) => (
@@ -321,6 +308,10 @@ const CambioLugarResguardoSection = ({ medidaId, legajoId }: { medidaId: number;
               Cargando historial de cambios...
             </Typography>
           </Paper>
+        ) : cambiosError ? (
+          <Alert severity="error">
+            No se pudo cargar el historial de cambios de lugar.
+          </Alert>
         ) : cambios.length === 0 ? (
           <Paper elevation={1} sx={{ p: 4, textAlign: 'center', borderRadius: 2, bgcolor: '#f5f5f5' }}>
             <Typography variant="body2" color="text.secondary">
@@ -382,7 +373,7 @@ const CambioLugarResguardoSection = ({ medidaId, legajoId }: { medidaId: number;
                         Fecha del Cambio
                       </Typography>
                       <Typography variant="body1" sx={{ fontWeight: 600, color: '#1976d2' }}>
-                        {formatDate(cambio.fecha_cambio)}
+                        {formatDateLocaleAR(cambio.fecha_cambio)}
                       </Typography>
                     </Grid>
 
@@ -391,7 +382,7 @@ const CambioLugarResguardoSection = ({ medidaId, legajoId }: { medidaId: number;
                         Registrado
                       </Typography>
                       <Typography variant="body2">
-                        {cambio.fecha_registro ? formatDateTime(cambio.fecha_registro) : '-'}
+                        {cambio.fecha_registro ? formatDateTimeLocaleAR(cambio.fecha_registro) : '-'}
                       </Typography>
                     </Grid>
 
@@ -422,6 +413,10 @@ const CambioLugarResguardoSection = ({ medidaId, legajoId }: { medidaId: number;
                     {cambio.adjunto_url && (
                       <Grid item xs={12}>
                         <Button
+                          component="a"
+                          href={cambio.adjunto_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           size="small"
                           startIcon={<AttachFileIcon />}
                           sx={{ textTransform: 'none' }}
@@ -450,26 +445,34 @@ const SituacionResidenciaSection = ({ medidaId, legajoId }: { medidaId: number; 
     const [observaciones, setObservaciones] = useState('')
     const [situaciones, setSituaciones] = useState<SituacionNNyA[]>([])
     const [loading, setLoading] = useState(false)
+    const [loadError, setLoadError] = useState(false)
     const today = new Date().toISOString().split('T')[0]
 
-    // Fetch existing situaciones on mount
     useEffect(() => {
-        fetchSituaciones()
-    }, [medidaId, legajoId])
+        let cancelled = false
 
-    const fetchSituaciones = async () => {
-        setLoading(true)
-        try {
-            const data = await seguimientoDispositivoService.listSituaciones(medidaId, legajoId)
-            // Ensure data is an array
-            setSituaciones(Array.isArray(data) ? data : [])
-        } catch (error) {
-            console.error('Error fetching situaciones:', error)
-            setSituaciones([]) // Set empty array on error
-        } finally {
-            setLoading(false)
+        const fetchSituaciones = async () => {
+            setLoading(true)
+            setLoadError(false)
+            try {
+                const data = await seguimientoDispositivoService.listSituaciones(medidaId, legajoId)
+                if (!cancelled) setSituaciones(Array.isArray(data) ? data : [])
+            } catch (error) {
+                console.error('Error fetching situaciones:', error)
+                if (!cancelled) {
+                    setSituaciones([])
+                    setLoadError(true)
+                }
+            } finally {
+                if (!cancelled) setLoading(false)
+            }
         }
-    }
+
+        void fetchSituaciones()
+        return () => {
+            cancelled = true
+        }
+    }, [medidaId, legajoId])
 
     const handleSaveSituacion = async () => {
         if (!fechaSituacion) {
@@ -495,26 +498,6 @@ const SituacionResidenciaSection = ({ medidaId, legajoId }: { medidaId: number; 
             // Error handled by apiService
             console.error('Error saving situación:', error)
         }
-    }
-
-    const formatDate = (dateString: string) => {
-        const date = new Date(dateString)
-        return date.toLocaleDateString('es-AR', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-        })
-    }
-
-    const formatDateTime = (dateString: string) => {
-        const date = new Date(dateString)
-        return date.toLocaleString('es-AR', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        })
     }
 
     return (
@@ -593,6 +576,10 @@ const SituacionResidenciaSection = ({ medidaId, legajoId }: { medidaId: number; 
                     <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 3 }}>
                         Cargando situaciones...
                     </Typography>
+                ) : loadError ? (
+                    <Alert severity="error">
+                        No se pudo cargar el historial de situaciones de residencia.
+                    </Alert>
                 ) : situaciones.length === 0 ? (
                     <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 3 }}>
                         No hay situaciones registradas
@@ -616,7 +603,7 @@ const SituacionResidenciaSection = ({ medidaId, legajoId }: { medidaId: number; 
                                                 Fecha
                                             </Typography>
                                             <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                                                {formatDate(situacion.fecha)}
+                                                {formatDateLocaleAR(situacion.fecha)}
                                             </Typography>
                                         </Grid>
                                         <Grid item xs={12} md={5}>
@@ -624,7 +611,7 @@ const SituacionResidenciaSection = ({ medidaId, legajoId }: { medidaId: number; 
                                                 Fecha de Registro
                                             </Typography>
                                             <Typography variant="body2">
-                                                {situacion.fecha_registro ? formatDateTime(situacion.fecha_registro) : '-'}
+                                                {situacion.fecha_registro ? formatDateTimeLocaleAR(situacion.fecha_registro) : '-'}
                                             </Typography>
                                         </Grid>
                                         {situacion.observaciones && (
@@ -654,27 +641,35 @@ const NotasSeguimientoSection = ({ medidaId, legajoId }: { medidaId: number; leg
   const [titulo, setTitulo] = useState("")
   const [nota, setNota] = useState("")
   const [fecha, setFecha] = useState("")
-  const [autor, setAutor] = useState("")
   const [loading, setLoading] = useState(false)
+  const [loadError, setLoadError] = useState(false)
   const today = new Date().toISOString().split('T')[0]
 
-  // Fetch existing notas on mount
   useEffect(() => {
-    fetchNotas()
-  }, [medidaId, legajoId])
+    let cancelled = false
 
-  const fetchNotas = async () => {
-    setLoading(true)
-    try {
-      const data = await seguimientoDispositivoService.listNotasSeguimiento(medidaId, legajoId)
-      setNotas(Array.isArray(data) ? data : [])
-    } catch (error) {
-      console.error('Error fetching notas de seguimiento:', error)
-      setNotas([])
-    } finally {
-      setLoading(false)
+    const fetchNotas = async () => {
+      setLoading(true)
+      setLoadError(false)
+      try {
+        const data = await seguimientoDispositivoService.listNotasSeguimiento(medidaId, legajoId)
+        if (!cancelled) setNotas(Array.isArray(data) ? data : [])
+      } catch (error) {
+        console.error('Error fetching notas de seguimiento:', error)
+        if (!cancelled) {
+          setNotas([])
+          setLoadError(true)
+        }
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
     }
-  }
+
+    void fetchNotas()
+    return () => {
+      cancelled = true
+    }
+  }, [medidaId, legajoId])
 
   const handleSave = async () => {
     if (!titulo || !nota || !fecha) {
@@ -687,14 +682,12 @@ const NotasSeguimientoSection = ({ medidaId, legajoId }: { medidaId: number; leg
         titulo: titulo,
         nota: nota,
         fecha: fecha,
-        autor: autor || undefined
       }, legajoId)
 
       // Reset form
       setTitulo('')
       setNota('')
       setFecha('')
-      setAutor('')
 
       // Add new nota to local state
       setNotas(prev => [savedNota, ...prev])
@@ -717,26 +710,6 @@ const NotasSeguimientoSection = ({ medidaId, legajoId }: { medidaId: number; leg
     } catch (error) {
       console.error('Error deleting nota:', error)
     }
-  }
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('es-AR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    })
-  }
-
-  const formatDateTime = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleString('es-AR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
   }
 
   return (
@@ -797,16 +770,6 @@ const NotasSeguimientoSection = ({ medidaId, legajoId }: { medidaId: number; leg
             />
           </Grid>
           <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Autor"
-              value={autor}
-              onChange={(e) => setAutor(e.target.value)}
-              placeholder="Ej: Lic. María González"
-              helperText="Persona que realizó el seguimiento (opcional)"
-            />
-          </Grid>
-          <Grid item xs={12}>
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
               <Button
                 variant="contained"
@@ -850,6 +813,10 @@ const NotasSeguimientoSection = ({ medidaId, legajoId }: { medidaId: number; leg
               Cargando notas de seguimiento...
             </Typography>
           </Paper>
+        ) : loadError ? (
+          <Alert severity="error">
+            No se pudo cargar el historial de notas de seguimiento.
+          </Alert>
         ) : notas.length === 0 ? (
           <Paper elevation={1} sx={{ p: 4, textAlign: 'center', borderRadius: 2, bgcolor: '#f5f5f5' }}>
             <Typography variant="body2" color="text.secondary">
@@ -895,7 +862,7 @@ const NotasSeguimientoSection = ({ medidaId, legajoId }: { medidaId: number; leg
                           </Box>
                         )}
                         <Typography variant="caption" color="text.secondary">
-                          Fecha: {formatDate(nota.fecha)}
+                          Fecha: {formatDateLocaleAR(nota.fecha)}
                         </Typography>
                       </Box>
                       <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: '#1976d2', fontSize: '1.1rem' }}>
@@ -905,6 +872,11 @@ const NotasSeguimientoSection = ({ medidaId, legajoId }: { medidaId: number; leg
                     <Box sx={{ display: 'flex', gap: 1 }}>
                       {nota.adjunto_url && (
                         <IconButton
+                          component="a"
+                          href={nota.adjunto_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label={`Abrir adjunto de ${nota.titulo}`}
                           size="small"
                           color="primary"
                           sx={{
@@ -952,7 +924,7 @@ const NotasSeguimientoSection = ({ medidaId, legajoId }: { medidaId: number; leg
                           Fecha de Registro
                         </Typography>
                         <Typography variant="body2">
-                          {formatDateTime(nota.fecha_registro)}
+                          {formatDateTimeLocaleAR(nota.fecha_registro)}
                         </Typography>
                       </Grid>
                     )}
@@ -969,7 +941,7 @@ const NotasSeguimientoSection = ({ medidaId, legajoId }: { medidaId: number; leg
 
 interface ResidenciasTabProps {
     medidaId: number // Required for API calls
-    demandaData?: any // Full demanda data from the full-detail endpoint
+    demandaData?: Parameters<typeof mapEducacionFromDemanda>[0] // Full demanda data from the full-detail endpoint
     personaId?: number // Optional specific persona ID to use
 }
 
@@ -979,9 +951,6 @@ export const ResidenciasTab: React.FC<ResidenciasTabProps> = ({
     personaId
 }) => {
     const [selectedSection, setSelectedSection] = useState<string>("situacion-residencia")
-    const [selectedTipo, setSelectedTipo] = useState<string>("RSA")
-    const [fecha, setFecha] = useState<string>("12/12/2025")
-    const [situaciones] = useState<SituacionCritica[]>(mockSituaciones)
 
     // Óptica de legajo: la medida siempre se ve bajo /legajo/[id]/medida/[medidaId],
     // así que el legajo de la ruta ES el NNyA cuyo seguimiento se ve/edita. No hay
@@ -1013,113 +982,6 @@ export const ResidenciasTab: React.FC<ResidenciasTabProps> = ({
         { id: "cambio-lugar", label: "Cambio de Lugar de Resguardo" },
         { id: "notas-seguimiento", label: "Notas de Seguimiento" }
     ]
-
-    const handleTipoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setSelectedTipo(event.target.value)
-    }
-
-    const renderSituacionesCriticas = () => (
-        <Box>
-            <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>
-                Situaciones críticas
-            </Typography>
-
-            {/* Radio buttons for situation types */}
-            <FormControl component="fieldset" sx={{ mb: 3 }}>
-                <RadioGroup
-                    row
-                    value={selectedTipo}
-                    onChange={handleTipoChange}
-                    sx={{ gap: 3 }}
-                >
-                    <FormControlLabel
-                        value="RSA"
-                        control={<Radio color="primary" />}
-                        label="RSA"
-                    />
-                    <FormControlLabel
-                        value="BP"
-                        control={<Radio color="primary" />}
-                        label="BP"
-                    />
-                    <FormControlLabel
-                        value="DCS"
-                        control={<Radio color="primary" />}
-                        label="DCS"
-                    />
-                    <FormControlLabel
-                        value="SCP"
-                        control={<Radio color="primary" />}
-                        label="SCP"
-                    />
-                </RadioGroup>
-            </FormControl>
-
-            {/* Date and action buttons */}
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 4 }}>
-                <TextField
-                    value={fecha}
-                    onChange={(e) => setFecha(e.target.value)}
-                    size="small"
-                    sx={{ width: 120 }}
-                />
-                <Button
-                    variant="contained"
-                    color="primary"
-                    sx={{
-                        textTransform: "none",
-                        borderRadius: 2,
-                    }}
-                >
-                    Agregar fecha
-                </Button>
-                <Button
-                    variant="contained"
-                    color="primary"
-                    sx={{
-                        textTransform: "none",
-                        borderRadius: 2,
-                    }}
-                >
-                    Adjuntar denuncia
-                </Button>
-            </Box>
-
-            {/* Situation cards */}
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                {situaciones.map((situacion) => (
-                    <Card key={situacion.id} elevation={1} sx={{ borderRadius: 2 }}>
-                        <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
-                            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                <Box>
-                                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
-                                        {situacion.tipo}
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                                        {situacion.fecha}
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                        Residencia: {situacion.residencia}
-                                    </Typography>
-                                </Box>
-                                <IconButton
-                                    color="primary"
-                                    sx={{
-                                        backgroundColor: "rgba(25, 118, 210, 0.1)",
-                                        "&:hover": {
-                                            backgroundColor: "rgba(25, 118, 210, 0.2)",
-                                        }
-                                    }}
-                                >
-                                    <AttachFileIcon />
-                                </IconButton>
-                            </Box>
-                        </CardContent>
-                    </Card>
-                ))}
-            </Box>
-        </Box>
-    )
 
     const renderContent = () => {
         // key con legajoId fuerza remount al cambiar de NNyA, evitando fugas de estado
@@ -1178,4 +1040,4 @@ export const ResidenciasTab: React.FC<ResidenciasTabProps> = ({
             </Box>
         </Box>
     )
-} 
+}

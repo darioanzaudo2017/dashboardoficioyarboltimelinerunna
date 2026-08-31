@@ -325,13 +325,13 @@ export default function EvaluacionTabs({ data }: EvaluacionTabsProps) {
       )}
 
       <ActionButtons
-        generatePDF={() => Promise.resolve(collectUpdatedData())}
         data={collectUpdatedData()}
         onPDFGenerated={handlePDFGenerated}
         demandaId={demandaId}
         nnyaIds={allNnyaIds}
         valoracionProfesional={valoracionProfesional}
         justificacionTecnico={justificacionTecnico}
+        justificacionDirector={justificacionDirector}
         descripcionSituacion={descripcionSituacion}
         adjuntos={adjuntos}
         fileManagementRef={fileManagementRef}

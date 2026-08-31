@@ -46,6 +46,7 @@ export default function InformacionGeneral({ data, onFieldChange }: InformacionG
     typeof data.objetivo_de_demanda === "object" && data.objetivo_de_demanda
       ? data.objetivo_de_demanda.nombre
       : data.objetivo_de_demanda || ""
+  const isCargaOficios = objetivoDemanda === "CARGA_OFICIOS"
 
   // Handle remitente data
   const remitente =
@@ -73,7 +74,7 @@ export default function InformacionGeneral({ data, onFieldChange }: InformacionG
             <TextField
               label="Fecha"
               name="Fecha"
-              value={data.fecha || data.Fecha || ""}
+              value={data.fecha || data.Fecha || "Sin fecha de evaluación registrada"}
               InputProps={{ readOnly: true }}
               fullWidth
             />
@@ -228,6 +229,28 @@ export default function InformacionGeneral({ data, onFieldChange }: InformacionG
                   InputProps={{ readOnly: true }}
                 />
               </Grid>
+              {isCargaOficios && (
+                <>
+                  <Grid item xs={12}>
+                    <TextField
+                      label="Categoría de oficio"
+                      value={data.CategoriaOficio || "Sin categoría registrada"}
+                      fullWidth
+                      margin="dense"
+                      InputProps={{ readOnly: true }}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      label="Tipo de oficio"
+                      value={data.TipoOficio || "Sin tipo de oficio registrado"}
+                      fullWidth
+                      margin="dense"
+                      InputProps={{ readOnly: true }}
+                    />
+                  </Grid>
+                </>
+              )}
               <Grid item xs={6}>
                 <TextField
                   label="Motivo Ingreso"

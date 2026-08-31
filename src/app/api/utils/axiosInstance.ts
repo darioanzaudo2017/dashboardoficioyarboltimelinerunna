@@ -1,7 +1,5 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
-import { getSession } from '@/utils/auth';
-import { handleApiError } from './errorHandler';
-import Cookies from 'js-cookie';
+import { getSession, refreshToken as refreshSessionToken } from '@/utils/auth';
 import posthog from 'posthog-js';
 
 const axiosInstance = axios.create({
@@ -27,27 +25,11 @@ const processQueue = (error: Error | null, token: string | null = null) => {
 
 export const refreshAccessToken = async (): Promise<string | null> => {
   try {
-    const refreshToken = Cookies.get('refreshToken');
-    if (!refreshToken) {
-      console.warn('No refresh token available');
-      return null;
-    }
-
-    const response = await axios.post(
-      `${process.env.NEXT_PUBLIC_API_URL || 'https://web-runna-v2legajos.up.railway.app/api'}/token/refresh/`,
-      { refresh: refreshToken }
-    );
-
-    const newAccessToken = response.data.access;
-    if (newAccessToken) {
-      Cookies.set('accessToken', newAccessToken, { secure: true, sameSite: 'lax' });
-      return newAccessToken;
-    }
-    return null;
+    // The refresh cookie is httpOnly by design, so only the server action may
+    // read it and rotate the access token.
+    return await refreshSessionToken();
   } catch (error) {
     console.error('Token refresh failed:', error);
-    Cookies.remove('accessToken');
-    Cookies.remove('refreshToken');
     return null;
   }
 };
@@ -56,7 +38,7 @@ axiosInstance.interceptors.request.use(
   async (config) => {
     if (!config.headers.Authorization) {
       const session = await getSession();
-      const accessToken = typeof session === 'string' ? session : Cookies.get('accessToken');
+      const accessToken = typeof session === 'string' ? session : null;
       if (accessToken) {
         config.headers.Authorization = `Bearer ${accessToken}`;
       }
@@ -127,8 +109,6 @@ axiosInstance.interceptors.response.use(
         } else {
           processQueue(new Error('Token refresh failed'), null);
           if (typeof window !== 'undefined') {
-            Cookies.remove('accessToken');
-            Cookies.remove('refreshToken');
             window.location.href = '/login';
           }
           return Promise.reject(error);
@@ -136,8 +116,6 @@ axiosInstance.interceptors.response.use(
       } catch (refreshError) {
         processQueue(refreshError as Error, null);
         if (typeof window !== 'undefined') {
-          Cookies.remove('accessToken');
-          Cookies.remove('refreshToken');
           window.location.href = '/login';
         }
         return Promise.reject(refreshError);

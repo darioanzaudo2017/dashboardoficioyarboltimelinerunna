@@ -13,7 +13,11 @@ import DatosNnyaStep from './DatosNnyaStep'
 import AsignacionStep from './AsignacionStep'
 import ResumenStep from './ResumenStep'
 import { useCreateLegajo } from '../../hooks/useCreateLegajo'
-import type { CreateLegajoManualRequest, BusquedaNnyaResult } from '../../types/legajo-creation.types'
+import type {
+  CreateLegajoManualRequest,
+  BusquedaNnyaResult,
+  NnyaCreateData,
+} from '../../types/legajo-creation.types'
 
 interface Props {
   open: boolean
@@ -33,11 +37,18 @@ export default function CrearLegajoDialog({ open, onClose }: Props) {
   const handleNext = () => setActiveStep((prev) => prev + 1)
   const handleBack = () => setActiveStep((prev) => prev - 1)
 
+  const resetForm = () => {
+    setActiveStep(0)
+    setFormData({})
+    setNnyaSeleccionado(null)
+    setModoCreacion('nuevo')
+  }
+
   // Step 1: NNyA Selection
   const handleNnyaSelect = (nnya: BusquedaNnyaResult) => {
     setNnyaSeleccionado(nnya)
     setModoCreacion('existente')
-    setFormData({ ...formData, nnya: nnya.id })
+    setFormData((current) => ({ ...current, nnya: nnya.id, nnya_data: undefined }))
     handleNext()
   }
 
@@ -48,54 +59,46 @@ export default function CrearLegajoDialog({ open, onClose }: Props) {
   }
 
   // Step 2: NNyA Data
-  const handleDatosNnyaComplete = (datosNnya: any) => {
+  const handleDatosNnyaComplete = (datosNnya: NnyaCreateData) => {
     if (modoCreacion === 'nuevo') {
-      setFormData({ ...formData, nnya_data: datosNnya })
+      setFormData((current) => ({ ...current, nnya: undefined, nnya_data: datosNnya }))
     }
     handleNext()
   }
 
   // Step 3: Assignment
-  const handleAsignacionComplete = (asignacion: any) => {
-    setFormData({ ...formData, ...asignacion })
+  const handleAsignacionComplete = (asignacion: Partial<CreateLegajoManualRequest>) => {
+    setFormData((current) => ({ ...current, ...asignacion }))
     handleNext()
   }
 
   // Step 4: Confirm and Create
   const handleConfirmar = async () => {
     try {
-      console.log('Creating legajo with data:', formData)
       await crearLegajo(formData as CreateLegajoManualRequest)
 
       // Close dialog and reset
-      handleDialogClose(true)
+      handleDialogClose()
     } catch (error) {
       console.error('Error al crear legajo:', error)
       // Error handling done in mutation hook
     }
   }
 
-  const handleDialogClose = (success: boolean = false) => {
+  const handleDialogClose = () => {
     if (!isPending) {
       onClose()
-
-      // Reset form after close animation
-      setTimeout(() => {
-        setActiveStep(0)
-        setFormData({})
-        setNnyaSeleccionado(null)
-        setModoCreacion('nuevo')
-      }, 300)
     }
   }
 
   return (
     <Dialog
       open={open}
-      onClose={() => handleDialogClose(false)}
+      onClose={handleDialogClose}
       maxWidth="md"
       fullWidth
       disableEscapeKeyDown={isPending}
+      TransitionProps={{ onExited: resetForm }}
     >
       <DialogTitle sx={{ pb: 1 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -108,7 +111,7 @@ export default function CrearLegajoDialog({ open, onClose }: Props) {
             </Typography>
           </Box>
           <IconButton
-            onClick={() => handleDialogClose(false)}
+            onClick={handleDialogClose}
             disabled={isPending}
             sx={{ ml: 2 }}
           >

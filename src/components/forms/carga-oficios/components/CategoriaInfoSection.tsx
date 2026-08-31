@@ -46,7 +46,7 @@ const CategoriaInfoSection: React.FC<CategoriaInfoSectionProps> = ({
           renderInput={(params) => (
             <TextField
               {...params}
-              label="Categoría de Información *"
+              label="Categoría de Información"
               required
               error={!!errors?.categoria}
               helperText={errors?.categoria || "Seleccione la categoría para filtrar los tipos de oficio"}
