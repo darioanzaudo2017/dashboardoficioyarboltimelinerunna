@@ -263,11 +263,15 @@ export const NOTA_AVAL_VALIDATIONS: Record<TNotaAvalDecision, ComentariosValidat
 /**
  * Configuración de adjuntos
  */
-export const ADJUNTO_CONFIG = {
+export const ADJUNTO_CONFIG: {
+  readonly MAX_SIZE_BYTES: number
+  readonly ALLOWED_TYPES: readonly string[]
+  readonly ALLOWED_EXTENSIONS: readonly string[]
+} = {
   MAX_SIZE_BYTES: 10 * 1024 * 1024, // 10MB
   ALLOWED_TYPES: ['application/pdf'],
   ALLOWED_EXTENSIONS: ['.pdf'],
-} as const
+}
 
 /**
  * Labels de decisión

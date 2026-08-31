@@ -159,7 +159,7 @@ export const QuickLinksSection: React.FC<QuickLinksSectionProps> = ({
         )}
 
         {/* Link to Plan de Trabajo */}
-        {actividad.plan_trabajo_medida && medidaId && legajoId && (
+        {actividad.plan_trabajo && medidaId && legajoId && (
           <Box
             sx={{
               border: '1px solid',
@@ -207,17 +207,17 @@ export const QuickLinksSection: React.FC<QuickLinksSectionProps> = ({
               variant="outlined"
             />
           )}
-          {actividad.tipo && (
+          {actividad.tipo_actividad_info && (
             <Chip
-              label={`Tipo: ${actividad.tipo_display || actividad.tipo}`}
+              label={`Tipo: ${actividad.tipo_actividad_info.nombre}`}
               size="small"
               variant="outlined"
               color="primary"
             />
           )}
-          {actividad.equipo_responsable_display && (
+          {actividad.equipo_info?.nombre && (
             <Chip
-              label={`Equipo: ${actividad.equipo_responsable_display}`}
+              label={`Equipo: ${actividad.equipo_info.nombre}`}
               size="small"
               variant="outlined"
               color="secondary"

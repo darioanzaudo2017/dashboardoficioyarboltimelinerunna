@@ -54,6 +54,8 @@ Quedan fuera de la UI hasta contar con contrato formal:
 ## Gates ejecutados
 
 - `npm run test:run`: 13 tests unitarios.
+- `npm run typecheck`: 0 errores (línea base anterior: 259).
+- `npm run lint`: 0 errores; conserva advertencias históricas.
 - `npm run build`: compilación de producción completa.
 - ESLint y TypeScript focales: sin errores en archivos modificados.
 - Smoke autenticado: Mis Actividades, Oficios, Demanda 303, Legajo 134, Medida 235 y página inexistente.
@@ -62,7 +64,8 @@ Quedan fuera de la UI hasta contar con contrato formal:
 ## Deuda que continúa abierta
 
 - PostHog no se modificó por instrucción expresa de no aplicar enmascaramiento.
-- El chequeo global bajó de 259 a 229 errores TypeScript, pero la deuda histórica continúa y el build mantiene sus excepciones.
+- Los 259 errores TypeScript quedaron resueltos y el build ya no ignora TypeScript ni ESLint. Continúa la reducción de advertencias de lint y usos de `any` como deuda no bloqueante.
 - Indicadores continúa siendo una aproximación del cliente; falta endpoint homologado y versionado.
 - `npm audit --omit=dev` todavía informa 11 vulnerabilidades productivas (1 crítica, 7 altas y 3 moderadas); requieren un sprint de actualización con regresión, especialmente Next y `xlsx`.
 - Falta automatizar E2E por rol y resolver progresivamente componentes monolíticos, estilos locales y logging excesivo.
+- El flujo de duplicados referencia `buscar-duplicados`, `crear-con-duplicado-confirmado` y `vincular-demanda`, pero el backend todavía no expone esos contratos; las acciones quedan protegidas hasta definirlos.

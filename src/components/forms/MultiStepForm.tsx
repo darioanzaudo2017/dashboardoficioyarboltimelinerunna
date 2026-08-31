@@ -34,6 +34,7 @@ import { submitFormData } from "./utils/api"
 import type { DropdownData, FormData } from "./types/formTypes"
 export type { FormData } from "./types/formTypes"
 import type { FormVariant, ObjetivoDemanda } from "./carga-oficios/types/carga-oficios.types"
+import type { DemandaCreatedResponse } from "@/app/(runna)/nuevoingreso/types/demanda-response"
 import { useDraftStore } from "./utils/userDraftStore"
 import { fetchDropdownData } from "./utils/fetchFormCase"
 import VinculosManager from "./components/VinculosManager"
@@ -102,7 +103,7 @@ interface MultiStepFormProps {
   initialData?: FormData
   readOnly?: boolean
   mode?: "form" | "review"
-  onSubmit: (data: FormData) => void
+  onSubmit: (data: FormData | DemandaCreatedResponse) => void
   id?: string
   form?: string
   demandaId?: number

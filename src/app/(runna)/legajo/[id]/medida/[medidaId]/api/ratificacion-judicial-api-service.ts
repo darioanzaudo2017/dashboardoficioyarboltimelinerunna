@@ -10,7 +10,9 @@
  * - GET  /api/medidas/{medida_pk}/ratificacion/historial/ → Historial completo
  */
 
-import { get, create } from "@/app/api/apiService"
+import { get } from "@/app/api/apiService"
+import axiosInstance from "@/app/api/utils/axiosInstance"
+import { toast } from "react-toastify"
 import type {
   RatificacionJudicial,
   CreateRatificacionJudicialRequest,
@@ -90,12 +92,11 @@ export async function createRatificacion(
 
     // REFACTORED: Use apiService.create() instead of axiosInstance
     // apiService.create() automatically handles FormData and multipart/form-data
-    const response = await create<RatificacionJudicial>(
+    const { data: response } = await axiosInstance.post<RatificacionJudicial>(
       `medidas/${medidaId}/ratificacion/`,
-      formData,
-      true,
-      'Ratificación judicial registrada exitosamente'
+      formData
     )
+    toast.success('Ratificación judicial registrada exitosamente')
 
     console.log("Ratificación created successfully:", response)
 

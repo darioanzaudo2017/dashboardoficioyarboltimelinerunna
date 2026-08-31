@@ -79,7 +79,7 @@ const createActividadSchema = (isEquipoTecnico: boolean, isDraft: boolean) => {
   }
 }
 
-type ActividadFormData = z.infer<typeof actividadSchemaFinal>
+type ActividadFormData = z.infer<ReturnType<typeof createActividadSchema>>
 
 interface ActorTabContentProps {
   actor: string
@@ -263,7 +263,7 @@ export const ActorTabContent: React.FC<ActorTabContentProps> = ({
             render={({ field }) => (
               <ActividadEspecificaSelector
                 derechoId={watchedDerechoId}
-                value={field.value}
+                value={field.value ?? null}
                 onChange={field.onChange}
                 error={!!errors.subtipo_actividad}
                 helperText={errors.subtipo_actividad?.message}
@@ -304,7 +304,7 @@ export const ActorTabContent: React.FC<ActorTabContentProps> = ({
           render={({ field }) => (
             <DatePicker
               label="Fecha de planificación"
-              value={field.value}
+              value={field.value instanceof Date ? field.value : null}
               onChange={(newValue) => field.onChange(newValue)}
               slotProps={{
                 textField: {
@@ -343,7 +343,7 @@ export const ActorTabContent: React.FC<ActorTabContentProps> = ({
           render={({ field }) => (
             <ResponsableSelect
               label="Responsable Principal"
-              value={field.value}
+              value={field.value ?? 0}
               onChange={field.onChange}
               error={!!errors.responsable_principal}
               helperText={errors.responsable_principal?.message}

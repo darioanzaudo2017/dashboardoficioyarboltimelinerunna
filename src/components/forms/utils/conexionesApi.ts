@@ -1,6 +1,6 @@
 "use client"
 
-import { create } from "@/app/api/apiService"
+import axiosInstance from "@/app/api/utils/axiosInstance"
 import { useCallback, useRef, useEffect } from "react"
 import { debounce } from "lodash"
 
@@ -30,8 +30,11 @@ interface BusquedaVinculacionResponse {
  */
 export const buscarVinculacion = async (data: BusquedaVinculacionRequest): Promise<BusquedaVinculacionResponse> => {
   try {
-    const response = await create<BusquedaVinculacionResponse>("demanda-busqueda-vinculacion", data)
-    return response
+    const response = await axiosInstance.post<BusquedaVinculacionResponse>(
+      "demanda-busqueda-vinculacion/",
+      data,
+    )
+    return response.data
   } catch (error) {
     console.error("Error al buscar vinculación:", error)
     return { demanda_ids: [], match_descriptions: [] }
@@ -63,7 +66,7 @@ const isValidLocalizacion = (localizacion?: LocalizacionData): boolean => {
   const calleValida = localizacion.calle && localizacion.calle.trim().length > 0
   const localidadValida = localizacion.localidad && !isNaN(Number(localizacion.localidad))
 
-  return calleValida && localidadValida
+  return Boolean(calleValida && localidadValida)
 }
 
 /**
@@ -160,7 +163,7 @@ export const useBusquedaVinculacion = (delay = 500) => {
             shouldSearch = true
           }
 
-          if (isValidSearchValue(codigo)) {
+          if (typeof codigo === "string" && isValidSearchValue(codigo)) {
             data.codigo = codigo
             prevCodigoRef.current = codigo
             shouldSearch = true

@@ -4,6 +4,7 @@
  */
 
 import { get } from "@/app/api/apiService"
+import axiosInstance from "@/app/api/utils/axiosInstance"
 import type {
   LegajosQueryParams,
   PaginatedLegajosResponse,
@@ -316,9 +317,6 @@ export const updateLegajoDatosPersonales = async (
   datosPersonales: Record<string, any>
 ): Promise<LegajoDetailResponse> => {
   try {
-    // Import patch from apiService
-    const { patch } = await import("@/app/api/apiService")
-
     // The backend expects persona data wrapped in "persona" key
     const payload = {
       persona: datosPersonales,
@@ -326,7 +324,10 @@ export const updateLegajoDatosPersonales = async (
 
     console.log(`Updating legajo ${id} datos personales:`, payload)
 
-    const response = await patch<LegajoDetailResponse>("/legajos", id, payload)
+    const { data: response } = await axiosInstance.patch<LegajoDetailResponse>(
+      `/legajos/${id}/`,
+      payload
+    )
 
     console.log("Update response:", response)
 

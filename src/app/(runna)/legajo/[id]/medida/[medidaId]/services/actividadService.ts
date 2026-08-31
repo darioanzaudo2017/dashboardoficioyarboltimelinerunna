@@ -1,9 +1,10 @@
 // API Service Layer for PLTM-01 Activity Management & PLTM-02 Actions
 // Backend API: stories/RUNNA API (9).yaml
 
-import { get, create, patch, remove } from '@/app/api/apiService'
+import { get, create } from '@/app/api/apiService'
 import { extractArray } from '@/hooks/useApiQuery'
 import axiosInstance from '@/app/api/utils/axiosInstance' // Only for cancel() - non-standard DELETE with payload
+import { toast } from 'react-toastify'
 import type {
   TActividadPlanTrabajo,
   TTipoActividad,
@@ -32,6 +33,16 @@ import type {
   LeidaPorMiResponse,
   MarcarLeidaResponse
 } from '../types/actividades'
+
+const postActivityAction = async <TResponse, TRequest>(
+  endpoint: string,
+  data: TRequest,
+  successMessage: string
+): Promise<TResponse> => {
+  const response = await axiosInstance.post<TResponse>(endpoint, data)
+  toast.success(successMessage)
+  return response.data
+}
 
 export const actividadService = {
   // List activities with filters
@@ -91,12 +102,17 @@ export const actividadService = {
       })
     }
 
-    return create<TActividadPlanTrabajo>('actividades/', formData, true, 'Actividad creada exitosamente')
+    return postActivityAction<TActividadPlanTrabajo, FormData>(
+      'actividades/',
+      formData,
+      'Actividad creada exitosamente'
+    )
   },
 
   // Update activity
   async update(id: number, data: UpdateActividadRequest): Promise<TActividadPlanTrabajo> {
-    return patch<TActividadPlanTrabajo>(`actividades`, id, data)
+    const response = await axiosInstance.patch<TActividadPlanTrabajo>(`actividades/${id}/`, data)
+    return response.data
   },
 
   // Cancel activity (soft delete)
@@ -119,7 +135,11 @@ export const actividadService = {
       formData.append('descripcion', data.descripcion)
     }
 
-    return create<TAdjuntoActividad>(`actividades/${actividadId}/adjuntos/`, formData, true, 'Adjunto agregado exitosamente')
+    return postActivityAction<TAdjuntoActividad, FormData>(
+      `actividades/${actividadId}/adjuntos/`,
+      formData,
+      'Adjunto agregado exitosamente'
+    )
   },
 
   // Get activity types catalog
@@ -232,7 +252,9 @@ export const actividadService = {
    * @returns Updated activity
    */
   async cambiarEstado(id: number, data: CambiarEstadoRequest): Promise<TActividadPlanTrabajo> {
-    return create<TActividadPlanTrabajo>(`actividades/${id}/cambiar-estado/`, data, true, 'Estado de actividad actualizado')
+    return postActivityAction<TActividadPlanTrabajo, CambiarEstadoRequest>(
+      `actividades/${id}/cambiar-estado/`, data, 'Estado de actividad actualizado'
+    )
   },
 
   /**
@@ -287,7 +309,9 @@ export const actividadService = {
    * @returns Updated activity in EN_PROGRESO state
    */
   async reabrir(id: number, data: ReabrirRequest): Promise<TActividadPlanTrabajo> {
-    return create<TActividadPlanTrabajo>(`actividades/${id}/reabrir/`, data, true, 'Actividad reabierta')
+    return postActivityAction<TActividadPlanTrabajo, ReabrirRequest>(
+      `actividades/${id}/reabrir/`, data, 'Actividad reabierta'
+    )
   },
 
   /**
@@ -336,7 +360,11 @@ export const actividadService = {
    * @returns Updated activity with new visado state
    */
   async visar(id: number, data: VisarRequest): Promise<TActividadPlanTrabajo> {
-    return create<TActividadPlanTrabajo>(`actividades/${id}/visar/`, data, true, data.aprobado ? 'Visado aprobado' : 'Visado con observaciones')
+    return postActivityAction<TActividadPlanTrabajo, VisarRequest>(
+      `actividades/${id}/visar/`,
+      data,
+      data.aprobado ? 'Visado aprobado' : 'Visado con observaciones'
+    )
   },
 
   /**
@@ -353,7 +381,11 @@ export const actividadService = {
    * @returns Updated activity with new state
    */
   async visarJz(id: number, data: VisarJzRequest): Promise<TActividadPlanTrabajo> {
-    return create<TActividadPlanTrabajo>(`actividades/${id}/visar-jz/`, data, true, data.aprobado ? 'Visado JZ aprobado' : 'Visado JZ rechazado')
+    return postActivityAction<TActividadPlanTrabajo, VisarJzRequest>(
+      `actividades/${id}/visar-jz/`,
+      data,
+      data.aprobado ? 'Visado JZ aprobado' : 'Visado JZ rechazado'
+    )
   },
 
   // ============================================================================
@@ -389,7 +421,9 @@ export const actividadService = {
    * @returns Response with transferred count, activities, and any errors
    */
   async bulkTransfer(data: BulkTransferActividadesRequest): Promise<BulkOperationResponse> {
-    return create<BulkOperationResponse>('actividades/bulk-transferir/', data, true, 'Actividades transferidas exitosamente')
+    return postActivityAction<BulkOperationResponse, BulkTransferActividadesRequest>(
+      'actividades/bulk-transferir/', data, 'Actividades transferidas exitosamente'
+    )
   },
 
   // ============================================================================

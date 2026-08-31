@@ -103,9 +103,7 @@ const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({ index, contro
                         size="small"
                       />
                     )}
-                    PopperProps={{
-                      style: { width: "auto", maxWidth: "300px" },
-                    }}
+                    componentsProps={{ popper: { style: { width: "auto", maxWidth: "300px" } } }}
                     size="small"
                   />
                 </FormControl>
@@ -137,9 +135,7 @@ const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({ index, contro
                       size="small"
                     />
                   )}
-                  PopperProps={{
-                    style: { width: "auto", maxWidth: "300px" },
-                  }}
+                  componentsProps={{ popper: { style: { width: "auto", maxWidth: "300px" } } }}
                   size="small"
                 />
               </FormControl>
@@ -170,9 +166,7 @@ const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({ index, contro
                       size="small"
                     />
                   )}
-                  PopperProps={{
-                    style: { width: "auto", maxWidth: "300px" },
-                  }}
+                  componentsProps={{ popper: { style: { width: "auto", maxWidth: "300px" } } }}
                   size="small"
                 />
               </FormControl>

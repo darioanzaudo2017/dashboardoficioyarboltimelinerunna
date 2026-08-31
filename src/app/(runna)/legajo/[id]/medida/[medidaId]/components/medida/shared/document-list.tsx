@@ -13,7 +13,7 @@ import DescriptionIcon from "@mui/icons-material/Description"
 import DownloadIcon from "@mui/icons-material/Download"
 import AttachFileIcon from "@mui/icons-material/AttachFile"
 
-interface DocumentItem {
+export interface DocumentItem {
     id: string
     label: string
     checked?: boolean
@@ -128,4 +128,4 @@ export const DocumentList: React.FC<DocumentListProps> = ({
             </Box>
         </Box>
     )
-} 
+}

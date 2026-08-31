@@ -27,7 +27,7 @@ export interface BatchEvaluacion {
 
 // Fetch indicators from the API - using the correct endpoint format
 export const getIndicadores = async (): Promise<Indicador[]> => {
-  return get<Indicador>("indicadores-valoracion/")
+  return get<Indicador[]>("indicadores-valoracion/")
 }
 
 // Submit an evaluation for an indicator (without showing toast)

@@ -25,7 +25,7 @@ import type { TActividadPlanTrabajo } from '../../../types/actividades'
 // Note: PENDIENTE_VISADO_JZ is auto-transitioned by backend when completing activity with requiere_visado_legales=true
 // Note: PENDIENTE_VISADO_JZ → PENDIENTE_VISADO should ONLY be done via /visar-jz/ endpoint (VisarJzButton component)
 // Note: PENDIENTE_VISADO → VISADO_APROBADO/VISADO_CON_OBSERVACION should ONLY be done via /visar/ endpoint (VisarButton component)
-const TRANSICIONES_PERMITIDAS: Record<string, string[]> = {
+const TRANSICIONES_PERMITIDAS: Record<string, TActividadPlanTrabajo['estado'][]> = {
   'PENDIENTE': ['EN_PROGRESO', 'CANCELADA'],
   'EN_PROGRESO': ['COMPLETADA', 'CANCELADA', 'PENDIENTE'],
   // COMPLETADA state removed - backend auto-transitions to PENDIENTE_VISADO_JZ if needed
@@ -56,7 +56,7 @@ interface CambiarEstadoSectionProps {
    */
   canChangeEstado: boolean
   onSuccess: () => void
-  onCambiarEstado: (nuevoEstado: string, motivo?: string) => Promise<any>
+  onCambiarEstado: (nuevoEstado: TActividadPlanTrabajo['estado'], motivo?: string) => Promise<unknown>
   loading: boolean
 }
 
@@ -68,7 +68,7 @@ export const CambiarEstadoSection: React.FC<CambiarEstadoSectionProps> = ({
   loading
 }) => {
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [nuevoEstado, setNuevoEstado] = useState('')
+  const [nuevoEstado, setNuevoEstado] = useState<TActividadPlanTrabajo['estado'] | ''>('')
   const [motivo, setMotivo] = useState('')
   const [error, setError] = useState<string | null>(null)
 
@@ -157,7 +157,7 @@ export const CambiarEstadoSection: React.FC<CambiarEstadoSectionProps> = ({
               <InputLabel>Nuevo Estado</InputLabel>
               <Select
                 value={nuevoEstado}
-                onChange={(e) => setNuevoEstado(e.target.value)}
+                onChange={(e) => setNuevoEstado(e.target.value as TActividadPlanTrabajo['estado'])}
                 label="Nuevo Estado"
               >
                 {transicionesPermitidas.map((estado) => (
@@ -189,7 +189,7 @@ export const CambiarEstadoSection: React.FC<CambiarEstadoSectionProps> = ({
             )}
 
             {/* Warnings */}
-            {nuevoEstado === 'COMPLETADA' && actividad.requiere_visado_legales && (
+            {nuevoEstado === 'COMPLETADA' && actividad.subtipo_actividad_info?.requiere_visado_legales && (
               <Alert severity="info">
                 Esta actividad requiere visado. Al completarla, pasará a &quot;Pendiente Visado JZ&quot; para revisión del Jefe Zonal, y luego al equipo Legal para visado final.
               </Alert>

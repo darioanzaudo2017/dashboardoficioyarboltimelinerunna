@@ -6,6 +6,22 @@ import type { FormData } from "../types/formTypes"
  */
 export const transformApiDataToFormData = (apiData: any): FormData => {
   return {
+    id: apiData.id || 0,
+    nombre: apiData.nombre || "",
+    tipo_demanda: apiData.tipo_demanda || null,
+    presuntos_delitos: apiData.presuntos_delitos || null,
+    nro_notificacion_102: apiData.nro_notificacion_102 || null,
+    nro_sac: apiData.nro_sac || null,
+    nro_suac: apiData.nro_suac || null,
+    nro_historia_clinica: apiData.nro_historia_clinica || null,
+    nro_oficio_web: apiData.nro_oficio_web || null,
+    autos_caratulados: apiData.autos_caratulados || "",
+    descripcion: apiData.descripcion || "",
+    adjuntos: apiData.adjuntos || [],
+    createNewUsuarioExterno: false,
+    presuntaVulneracion: {
+      motivos: apiData.presunta_vulneracion?.motivos || null,
+    },
     // Include estado_demanda in the transformed data
     estado_demanda: apiData.estado_demanda || null,
     objetivo_de_demanda: apiData.objetivo_de_demanda || null,

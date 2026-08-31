@@ -20,7 +20,7 @@ import ListAltIcon from "@mui/icons-material/ListAlt"
 import HomeIcon from "@mui/icons-material/Home"
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance"
 
-import BaseModal from "@/components/shared/BaseModal"
+import BaseModal, { type BaseModalAction } from "@/components/shared/BaseModal"
 import type { DemandaCreatedResponse } from "../types/demanda-response"
 import { getNnyaCount, getAdultosCount, OBJETIVO_LABELS } from "../types/demanda-response"
 import { UnifiedActividadesTable } from "@/app/(runna)/legajo/actividades/components/UnifiedActividadesTable"
@@ -72,7 +72,46 @@ export const DemandaSuccessModal: React.FC<DemandaSuccessModalProps> = ({
   // Get first medida and legajo for navigation
   const firstMedida = medidas_creadas?.[0]
   const firstVinculo = vinculos_legajo?.[0]
-  const canNavigateToMedida = firstMedida && firstVinculo?.legajo_origen_id
+
+  const actions: BaseModalAction[] = [
+    {
+      label: "Cerrar",
+      onClick: onClose,
+      variant: "outlined",
+      color: "inherit",
+    },
+    {
+      label: "Mesa de Entrada",
+      onClick: () => {
+        onNavigateToMesaEntrada?.()
+      },
+      variant: "outlined",
+      color: "primary",
+      startIcon: <HomeIcon />,
+    },
+  ]
+
+  if (firstMedida && firstVinculo?.legajo_origen_id) {
+    actions.push({
+      label: "Ver Medida",
+      onClick: () => {
+        onNavigateToMedida?.(firstVinculo.legajo_origen_id, firstMedida.id)
+      },
+      variant: "contained",
+      color: "secondary",
+      startIcon: <AccountBalanceIcon />,
+    })
+  }
+
+  actions.push({
+    label: "Ver Demanda",
+    onClick: () => {
+      onNavigateToDemanda?.(demanda.id)
+    },
+    variant: "contained",
+    color: "primary",
+    startIcon: <VisibilityIcon />,
+  })
 
   return (
     <BaseModal
@@ -90,35 +129,7 @@ export const DemandaSuccessModal: React.FC<DemandaSuccessModalProps> = ({
       maxHeight="95vh"
       showCloseButton
       showFooterDivider
-      actions={[
-        {
-          label: "Cerrar",
-          onClick: onClose,
-          variant: "outlined",
-          color: "inherit",
-        },
-        {
-          label: "Mesa de Entrada",
-          onClick: () => onNavigateToMesaEntrada?.(),
-          variant: "outlined",
-          color: "primary",
-          startIcon: <HomeIcon />,
-        },
-        ...(canNavigateToMedida ? [{
-          label: "Ver Medida",
-          onClick: () => onNavigateToMedida?.(firstVinculo.legajo_origen_id, firstMedida.id),
-          variant: "contained",
-          color: "secondary",
-          startIcon: <AccountBalanceIcon />,
-        }] : []),
-        {
-          label: "Ver Demanda",
-          onClick: () => onNavigateToDemanda?.(demanda.id),
-          variant: "contained",
-          color: "primary",
-          startIcon: <VisibilityIcon />,
-        },
-      ]}
+      actions={actions}
     >
       {/* Summary Section */}
       <Paper

@@ -791,7 +791,7 @@ export const InformeJuridicoDialog: React.FC<InformeJuridicoDialogProps> = ({
       {/* Info */}
       <Alert severity="info" icon={<SendIcon />}>
         <Typography variant="body2">
-          Al hacer clic en "Crear y Enviar", el informe se creará, los archivos se subirán
+          Al hacer clic en «Crear y Enviar», el informe se creará, los archivos se subirán
           y el informe se enviará automáticamente. La medida avanzará al estado
           <strong> PENDIENTE_RATIFICACION_JUDICIAL</strong>.
         </Typography>

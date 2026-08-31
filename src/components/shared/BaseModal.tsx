@@ -33,11 +33,11 @@ export interface BaseModalAction {
 
 export interface BaseModalTab {
   label: string
-  icon?: React.ReactNode
+  icon?: React.ReactElement
   disabled?: boolean
 }
 
-export interface BaseModalProps extends Omit<ModalProps, "children"> {
+export interface BaseModalProps extends Omit<ModalProps, "children" | "title"> {
   /** Modal title */
   title: string | React.ReactNode
   /** Optional icon to display before title */

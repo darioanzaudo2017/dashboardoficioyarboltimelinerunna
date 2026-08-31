@@ -42,7 +42,8 @@ import type { StepStatus, StepProgress } from "../../types/workflow"
 
 // V2 Imports
 import type { TipoEtapa, TEstadoEtapaMedida } from "../../types/estado-etapa"
-import type { TipoMedida, EtapaMedida } from "../../types/medida-api"
+import type { TipoMedida } from "../../types/medida-api"
+import type { EtapaMedida } from "@/app/(runna)/legajo-mesa/types/medida-api"
 import { shouldSkipEstados } from "../../utils/estado-validation"
 import MPJStageStepper from "./mpj-stage-stepper"
 import MPICeseCompletion from "./mpi-cese-completion"

@@ -32,7 +32,7 @@ export const CalculatedFieldsChip: React.FC<CalculatedFieldsChipProps> = ({
   const fields: Array<{
     label: string
     value: number
-    icon: React.ReactNode
+    icon: React.ReactElement
     color: string
     tooltip: string
   }> = []

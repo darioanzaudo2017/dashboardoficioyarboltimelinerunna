@@ -55,7 +55,7 @@ const createEditSchema = (isEquipoTecnico: boolean) => {
   }
 }
 
-type EditActividadFormData = z.infer<typeof editActividadSchema>
+type EditActividadFormData = z.infer<ReturnType<typeof createEditSchema>>
 
 interface EditActividadModalProps {
   open: boolean
@@ -116,7 +116,7 @@ export const EditActividadModal: React.FC<EditActividadModalProps> = ({
       fecha_planificacion: new Date(actividad.fecha_planificacion),
       descripcion: actividad.descripcion || '',
       responsable_principal: actividad.responsable_principal,
-      responsables_secundarios: actividad.responsables_secundarios?.map(r => typeof r === 'number' ? r : r.id) || [],
+      responsables_secundarios: actividad.responsables_secundarios || [],
       referentes_externos: actividad.referentes_externos || ''
     }
   })
@@ -137,7 +137,7 @@ export const EditActividadModal: React.FC<EditActividadModalProps> = ({
       // PLTM V4.1: Hybrid system update
       // - EQUIPO_TECNICO: Both tipo_actividad and subtipo_actividad
       // - Other teams: Only tipo_actividad, omit subtipo_actividad
-      const updateData: any = {
+      const updateData: UpdateActividadRequest = {
         tipo_actividad: data.tipo_actividad,
         fecha_planificacion: data.fecha_planificacion.toISOString().split('T')[0],
         descripcion: data.descripcion,
@@ -176,7 +176,7 @@ export const EditActividadModal: React.FC<EditActividadModalProps> = ({
         fecha_planificacion: new Date(actividad.fecha_planificacion),
         descripcion: actividad.descripcion || '',
         responsable_principal: actividad.responsable_principal,
-        responsables_secundarios: actividad.responsables_secundarios?.map(r => typeof r === 'number' ? r : r.id) || [],
+        responsables_secundarios: actividad.responsables_secundarios || [],
         referentes_externos: actividad.referentes_externos || ''
       })
       setLegajosAlcance(Array.isArray(actividad.legajos_alcance) ? actividad.legajos_alcance : [])
@@ -222,7 +222,7 @@ export const EditActividadModal: React.FC<EditActividadModalProps> = ({
         {/* Bloqueo de edición: solo EN_PROGRESO es editable */}
         {!isEditable && (
           <Alert severity="warning" sx={{ fontSize: '0.875rem' }}>
-            Esta actividad no puede editarse porque no está <strong>En Progreso</strong>. Solo las actividades en estado "En Progreso" pueden modificarse.
+            Esta actividad no puede editarse porque no está <strong>En Progreso</strong>. Solo las actividades en estado &quot;En Progreso&quot; pueden modificarse.
           </Alert>
         )}
 
@@ -246,7 +246,7 @@ export const EditActividadModal: React.FC<EditActividadModalProps> = ({
               control={control}
               render={({ field }) => (
                 <DerechoPrincipalSelector
-                  value={field.value}
+                  value={field.value ?? null}
                   onChange={field.onChange}
                   error={!!errors.tipo_actividad}
                   helperText={errors.tipo_actividad?.message}
@@ -260,7 +260,7 @@ export const EditActividadModal: React.FC<EditActividadModalProps> = ({
               render={({ field }) => (
                 <ActividadEspecificaSelector
                   derechoId={watchedDerechoId}
-                  value={field.value}
+                  value={field.value ?? null}
                   onChange={field.onChange}
                   error={!!errors.subtipo_actividad}
                   helperText={errors.subtipo_actividad?.message}

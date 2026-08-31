@@ -198,8 +198,8 @@ export const useEtapaDetail = (
   const latestInformeJuridico = hasInformesJuridicos
     ? [...informesJuridicos].sort(
         (a, b) =>
-          new Date(b.fecha_creacion).getTime() -
-          new Date(a.fecha_creacion).getTime()
+          new Date(b.fecha_notificaciones).getTime() -
+          new Date(a.fecha_notificaciones).getTime()
       )[0]
     : null
 

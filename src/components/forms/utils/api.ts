@@ -1,10 +1,11 @@
-import type { FormData } from "../types/formTypes"
+import type { FormData as DemandaFormData } from "../types/formTypes"
 import { create, update } from "@/app/api/apiService"
 import { fetchCaseData } from "./fetch-case-data"
 import { createPatchFromChanges } from "./compareAndPatch"
 import { logPatchData } from "./debug-patch"
 import { submitCleanFormData } from "./submitCleanFormData"
 import { debugFormDataStructure, debugPatchData, logApiSubmission, validateFormDataStructure } from "./debugFormData"
+import type { DemandaCreatedResponse } from "@/app/(runna)/nuevoingreso/types/demanda-response"
 
 // Track if a submission is in progress to prevent duplicates
 let isSubmissionInProgress = false
@@ -12,7 +13,18 @@ let isSubmissionInProgress = false
 /**
  * Create or update the Demanda (form data)
  */
-export const submitFormData = async (formData: FormData, id?: string): Promise<any> => {
+const isDemandaCreatedResponse = (value: unknown): value is DemandaCreatedResponse => {
+  if (!value || typeof value !== "object" || !("demanda" in value)) return false
+  const demanda = value.demanda
+  return Boolean(
+    demanda
+    && typeof demanda === "object"
+    && "id" in demanda
+    && typeof demanda.id === "number",
+  )
+}
+
+export const submitFormData = async (formData: DemandaFormData, id?: string): Promise<DemandaCreatedResponse> => {
   console.log("Original form data:", JSON.stringify(formData, null, 2))
 
   // Debug the incoming form data structure
@@ -33,7 +45,7 @@ export const submitFormData = async (formData: FormData, id?: string): Promise<a
   isSubmissionInProgress = true
 
   try {
-    let dataToSend: FormData | any
+    let dataToSend: globalThis.FormData
 
     if (id) {
       // For updates (PATCH), only send changed fields
@@ -83,7 +95,7 @@ export const submitFormData = async (formData: FormData, id?: string): Promise<a
     const dataJson = JSON.parse(dataToSend.get("data") as string)
     console.log(JSON.stringify(dataJson, null, 2))
 
-    let response: any
+    let response: unknown
     if (id) {
       // Update (PATCH) the existing Demanda
       response = await update("registro-demanda-form", Number(id), dataToSend, true, "Demanda actualizada con éxito")
@@ -93,6 +105,9 @@ export const submitFormData = async (formData: FormData, id?: string): Promise<a
     }
 
     console.log("Server response:", response)
+    if (!isDemandaCreatedResponse(response)) {
+      throw new Error("El servidor devolvió una respuesta de demanda incompleta")
+    }
     isSubmissionInProgress = false
     return response
   } catch (error: any) {
@@ -103,7 +118,9 @@ export const submitFormData = async (formData: FormData, id?: string): Promise<a
     if (error.response && error.response.status === 201) {
       console.log("Form submitted successfully with status 201")
       isSubmissionInProgress = false
-      return error.response.data
+      if (isDemandaCreatedResponse(error.response.data)) {
+        return error.response.data
+      }
     }
     isSubmissionInProgress = false
     throw error
@@ -116,11 +133,13 @@ export const submitFormData = async (formData: FormData, id?: string): Promise<a
 /**
  * Adds files to the FormData object
  */
-function addFilesToFormData(formDataObj: FormData, formData: FormData): void {
+function addFilesToFormData(formDataObj: globalThis.FormData, formData: DemandaFormData): void {
   // Add general attachments
   if (formData.adjuntos && formData.adjuntos.length > 0) {
-    formData.adjuntos.forEach((file: File, index: number) => {
-      formDataObj.append(`adjuntos[${index}][archivo]`, file)
+    formData.adjuntos.forEach((file, index) => {
+      if (file instanceof File) {
+        formDataObj.append(`adjuntos[${index}][archivo]`, file)
+      }
     })
   }
   // Add medical certificate files

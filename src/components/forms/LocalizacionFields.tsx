@@ -67,9 +67,7 @@ const LocalizacionFields: React.FC<LocalizacionFieldsProps> = ({ control, prefix
                       size="small"
                     />
                   )}
-                  PopperProps={{
-                    style: { width: "auto", maxWidth: "300px" },
-                  }}
+                  componentsProps={{ popper: { style: { width: "auto", maxWidth: "300px" } } }}
                   size="small"
                 />
               </FormControl>
@@ -238,9 +236,7 @@ const LocalizacionFields: React.FC<LocalizacionFieldsProps> = ({ control, prefix
                       size="small"
                     />
                   )}
-                  PopperProps={{
-                    style: { width: "auto", maxWidth: "300px" },
-                  }}
+                  componentsProps={{ popper: { style: { width: "auto", maxWidth: "300px" } } }}
                   size="small"
                 />
               </FormControl>
@@ -265,9 +261,7 @@ const LocalizacionFields: React.FC<LocalizacionFieldsProps> = ({ control, prefix
                     renderInput={(params) => (
                       <TextField {...params} label="Barrio" error={!!error} helperText={error?.message} size="small" />
                     )}
-                    PopperProps={{
-                      style: { width: "auto", maxWidth: "300px" },
-                    }}
+                    componentsProps={{ popper: { style: { width: "auto", maxWidth: "300px" } } }}
                     size="small"
                   />
                 </FormControl>
@@ -293,9 +287,7 @@ const LocalizacionFields: React.FC<LocalizacionFieldsProps> = ({ control, prefix
                     renderInput={(params) => (
                       <TextField {...params} label="CPC" error={!!error} helperText={error?.message} size="small" />
                     )}
-                    PopperProps={{
-                      style: { width: "auto", maxWidth: "300px" },
-                    }}
+                    componentsProps={{ popper: { style: { width: "auto", maxWidth: "300px" } } }}
                     size="small"
                   />
                 </FormControl>

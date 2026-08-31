@@ -26,7 +26,7 @@ export const EvaluacionFamiliarSection: React.FC<EvaluacionFamiliarSectionProps>
     onEdit,
     onStartEvaluation,
 }) => {
-    const hasEvaluation = data.estado && data.estado !== ""
+    const hasEvaluation = Boolean(data.estado)
     const isCompleted = data.estado === "Finalizada"
     const isInProgress = data.estado === "En curso"
 
@@ -117,4 +117,4 @@ export const EvaluacionFamiliarSection: React.FC<EvaluacionFamiliarSectionProps>
             )}
         </SectionCard>
     )
-} 
+}

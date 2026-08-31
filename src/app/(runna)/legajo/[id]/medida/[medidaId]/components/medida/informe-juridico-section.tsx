@@ -502,7 +502,7 @@ export const InformeJuridicoSection: React.FC<InformeJuridicoSectionProps> = ({
                   Observaciones
                 </Typography>
                 <Typography variant="body2" sx={{ fontStyle: 'italic', pl: 1, color: 'text.secondary' }}>
-                  "{informeJuridico.observaciones}"
+                  «{informeJuridico.observaciones}»
                 </Typography>
               </Box>
             </Grid>

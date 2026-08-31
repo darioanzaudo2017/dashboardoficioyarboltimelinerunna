@@ -380,21 +380,6 @@ export const NotaAvalSection: React.FC<NotaAvalSectionProps> = ({
 
                       {/* CONTENT */}
                       <CardContent>
-                        {/* COMENTARIOS */}
-                        {nota.comentarios && (
-                          <Box sx={{ mb: 2 }}>
-                            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 0.5 }}>
-                              <CommentIcon fontSize="small" color="action" />
-                              <Typography variant="caption" fontWeight="bold">
-                                Comentarios:
-                              </Typography>
-                            </Box>
-                            <Typography variant="body2" sx={{ pl: 3 }}>
-                              {nota.comentarios}
-                            </Typography>
-                          </Box>
-                        )}
-
                         {/* EXPANDABLE CONTENT */}
                         <Collapse in={isExpanded} timeout="auto" unmountOnExit>
                           <Divider sx={{ my: 2 }} />

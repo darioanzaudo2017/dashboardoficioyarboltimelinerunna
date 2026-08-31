@@ -29,7 +29,7 @@ import {
 import CheckCircleIcon from "@mui/icons-material/CheckCircle"
 import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn"
 import InfoIcon from "@mui/icons-material/Info"
-import type { EtapaMedida } from "../../types/medida-api"
+import type { EtapaMedida } from "@/app/(runna)/legajo-mesa/types/medida-api"
 
 // ============================================================================
 // TYPES
@@ -119,9 +119,9 @@ export const MPICeseCompletion: React.FC<MPICeseCompletionProps> = ({
           <Typography variant="body1" sx={{ fontWeight: 600 }}>
             {etapaActual.nombre}
           </Typography>
-          {etapaActual.fecha_creacion && (
+          {etapaActual.fecha_inicio_estado && (
             <Typography variant="caption" color="text.secondary">
-              Iniciado: {new Date(etapaActual.fecha_creacion).toLocaleDateString('es-AR')}
+              Iniciado: {new Date(etapaActual.fecha_inicio_estado).toLocaleDateString('es-AR')}
             </Typography>
           )}
           {etapaActual.observaciones && (

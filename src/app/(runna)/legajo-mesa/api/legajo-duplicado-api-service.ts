@@ -4,7 +4,8 @@
  * Based on RUNNA API (6).yaml specification
  */
 
-import { get, create } from "@/app/api/apiService"
+import { create } from "@/app/api/apiService"
+import axiosInstance from "@/app/api/utils/axiosInstance"
 import type {
   DuplicateSearchRequest,
   DuplicateSearchResponse,
@@ -196,8 +197,8 @@ export const crearLegajoConDuplicado = async (
     })
 
     // Make API call
-    const response = await create<CrearConDuplicadoResponse>(
-      "legajos/crear-con-duplicado-confirmado",
+    const { data: response } = await axiosInstance.post<CrearConDuplicadoResponse>(
+      "legajos/crear-con-duplicado-confirmado/",
       data
     )
 

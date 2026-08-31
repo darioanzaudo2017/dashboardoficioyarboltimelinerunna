@@ -126,98 +126,21 @@ export function mapSaludFromDemanda(demandaData: DemandaFullDetail, personaId?: 
   }
 
   const cobertura = persona.cobertura_medica
-  const enfermedades = persona.persona_enfermedades || []
-
-  // Concatenate all tratamientos (informacion_tratamiento)
-  const medicacionActual = enfermedades
-    .map(e => e.informacion_tratamiento)
-    .filter(Boolean)
-    .join('; ')
-
-  // Concatenate all enfermedades as condiciones preexistentes
-  const condicionesPreexistentes = enfermedades
-    .map(e => e.enfermedad?.nombre)
-    .filter(Boolean)
-    .join('; ')
 
   return {
     id: cobertura.id,
     obra_social: cobertura.obra_social || '',
+    intervencion: cobertura.intervencion || '',
+    auh: cobertura.auh || false,
+    institucion_sanitaria_id: cobertura.institucion_sanitaria?.id,
     centro_salud: cobertura.institucion_sanitaria?.nombre || '',
-    medico_cabecera: cobertura.medico_cabecera?.nombre || '',
-    medicacion_actual: medicacionActual || '',
-    alergias: '', // Not available in demanda data
-    condiciones_preexistentes: condicionesPreexistentes || '',
-    discapacidad: '', // Will be filled by enhanced version
-    cud: false, // Will be filled by enhanced version
     observaciones: cobertura.observaciones || '',
-    fecha_actualizacion: getCurrentDateISO()
   }
-}
-
-/**
- * Check if persona has CUD based on certificaciones
- * In the API: certificacion can be "NO_TIENE", "CUD", etc.
- */
-function checkCUD(persona: any): boolean {
-  if (!persona?.persona_enfermedades) return false
-
-  return persona.persona_enfermedades.some((e: any) => {
-    const cert = e.certificacion?.toUpperCase() || ''
-    return cert === 'CUD' ||
-           cert.includes('CERTIFICADO') ||
-           cert.includes('DISCAPACIDAD')
-  })
-}
-
-/**
- * Extract discapacidad from condiciones_vulnerabilidad or situacion_salud
- */
-function extractDiscapacidad(persona: any): string {
-  // Check condiciones_vulnerabilidad
-  if (persona?.condiciones_vulnerabilidad && persona.condiciones_vulnerabilidad.length > 0) {
-    const discapacidades = persona.condiciones_vulnerabilidad
-      .filter((c: any) => c.nombre?.toUpperCase().includes('DISCAPACIDAD'))
-      .map((c: any) => c.nombre)
-
-    if (discapacidades.length > 0) {
-      return discapacidades.join(', ')
-    }
-  }
-
-  // Check enfermedades for disability-related situacion_salud
-  if (persona?.persona_enfermedades && persona.persona_enfermedades.length > 0) {
-    const discapacidades = persona.persona_enfermedades
-      .filter((e: any) =>
-        e.situacion_salud?.nombre?.toUpperCase().includes('DISCAPACIDAD') ||
-        e.enfermedad?.nombre?.toUpperCase().includes('DISCAPACIDAD')
-      )
-      .map((e: any) => e.enfermedad?.nombre || e.situacion_salud?.nombre)
-      .filter(Boolean)
-
-    if (discapacidades.length > 0) {
-      return discapacidades.join(', ')
-    }
-  }
-
-  return ''
 }
 
 /**
  * Enhanced version with discapacidad and CUD detection
  */
 export function mapSaludFromDemandaEnhanced(demandaData: DemandaFullDetail, personaId?: number): InformacionSalud {
-  const baseData = mapSaludFromDemanda(demandaData, personaId)
-
-  const persona = demandaData.personas?.find(p =>
-    personaId ? p.persona.id === personaId : true
-  ) || demandaData.personas?.[0]
-
-  if (!persona) return baseData
-
-  return {
-    ...baseData,
-    discapacidad: extractDiscapacidad(persona),
-    cud: checkCUD(persona)
-  }
+  return mapSaludFromDemanda(demandaData, personaId)
 }

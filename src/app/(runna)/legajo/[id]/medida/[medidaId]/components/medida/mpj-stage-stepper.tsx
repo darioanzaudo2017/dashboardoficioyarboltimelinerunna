@@ -38,7 +38,7 @@ import GavelIcon from "@mui/icons-material/Gavel"
 import AssignmentIcon from "@mui/icons-material/Assignment"
 import CheckCircleIcon from "@mui/icons-material/CheckCircle"
 import type { TipoEtapa } from "../../types/estado-etapa"
-import type { EtapaMedida } from "../../types/medida-api"
+import type { EtapaMedida } from "@/app/(runna)/legajo-mesa/types/medida-api"
 
 // ============================================================================
 // TYPES

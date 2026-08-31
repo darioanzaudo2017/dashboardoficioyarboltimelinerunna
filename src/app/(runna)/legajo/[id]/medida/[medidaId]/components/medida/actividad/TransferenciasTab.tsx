@@ -177,13 +177,13 @@ export const TransferenciasTab: React.FC<TransferenciasTabProps> = ({
                 )}
 
                 {/* Estado at transfer */}
-                {transferencia.estado_al_momento && (
+                {transferencia.estado_transferencia_display && (
                   <Box sx={{ mt: 2 }}>
                     <Typography variant="caption" color="text.secondary" display="block" gutterBottom>
                       Estado al momento de la transferencia:
                     </Typography>
                     <Chip
-                      label={transferencia.estado_al_momento}
+                      label={transferencia.estado_transferencia_display}
                       size="small"
                       color="info"
                       variant="outlined"

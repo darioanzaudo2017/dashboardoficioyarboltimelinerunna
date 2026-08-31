@@ -262,7 +262,7 @@ export const HistorialAsignacionesSection: React.FC<HistorialAsignacionesSection
                   <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
                     <Chip
                       label={getStatusText(asignacion)}
-                      color={getStatusColor(asignacion)}
+                      color={asignacion.fecha_fin ? "default" : asignacion.recibido ? "success" : "warning"}
                       size="small"
                       icon={getStatusIcon(asignacion)}
                     />

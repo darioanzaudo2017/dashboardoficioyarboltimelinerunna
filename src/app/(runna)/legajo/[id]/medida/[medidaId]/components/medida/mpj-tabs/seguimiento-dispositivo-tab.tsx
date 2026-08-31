@@ -429,7 +429,10 @@ const CambioLugarResguardoSection = ({ medidaId, legajoId }: { medidaId: number;
                   label="Lugar de Destino"
                   placeholder="Seleccione el nuevo lugar"
                   helperText="Seleccione el lugar al que se trasladará el NNyA"
-                  error={!lugarDestino || (lugarOrigen && lugarDestino && lugarOrigen.id === lugarDestino.id)}
+                  error={
+                    !lugarDestino ||
+                    Boolean(lugarOrigen && lugarOrigen.id === lugarDestino.id)
+                  }
                 />
               )}
               renderOption={(props, option) => (

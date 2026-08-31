@@ -24,16 +24,7 @@ export const LocalizacionSection: React.FC<LocalizacionSectionProps> = ({ legajo
       return null
     }
 
-    const firstDemanda = demandas[0]
-    let extractedId: number | null = null
-
-    if (firstDemanda?.demanda?.demanda_id) {
-      extractedId = firstDemanda.demanda.demanda_id
-    } else if (firstDemanda?.demanda_id) {
-      extractedId = firstDemanda.demanda_id
-    } else if (firstDemanda?.id) {
-      extractedId = firstDemanda.id
-    }
+    const extractedId = demandas[0]?.id ?? null
 
     if (!extractedId) {
       console.log("LocalizacionSection - Could not extract demanda ID")

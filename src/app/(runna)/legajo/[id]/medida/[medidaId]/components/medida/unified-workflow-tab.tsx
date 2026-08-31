@@ -523,12 +523,14 @@ export const UnifiedWorkflowTab: React.FC<UnifiedWorkflowTabProps> = ({
               </Box>
             }
           >
-            <InformeCierreSection
-              medidaId={medidaData.id}
-              medidaApiData={medidaApiData}
-              isJZ={isJZ}
-              onRefresh={refreshWorkflowData}
-            />
+            {medidaApiData && (
+              <InformeCierreSection
+                medidaId={medidaData.id}
+                medidaApiData={medidaApiData}
+                isJZ={isJZ}
+                onRefresh={refreshWorkflowData}
+              />
+            )}
           </WorkflowStepContent>
         ),
       }
@@ -784,22 +786,10 @@ export const UnifiedWorkflowTab: React.FC<UnifiedWorkflowTabProps> = ({
     medidaData.tipo_medida === "MPI" &&
     medidaApiData &&
     etapaActualForThisTab &&
-    (etapaActualForThisTab.estado === "PENDIENTE_DE_INFORME_DE_CIERRE" ||
-      etapaActualForThisTab.estado === "INFORME_DE_CIERRE_REDACTADO")
+    workflowPhase === "cese"
 
   // Extract available estados from etapa's estado_especifico_detalle
-  const availableEstadosFromEtapa: TEstadoEtapaMedida[] =
-    etapaActualForThisTab?.estado_especifico_detalle?.estados_disponibles?.map((estado: any) => ({
-      id: 0, // Not needed for display
-      codigo: estado.codigo,
-      nombre_display: estado.nombre,
-      orden: estado.orden,
-      responsable_tipo: 'EQUIPO_TECNICO', // Default, will be overridden by actual estado
-      siguiente_accion: '',
-      aplica_a_tipos_medida: [],
-      aplica_a_tipos_etapa: [],
-      activo: true,
-    })) ?? []
+  const availableEstadosFromEtapa: TEstadoEtapaMedida[] = estadosCatalog
 
   // V2 MODE: Use catalog-based EstadoStepper
   // Updated: Uses estados from etapa's estado_especifico_detalle instead of separate API call

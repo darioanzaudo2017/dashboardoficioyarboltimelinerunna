@@ -21,7 +21,8 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight"
 import AddIcon from "@mui/icons-material/Add"
 import GroupsIcon from "@mui/icons-material/Groups"
 import { useRouter } from "next/navigation"
-import { useApiQuery, extractArray } from "@/hooks/useApiQuery"
+import { useQuery } from "@tanstack/react-query"
+import { extractArray } from "@/hooks/useApiQuery"
 import type { LegajoDetailResponse } from "@/app/(runna)/legajo-mesa/types/legajo-api"
 import { getMedidasByLegajo } from "@/app/(runna)/legajo-mesa/api/medidas-api-service"
 import type { MedidaBasicResponse } from "@/app/(runna)/legajo-mesa/types/medida-api"
@@ -29,7 +30,7 @@ import { SectionCard } from "../medida/shared/section-card"
 
 interface MedidasActivasSectionProps {
   legajoData: LegajoDetailResponse
-  prefetchedMedidas?: MedidaBasicResponse[] | any // Optional prefetched data from parent
+  prefetchedMedidas?: MedidaBasicResponse[] // Optional prefetched data from parent
   onAddMedida?: () => void
   showAddButton?: boolean
   refreshTrigger?: number // Prop para forzar recarga
@@ -47,15 +48,12 @@ export const MedidasActivasSection: React.FC<MedidasActivasSectionProps> = ({
 
   // Fetch medidas using TanStack Query (only if not prefetched)
   // Use prefetched data to avoid duplicate requests and queuing
-  const { data: medidasData, isLoading, error: queryError } = useApiQuery<MedidaBasicResponse[]>(
-    `legajo/${legajoActualId}/medidas`,
-    { _refresh: refreshTrigger },
-    {
-      queryFn: () => getMedidasByLegajo(legajoActualId, {}),
-      enabled: !!legajoActualId && !prefetchedMedidas, // Only fetch if not prefetched
-      initialData: prefetchedMedidas, // Use prefetched data as initial
-    }
-  )
+  const { data: medidasData, isLoading, error: queryError } = useQuery<MedidaBasicResponse[]>({
+    queryKey: ["legajo", legajoActualId, "medidas", { refreshTrigger }],
+    queryFn: () => getMedidasByLegajo(legajoActualId, {}),
+    enabled: !!legajoActualId && !prefetchedMedidas, // Only fetch if not prefetched
+    initialData: prefetchedMedidas, // Use prefetched data as initial
+  })
 
   // Fuente de datos: el detalle del legajo (GET /api/legajos/{id}/) ya incluye
   // las medidas COMPARTIDAS donde este legajo participa como VINCULADO (Mejora 1,

@@ -137,7 +137,7 @@ const ActionMenu: React.FC<ActionMenuProps> = ({
       <Menu
         anchorEl={anchorEl}
         open={open}
-        onClose={handleClose}
+        onClose={() => handleClose()}
         onClick={(e) => e.stopPropagation()}
         PaperProps={{
           sx: {

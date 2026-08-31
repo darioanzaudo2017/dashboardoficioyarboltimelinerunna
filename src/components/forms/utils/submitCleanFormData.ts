@@ -287,9 +287,9 @@ function createCleanNnyaData(nnya: NnyaData, index: number, existingIds?: any): 
     },
 
     condiciones_vulnerabilidad: (nnya.condicionesVulnerabilidad || []).map(
-      (condicion: number) => ({
+      (condicion) => ({
         si_no: true,
-        condicion_vulnerabilidad: condicion,
+        condicion_vulnerabilidad: Number(condicion),
       }),
     ),
 
@@ -382,9 +382,9 @@ function createCleanAdultoData(adulto: AdultoData, existingIds?: any): any {
       ...(adulto.telefono ? { telefono: Number(adulto.telefono) } : {}),
     },
 
-    condiciones_vulnerabilidad: (adulto.condicionesVulnerabilidad || []).map((condicion: number) => ({
+    condiciones_vulnerabilidad: (adulto.condicionesVulnerabilidad || []).map((condicion) => ({
       si_no: true,
-      condicion_vulnerabilidad: condicion,
+      condicion_vulnerabilidad: Number(condicion),
     })),
 
     vulneraciones: [],
@@ -423,12 +423,6 @@ export function submitCleanFormData(formData: FormData, existingData?: any): any
           if (typeof formData.institucion === 'string') {
             return formData.institucion
           } else if (typeof formData.institucion === 'object' && formData.institucion !== null) {
-            // Check for double nesting first
-            if (typeof formData.institucion.nombre === 'object' && formData.institucion.nombre?.nombre) {
-              console.warn('⚠️ Double nesting detected in formData.institucion.nombre.nombre, fixing automatically')
-              return formData.institucion.nombre.nombre
-            }
-            // Normal object structure
             if (typeof formData.institucion.nombre === 'string') {
               return formData.institucion.nombre
             }

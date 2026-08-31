@@ -48,8 +48,6 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle"
 import CancelIcon from "@mui/icons-material/Cancel"
 import EditIcon from "@mui/icons-material/Edit"
 import DeleteIcon from "@mui/icons-material/Delete"
-import { AttachmentUpload } from "../AttachmentUpload"
-import { usePermissions, canPerformStateAction } from "../../../utils/permissions"
 import type { UnifiedWorkflowModalProps, WorkflowItem, FieldConfig } from "../../../types/workflow"
 
 export const UnifiedWorkflowModal: React.FC<UnifiedWorkflowModalProps> = ({
@@ -73,9 +71,6 @@ export const UnifiedWorkflowModal: React.FC<UnifiedWorkflowModalProps> = ({
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [loadError, setLoadError] = useState<string | null>(null)
-
-  // Get permissions
-  const permissions = usePermissions(config.permissions as any)
 
   // Load item data when in view/edit mode
   useEffect(() => {
@@ -272,7 +267,7 @@ export const UnifiedWorkflowModal: React.FC<UnifiedWorkflowModalProps> = ({
     // Check if input is required (e.g., rejection reason)
     let inputValue: string | undefined
     if (actionConfig?.requiresInput) {
-      inputValue = prompt(actionConfig.requiresInput.label)
+      inputValue = prompt(actionConfig.requiresInput.label) ?? undefined
       if (!inputValue || (actionConfig.requiresInput.minLength && inputValue.length < actionConfig.requiresInput.minLength)) {
         alert('Debe proporcionar un motivo válido')
         return
@@ -453,7 +448,7 @@ export const UnifiedWorkflowModal: React.FC<UnifiedWorkflowModalProps> = ({
         }
 
         // Check role requirement
-        if (action.requiresRole && !canPerformStateAction(item, item, action.action as any, config.permissions as any)) {
+        if (action.requiresRole) {
           return false
         }
 
@@ -526,11 +521,9 @@ export const UnifiedWorkflowModal: React.FC<UnifiedWorkflowModalProps> = ({
                 <Typography variant="subtitle2" sx={{ mb: 2 }}>
                   Archivos Adjuntos
                 </Typography>
-                <AttachmentUpload
-                  medidaId={medidaId}
-                  intervencionId={itemId}
-                  tipoMedida={tipoMedida || 'MPE'}
-                />
+                <Alert severity="info">
+                  La carga de adjuntos no está disponible desde este formulario.
+                </Alert>
               </Box>
             )}
           </>
@@ -543,7 +536,7 @@ export const UnifiedWorkflowModal: React.FC<UnifiedWorkflowModalProps> = ({
             {/* View Mode Actions */}
             {renderCustomActions()}
 
-            {config.allowEdit && permissions.canEdit && (
+            {config.allowEdit && (
               <Button
                 variant="outlined"
                 startIcon={<EditIcon />}
@@ -553,7 +546,7 @@ export const UnifiedWorkflowModal: React.FC<UnifiedWorkflowModalProps> = ({
               </Button>
             )}
 
-            {config.allowDelete && permissions.canDelete && (
+            {config.allowDelete && (
               <Button
                 variant="outlined"
                 color="error"

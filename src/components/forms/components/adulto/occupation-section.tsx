@@ -33,9 +33,7 @@ const OccupationSection: React.FC<OccupationSectionProps> = ({ index, control, d
                   renderInput={(params) => (
                     <TextField {...params} label="Ocupación" error={!!error} helperText={error?.message} size="small" />
                   )}
-                  PopperProps={{
-                    style: { width: "auto", maxWidth: "300px" },
-                  }}
+                  componentsProps={{ popper: { style: { width: "auto", maxWidth: "300px" } } }}
                   size="small"
                 />
               </FormControl>

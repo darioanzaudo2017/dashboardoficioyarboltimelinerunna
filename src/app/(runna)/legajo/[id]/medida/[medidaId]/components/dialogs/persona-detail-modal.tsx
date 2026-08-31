@@ -168,16 +168,7 @@ export default function PersonaDetailModal({
       return null
     }
 
-    const firstDemanda = demandas[0]
-    let extractedId: number | null = null
-
-    if (firstDemanda?.demanda?.demanda_id) {
-      extractedId = firstDemanda.demanda.demanda_id
-    } else if (firstDemanda?.demanda_id) {
-      extractedId = firstDemanda.demanda_id
-    } else if (firstDemanda?.id) {
-      extractedId = firstDemanda.id
-    }
+    const extractedId = demandas[0]?.id ?? null
 
     if (!extractedId) {
       console.log("Could not extract demanda ID")
@@ -886,29 +877,34 @@ export default function PersonaDetailModal({
                     Condiciones Identificadas
                   </Typography>
                   <List dense>
-                    {(personaCompleta.condiciones_vulnerabilidad as Array<Record<string, unknown>>).map((condicion: Record<string, unknown>, idx: number) => (
+                    {(personaCompleta.condiciones_vulnerabilidad as Array<Record<string, unknown>>).map((condicion: Record<string, unknown>, idx: number) => {
+                      const detalle = condicion.condicion_vulnerabilidad
+                      const condicionDetalle = typeof detalle === "object" && detalle !== null
+                        ? detalle as Record<string, unknown>
+                        : condicion
+                      const nombre = typeof condicionDetalle.nombre === "string" ? condicionDetalle.nombre : "Condición"
+                      const descripcion = typeof condicionDetalle.descripcion === "string" ? condicionDetalle.descripcion : undefined
+                      const peso = typeof condicionDetalle.peso === "number" ? condicionDetalle.peso : undefined
+                      return (
                       <ListItem key={idx} divider={idx < (personaCompleta.condiciones_vulnerabilidad as Array<Record<string, unknown>>).length - 1}>
                         <ListItemIcon>
                           <WarningIcon color="warning" />
                         </ListItemIcon>
                         <ListItemText
-                          primary={condicion.condicion_vulnerabilidad?.nombre || condicion.nombre || "Condición"}
-                          secondary={
-                            condicion.condicion_vulnerabilidad?.descripcion ||
-                            condicion.descripcion ||
-                            `Peso: ${condicion.condicion_vulnerabilidad?.peso || condicion.peso || "N/A"}`
-                          }
+                          primary={nombre}
+                          secondary={descripcion || `Peso: ${peso ?? "N/A"}`}
                         />
-                        {(condicion.condicion_vulnerabilidad?.peso || condicion.peso) && (
+                        {peso !== undefined && (
                           <Chip
-                            label={`Peso: ${condicion.condicion_vulnerabilidad?.peso || condicion.peso}`}
+                            label={`Peso: ${peso}`}
                             size="small"
                             color="warning"
                             variant="outlined"
                           />
                         )}
                       </ListItem>
-                    ))}
+                      )
+                    })}
                   </List>
                 </Paper>
               </Grid>

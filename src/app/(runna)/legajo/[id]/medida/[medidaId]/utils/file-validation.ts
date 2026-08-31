@@ -104,7 +104,7 @@ export const validateFiles = (files: File[]): FileValidationResult => {
  * @returns True if extension is allowed
  */
 export const isAllowedExtension = (filename: string): boolean => {
-  const extension = getFileExtension(filename)
+  const extension = getExtension(filename)
   return ALLOWED_EXTENSIONS.includes(extension)
 }
 

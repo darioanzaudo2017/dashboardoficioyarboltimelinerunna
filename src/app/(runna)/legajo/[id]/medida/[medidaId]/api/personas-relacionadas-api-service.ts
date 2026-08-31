@@ -34,6 +34,7 @@ export interface NNyADataResponse {
   apellido: string
   fecha_nacimiento: string | null
   edad_aproximada: number | null
+  edad_calculada?: number | null
   nacionalidad: string | null
   dni: number | null
   situacion_dni: string | null

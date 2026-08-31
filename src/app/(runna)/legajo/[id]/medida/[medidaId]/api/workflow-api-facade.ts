@@ -30,6 +30,32 @@ import type { NotaAvalBasicResponse } from "../types/nota-aval-api"
 import type { InformeJuridicoBasicResponse } from "../types/informe-juridico-api"
 import type { RatificacionJudicial } from "../types/ratificacion-judicial-api"
 
+type WorkflowSource = {
+  id: number
+  medida: number | { id: number }
+  fecha_creacion?: string
+  fecha_emision?: string
+  fecha_envio?: string | null
+  fecha_notificaciones?: string
+  fecha_registro?: string
+}
+
+const toWorkflowItem = <T extends WorkflowSource>(item: T): WorkflowItem => {
+  const fechaCreacion =
+    item.fecha_creacion ??
+    item.fecha_emision ??
+    item.fecha_envio ??
+    item.fecha_notificaciones ??
+    item.fecha_registro
+
+  if (!fechaCreacion) {
+    throw new Error(`El elemento de workflow ${item.id} no incluye una fecha canónica`)
+  }
+
+  const medidaId = typeof item.medida === 'number' ? item.medida : item.medida.id
+  return { ...item, medida: medidaId, fecha_creacion: fechaCreacion }
+}
+
 // Import existing API services
 import {
   createIntervencion,
@@ -61,7 +87,7 @@ import {
 
 import {
   createRatificacion as createRatificacionJudicial,
-  getRatificacion as getRatificacionJudicial,
+  getRatificacionActiva as getRatificacionJudicial,
   getRatificacionHistorial as getHistorialRatificaciones,
 } from "./ratificacion-judicial-api-service"
 
@@ -72,24 +98,30 @@ import {
 export const intervencionApiAdapter: WorkflowApiService = {
   // Read Operations
   getList: async (medidaId, params = {}) => {
-    const intervenciones = await getIntervencionesByMedida(medidaId, params)
-    return intervenciones as WorkflowItem[]
+    const intervenciones = await getIntervencionesByMedida(medidaId, {
+      fecha_desde: params.fecha_desde,
+      fecha_hasta: params.fecha_hasta,
+      ordering: params.ordering,
+      limit: params.limit,
+      offset: params.offset,
+    })
+    return intervenciones.map(toWorkflowItem)
   },
 
   getDetail: async (medidaId, itemId) => {
     const intervencion = await getIntervencionDetail(medidaId, itemId)
-    return intervencion as WorkflowItem
+    return toWorkflowItem(intervencion)
   },
 
   // Write Operations
   create: async (medidaId, data) => {
     const intervencion = await createIntervencion(medidaId, data)
-    return intervencion as WorkflowItem
+    return toWorkflowItem(intervencion)
   },
 
   update: async (medidaId, itemId, data) => {
     const intervencion = await updateIntervencion(medidaId, itemId, data)
-    return intervencion as WorkflowItem
+    return toWorkflowItem(intervencion)
   },
 
   delete: async (medidaId, itemId) => {
@@ -100,18 +132,18 @@ export const intervencionApiAdapter: WorkflowApiService = {
   stateActions: {
     enviar: async (medidaId, itemId) => {
       const result = await enviarIntervencion(medidaId, itemId)
-      return result.intervencion as WorkflowItem
+      return toWorkflowItem(result.intervencion)
     },
 
     aprobar: async (medidaId, itemId) => {
       const result = await aprobarIntervencion(medidaId, itemId)
-      return result.intervencion as WorkflowItem
+      return toWorkflowItem(result)
     },
 
     rechazar: async (medidaId, itemId, reason) => {
       const observaciones = typeof reason === 'string' ? { observaciones: reason } : reason
       const result = await rechazarIntervencion(medidaId, itemId, observaciones)
-      return result.intervencion as WorkflowItem
+      return toWorkflowItem(result)
     },
   },
 
@@ -134,7 +166,7 @@ export const intervencionApiAdapter: WorkflowApiService = {
       ordering: '-fecha_creacion',
       limit: 1,
     })
-    return items.length > 0 ? (items[0] as WorkflowItem) : null
+    return items.length > 0 ? toWorkflowItem(items[0]) : null
   },
 
   hasItems: async (medidaId) => {
@@ -151,18 +183,18 @@ export const notaAvalApiAdapter: WorkflowApiService = {
   // Read Operations
   getList: async (medidaId, params = {}) => {
     const notas = await getNotasAvalByMedida(medidaId, params)
-    return notas as WorkflowItem[]
+    return notas.map(toWorkflowItem)
   },
 
   getDetail: async (medidaId, itemId) => {
     const nota = await getNotaAvalDetail(medidaId, itemId)
-    return nota as WorkflowItem
+    return toWorkflowItem(nota)
   },
 
   // Write Operations
   create: async (medidaId, data) => {
     const nota = await createNotaAval(medidaId, data)
-    return nota as WorkflowItem
+    return toWorkflowItem(nota)
   },
 
   // Note: Nota Aval is immutable after creation - no update or delete
@@ -173,7 +205,7 @@ export const notaAvalApiAdapter: WorkflowApiService = {
       ordering: '-fecha_emision',
       limit: 1,
     })
-    return items.length > 0 ? (items[0] as WorkflowItem) : null
+    return items.length > 0 ? toWorkflowItem(items[0]) : null
   },
 
   hasItems: async (medidaId) => {
@@ -190,23 +222,23 @@ export const informeJuridicoApiAdapter: WorkflowApiService = {
   // Read Operations
   getList: async (medidaId, params = {}) => {
     const informes = await getInformesJuridicosByMedida(medidaId, params)
-    return informes as WorkflowItem[]
+    return informes.map(toWorkflowItem)
   },
 
   getDetail: async (medidaId, itemId) => {
     const informe = await getInformeJuridicoDetail(medidaId, itemId)
-    return informe as WorkflowItem
+    return toWorkflowItem(informe)
   },
 
   // Write Operations
   create: async (medidaId, data) => {
     const informe = await createInformeJuridico(medidaId, data)
-    return informe as WorkflowItem
+    return toWorkflowItem(informe)
   },
 
   update: async (medidaId, itemId, data) => {
     const informe = await updateInformeJuridico(medidaId, itemId, data)
-    return informe as WorkflowItem
+    return toWorkflowItem(informe)
   },
 
   // Note: Informe Jurídico cannot be deleted
@@ -214,8 +246,8 @@ export const informeJuridicoApiAdapter: WorkflowApiService = {
   // State Transitions
   stateActions: {
     enviar: async (medidaId, itemId) => {
-      const informe = await enviarInformeJuridico(medidaId, itemId)
-      return informe as WorkflowItem
+      await enviarInformeJuridico(medidaId)
+      return toWorkflowItem(await getInformeJuridicoDetail(medidaId, itemId))
     },
   },
 
@@ -227,7 +259,7 @@ export const informeJuridicoApiAdapter: WorkflowApiService = {
       ordering: '-fecha_creacion',
       limit: 1,
     })
-    return items.length > 0 ? (items[0] as WorkflowItem) : null
+    return items.length > 0 ? toWorkflowItem(items[0]) : null
   },
 
   hasItems: async (medidaId) => {
@@ -246,12 +278,12 @@ export const ratificacionApiAdapter: WorkflowApiService = {
     // Ratificación returns single item or history
     try {
       const historial = await getHistorialRatificaciones(medidaId)
-      return historial as WorkflowItem[]
+      return historial.historial.map(toWorkflowItem)
     } catch (error) {
       // If no history endpoint, try single ratificacion
       try {
         const ratificacion = await getRatificacionJudicial(medidaId)
-        return ratificacion ? [ratificacion as WorkflowItem] : []
+        return ratificacion ? [toWorkflowItem(ratificacion)] : []
       } catch {
         return []
       }
@@ -261,13 +293,16 @@ export const ratificacionApiAdapter: WorkflowApiService = {
   getDetail: async (medidaId, itemId) => {
     // For ratificacion, itemId might not be used if there's only one per medida
     const ratificacion = await getRatificacionJudicial(medidaId)
-    return ratificacion as WorkflowItem
+    if (!ratificacion) {
+      throw new Error(`No existe una ratificación activa para la medida ${medidaId}`)
+    }
+    return toWorkflowItem(ratificacion)
   },
 
   // Write Operations
   create: async (medidaId, data) => {
     const ratificacion = await createRatificacionJudicial(medidaId, data)
-    return ratificacion as WorkflowItem
+    return toWorkflowItem(ratificacion)
   },
 
   // Note: Ratificación is read-only after creation - no update or delete
@@ -276,7 +311,7 @@ export const ratificacionApiAdapter: WorkflowApiService = {
   getLatest: async (medidaId) => {
     try {
       const ratificacion = await getRatificacionJudicial(medidaId)
-      return ratificacion ? (ratificacion as WorkflowItem) : null
+      return ratificacion ? toWorkflowItem(ratificacion) : null
     } catch {
       return null
     }
@@ -340,9 +375,17 @@ export function extractDocumentsFromEtapa(documentos: EtapaDocumentos | null | u
 /**
  * Get latest document from array (sorted by date descending)
  */
-export function getLatestFromArray<T extends { fecha_creacion?: string; fecha_emision?: string; fecha_registro?: string }>(
+type WorkflowDateSource = {
+  fecha_creacion?: string
+  fecha_emision?: string
+  fecha_envio?: string | null
+  fecha_notificaciones?: string
+  fecha_registro?: string
+}
+
+export function getLatestFromArray<T extends WorkflowDateSource>(
   items: T[],
-  dateField: 'fecha_creacion' | 'fecha_emision' | 'fecha_registro' = 'fecha_creacion'
+  dateField: keyof WorkflowDateSource = 'fecha_creacion'
 ): T | null {
   if (!items || items.length === 0) return null
 
@@ -371,7 +414,7 @@ export function getLatestNotaAval(documentos: EtapaDocumentos | null | undefined
  * Get latest informe juridico from etapa documents
  */
 export function getLatestInformeJuridico(documentos: EtapaDocumentos | null | undefined): InformeJuridicoBasicResponse | null {
-  return getLatestFromArray(documentos?.informes_juridicos ?? [], 'fecha_creacion')
+  return getLatestFromArray(documentos?.informes_juridicos ?? [], 'fecha_notificaciones')
 }
 
 /**
@@ -427,28 +470,28 @@ export function createOptimizedNotaAvalAdapter(
 
   return {
     // Read Operations - Use cached data
-    getList: async () => cachedNotasAval as WorkflowItem[],
+    getList: async () => cachedNotasAval.map(toWorkflowItem),
 
     getDetail: async (medidaId, itemId) => {
       // Try to find in cache first
       const cached = cachedNotasAval.find((n) => n.id === itemId)
-      if (cached) return cached as WorkflowItem
+      if (cached) return toWorkflowItem(cached)
 
       // Fallback to API if not in cache
       const nota = await getNotaAvalDetail(medidaId, itemId)
-      return nota as WorkflowItem
+      return toWorkflowItem(nota)
     },
 
     // Write Operations - Use original API
     create: async (medidaId, data) => {
       const nota = await createNotaAval(medidaId, data)
-      return nota as WorkflowItem
+      return toWorkflowItem(nota)
     },
 
     // Helpers - Use cached data
     getLatest: async () => {
       const latest = getLatestNotaAval(documentos)
-      return latest ? (latest as WorkflowItem) : null
+      return latest ? toWorkflowItem(latest) : null
     },
 
     hasItems: async () => cachedNotasAval.length > 0,
@@ -465,38 +508,38 @@ export function createOptimizedInformeJuridicoAdapter(
 
   return {
     // Read Operations - Use cached data
-    getList: async () => cachedInformes as WorkflowItem[],
+    getList: async () => cachedInformes.map(toWorkflowItem),
 
     getDetail: async (medidaId, itemId) => {
       const cached = cachedInformes.find((i) => i.id === itemId)
-      if (cached) return cached as WorkflowItem
+      if (cached) return toWorkflowItem(cached)
 
       const informe = await getInformeJuridicoDetail(medidaId, itemId)
-      return informe as WorkflowItem
+      return toWorkflowItem(informe)
     },
 
     // Write Operations - Use original API
     create: async (medidaId, data) => {
       const informe = await createInformeJuridico(medidaId, data)
-      return informe as WorkflowItem
+      return toWorkflowItem(informe)
     },
 
     update: async (medidaId, itemId, data) => {
       const informe = await updateInformeJuridico(medidaId, itemId, data)
-      return informe as WorkflowItem
+      return toWorkflowItem(informe)
     },
 
     stateActions: {
-      enviar: async (medidaId) => {
-        const informe = await enviarInformeJuridico(medidaId)
-        return informe as WorkflowItem
+      enviar: async (medidaId, itemId) => {
+        await enviarInformeJuridico(medidaId)
+        return toWorkflowItem(await getInformeJuridicoDetail(medidaId, itemId))
       },
     },
 
     // Helpers - Use cached data
     getLatest: async () => {
       const latest = getLatestInformeJuridico(documentos)
-      return latest ? (latest as WorkflowItem) : null
+      return latest ? toWorkflowItem(latest) : null
     },
 
     hasItems: async () => cachedInformes.length > 0,
@@ -513,23 +556,26 @@ export function createOptimizedRatificacionAdapter(
 
   return {
     // Read Operations - Use cached data
-    getList: async () => cachedRatificaciones as WorkflowItem[],
+    getList: async () => cachedRatificaciones.map(toWorkflowItem),
 
-    getDetail: async () => {
+    getDetail: async (medidaId, itemId) => {
       const latest = getLatestRatificacion(documentos)
-      return latest ? (latest as WorkflowItem) : ({} as WorkflowItem)
+      if (!latest) {
+        throw new Error(`No existe una ratificación ${itemId} para la medida ${medidaId}`)
+      }
+      return toWorkflowItem(latest)
     },
 
     // Write Operations - Use original API
     create: async (medidaId, data) => {
       const ratificacion = await createRatificacionJudicial(medidaId, data)
-      return ratificacion as WorkflowItem
+      return toWorkflowItem(ratificacion)
     },
 
     // Helpers - Use cached data
     getLatest: async () => {
       const latest = getLatestRatificacion(documentos)
-      return latest ? (latest as WorkflowItem) : null
+      return latest ? toWorkflowItem(latest) : null
     },
 
     hasItems: async () => cachedRatificaciones.length > 0,
@@ -546,25 +592,25 @@ export function createOptimizedIntervencionAdapter(
 
   return {
     // Read Operations - Use cached data
-    getList: async () => cachedIntervenciones as WorkflowItem[],
+    getList: async () => cachedIntervenciones.map(toWorkflowItem),
 
     getDetail: async (medidaId, itemId) => {
       const cached = cachedIntervenciones.find((i) => i.id === itemId)
-      if (cached) return cached as WorkflowItem
+      if (cached) return toWorkflowItem(cached)
 
       const intervencion = await getIntervencionDetail(medidaId, itemId)
-      return intervencion as WorkflowItem
+      return toWorkflowItem(intervencion)
     },
 
     // Write Operations - Use original API
     create: async (medidaId, data) => {
       const intervencion = await createIntervencion(medidaId, data)
-      return intervencion as WorkflowItem
+      return toWorkflowItem(intervencion)
     },
 
     update: async (medidaId, itemId, data) => {
       const intervencion = await updateIntervencion(medidaId, itemId, data)
-      return intervencion as WorkflowItem
+      return toWorkflowItem(intervencion)
     },
 
     delete: async (medidaId, itemId) => {
@@ -574,19 +620,19 @@ export function createOptimizedIntervencionAdapter(
     stateActions: {
       enviar: async (medidaId, itemId) => {
         const result = await enviarIntervencion(medidaId, itemId)
-        return result.intervencion as WorkflowItem
+        return toWorkflowItem(result.intervencion)
       },
 
       aprobar: async (medidaId, itemId) => {
         const result = await aprobarIntervencion(medidaId, itemId)
-        return result.intervencion as WorkflowItem
+        return toWorkflowItem(result)
       },
 
       rechazar: async (medidaId, itemId, reason) => {
         const observaciones =
           typeof reason === 'string' ? { observaciones: reason } : reason
         const result = await rechazarIntervencion(medidaId, itemId, observaciones)
-        return result.intervencion as WorkflowItem
+        return toWorkflowItem(result)
       },
     },
 
@@ -605,7 +651,7 @@ export function createOptimizedIntervencionAdapter(
     // Helpers - Use cached data
     getLatest: async () => {
       const latest = getLatestIntervencion(documentos)
-      return latest ? (latest as WorkflowItem) : null
+      return latest ? toWorkflowItem(latest) : null
     },
 
     hasItems: async () => cachedIntervenciones.length > 0,

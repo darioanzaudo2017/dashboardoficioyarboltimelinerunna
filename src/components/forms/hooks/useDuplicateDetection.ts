@@ -95,10 +95,11 @@ export function useDuplicateDetection(
   lastSearch: DuplicateSearchRequest | null
   lastSearchResponse: DuplicateSearchResponse | null
   cancelSearch: () => void
+  clearResults: () => void
+  maxAlertLevel: "CRITICA" | "ALTA" | "MEDIA" | null
 } {
   const {
     debounceMs = DUPLICATE_SEARCH_DEBOUNCE_MS,
-    autoSearch = true,
     threshold = DUPLICATE_THRESHOLDS.MEDIA,
     onDuplicatesFound,
     onError,
@@ -222,10 +223,6 @@ export function useDuplicateDetection(
    */
   const searchDuplicates = useCallback(
     (data: Partial<DuplicateSearchRequest>) => {
-      if (!autoSearch) {
-        return
-      }
-
       // Validar que los datos sean suficientes
       if (!debeEjecutarBusqueda(data)) {
         console.log("Datos insuficientes para búsqueda")
@@ -274,7 +271,7 @@ export function useDuplicateDetection(
         executeSearch(searchData)
       }, debounceMs)
     },
-    [autoSearch, debounceMs, cancelSearch, executeSearch]
+    [debounceMs, cancelSearch, executeSearch]
   )
 
   /**
@@ -310,6 +307,15 @@ export function useDuplicateDetection(
     hasDuplicates: state.hasDuplicates,
     error: state.error,
     clearDuplicates,
+    clearResults: clearDuplicates,
+    maxAlertLevel: state.duplicatesFound.reduce<"CRITICA" | "ALTA" | "MEDIA" | null>(
+      (current, match) => {
+        if (match.nivel_alerta === "CRITICA" || current === "CRITICA") return "CRITICA"
+        if (match.nivel_alerta === "ALTA" || current === "ALTA") return "ALTA"
+        return "MEDIA"
+      },
+      null,
+    ),
     lastSearch: state.lastSearch,
     lastSearchResponse: state.lastSearchResponse,
     cancelSearch,

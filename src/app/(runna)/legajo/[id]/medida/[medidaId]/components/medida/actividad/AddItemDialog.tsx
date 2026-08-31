@@ -17,6 +17,7 @@ import AttachFileIcon from '@mui/icons-material/AttachFile'
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import BaseDialog from '@/components/shared/BaseDialog'
+import type { BaseDialogAction } from '@/components/shared/BaseDialog'
 import { useFormSubmission } from '@/hooks'
 import { AttachmentUpload } from '../AttachmentUpload'
 
@@ -127,11 +128,11 @@ export const AddItemDialog: React.FC<AddItemDialogProps> = ({
   }
 
   const getActions = () => {
-    const actions = [
+    const actions: BaseDialogAction[] = [
       {
         label: "Cancelar",
         onClick: handleClose,
-        variant: "text" as const,
+        variant: "text",
         disabled: submitting
       }
     ]
@@ -140,8 +141,8 @@ export const AddItemDialog: React.FC<AddItemDialogProps> = ({
       actions.push({
         label: submitting ? 'Guardando...' : 'Guardar',
         onClick: handleSubmit,
-        variant: "contained" as const,
-        color: "primary" as const,
+        variant: "contained",
+        color: "primary",
         disabled: submitting,
         loading: submitting
       })

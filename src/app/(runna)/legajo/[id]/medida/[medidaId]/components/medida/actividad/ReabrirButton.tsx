@@ -20,7 +20,7 @@ import type { TActividadPlanTrabajo } from '../../../types/actividades'
 interface ReabrirButtonProps {
   actividad: TActividadPlanTrabajo
   canReopen: boolean
-  onReabrir: (motivo: string, nuevoEstado?: string) => Promise<any>
+  onReabrir: (motivo: string) => Promise<unknown>
   loading: boolean
   onSuccess: () => void
 }
@@ -72,15 +72,7 @@ export const ReabrirButton: React.FC<ReabrirButtonProps> = ({
     setSubmitting(true)
     setError(null)
 
-    // Determine target state based on current state
-    let nuevoEstado: string | undefined
-    if (actividad.estado === 'CANCELADA') {
-      nuevoEstado = 'PENDIENTE'
-    } else if (actividad.estado === 'COMPLETADA' || actividad.estado === 'VISADO_APROBADO') {
-      nuevoEstado = 'EN_PROGRESO'
-    }
-
-    const result = await onReabrir(motivo, nuevoEstado)
+    const result = await onReabrir(motivo)
 
     if (result) {
       handleCloseDialog()

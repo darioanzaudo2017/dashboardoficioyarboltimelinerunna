@@ -54,7 +54,7 @@ export const getInformeMedidaConfig = (handlers: {
             label: "Notificaciones a adultos: 2",
             additionalText: "No es posible",
             checked: handlers.documentStates.notificacionAdultos,
-            onCheckChange: (checked) => handlers.onDocumentChange('notificacionAdultos', checked),
+            onCheckChange: (checked: boolean) => handlers.onDocumentChange('notificacionAdultos', checked),
             showAttachButton: true,
             attachButtonText: "Adjuntar Notificación",
             onAttachClick: handlers.onAdjuntarNotificacion,
@@ -65,7 +65,7 @@ export const getInformeMedidaConfig = (handlers: {
             label: "Fotocopia del DNI:",
             additionalText: "No es posible",
             checked: handlers.documentStates.fotocopiaDNI,
-            onCheckChange: (checked) => handlers.onDocumentChange('fotocopiaDNI', checked),
+            onCheckChange: (checked: boolean) => handlers.onDocumentChange('fotocopiaDNI', checked),
             showAttachButton: true,
             attachButtonText: "AdjuntarDNI",
             onAttachClick: handlers.onAdjuntarDNI,
@@ -75,7 +75,7 @@ export const getInformeMedidaConfig = (handlers: {
             id: "acta-resguardo",
             label: "Acta de resguardo:",
             checked: handlers.documentStates.actaResguardo,
-            onCheckChange: (checked) => handlers.onDocumentChange('actaResguardo', checked),
+            onCheckChange: (checked: boolean) => handlers.onDocumentChange('actaResguardo', checked),
             showAttachButton: true,
             attachButtonText: "Adjuntar Actas",
             onAttachClick: handlers.onAdjuntarActas,
@@ -85,13 +85,13 @@ export const getInformeMedidaConfig = (handlers: {
             id: "acta-puesta-conocimiento",
             label: "Acta de puesta en conocimiento al NNyA:",
             checked: handlers.documentStates.actaPuestaConocimiento,
-            onCheckChange: (checked) => handlers.onDocumentChange('actaPuestaConocimiento', checked)
+            onCheckChange: (checked: boolean) => handlers.onDocumentChange('actaPuestaConocimiento', checked)
         },
         {
             id: "nota-aprobacion",
             label: "Nota de aprobación:",
             checked: handlers.documentStates.notaAprobacion,
-            onCheckChange: (checked) => handlers.onDocumentChange('notaAprobacion', checked),
+            onCheckChange: (checked: boolean) => handlers.onDocumentChange('notaAprobacion', checked),
             showAttachButton: true,
             attachButtonText: "Completar Y adjuntar notas",
             onAttachClick: handlers.onCompletarNotas
@@ -191,4 +191,4 @@ export const getRatificacionConfig = (handlers: {
             onClick: () => { }
         }
     ]
-}) 
+})

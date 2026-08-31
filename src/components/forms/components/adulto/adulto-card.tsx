@@ -89,7 +89,7 @@ const AdultoCard: React.FC<AdultoCardProps> = ({
         overflow: "visible",
         boxShadow: expanded ? 3 : 1,
         transition: "box-shadow 0.3s ease-in-out",
-        border: hasVulnerabilities ? `1px solid ${(theme) => theme.palette.warning.light}` : undefined,
+        border: (theme) => hasVulnerabilities ? `1px solid ${theme.palette.warning.light}` : undefined,
       }}
     >
       <CardHeader

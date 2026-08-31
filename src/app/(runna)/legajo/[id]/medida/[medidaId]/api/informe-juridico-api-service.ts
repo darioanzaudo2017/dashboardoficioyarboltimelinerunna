@@ -9,6 +9,8 @@
  */
 
 import { get, create, update, remove } from "@/app/api/apiService"
+import axiosInstance from "@/app/api/utils/axiosInstance"
+import { toast } from "react-toastify"
 import type {
   CreateInformeJuridicoRequest,
   InformeJuridicoResponse,
@@ -359,12 +361,11 @@ export const crearYEnviarInformeJuridico = async (
     }
 
     // Make API call
-    const response = await create<CrearYEnviarInformeJuridicoResponse>(
+    const { data: response } = await axiosInstance.post<CrearYEnviarInformeJuridicoResponse>(
       `medidas/${medidaId}/informe-juridico/crear-y-enviar/`,
-      formData,
-      true,
-      'Informe jurídico creado y enviado exitosamente'
+      formData
     )
+    toast.success('Informe jurídico creado y enviado exitosamente')
 
     console.log('[crearYEnviarInformeJuridico] Success:', response)
 
@@ -433,12 +434,11 @@ export const uploadAdjuntoInformeJuridico = async (
     }
 
     // apiService.create() supports FormData automatically
-    const response = await create<AdjuntoInformeJuridico>(
+    const { data: response } = await axiosInstance.post<AdjuntoInformeJuridico>(
       `medidas/${medidaId}/informe-juridico/adjuntos/`,
-      formData,
-      true,
-      'Adjunto subido exitosamente'
+      formData
     )
+    toast.success('Adjunto subido exitosamente')
 
     console.log("Adjunto uploaded successfully:", response)
 

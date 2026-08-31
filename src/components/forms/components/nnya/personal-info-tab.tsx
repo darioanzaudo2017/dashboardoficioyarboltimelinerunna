@@ -126,9 +126,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ index, control, dropd
                         size="small"
                       />
                     )}
-                    PopperProps={{
-                      style: { width: "auto", maxWidth: "300px" },
-                    }}
+                    componentsProps={{ popper: { style: { width: "auto", maxWidth: "300px" } } }}
                     size="small"
                   />
                 </FormControl>
@@ -159,9 +157,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ index, control, dropd
                         size="small"
                       />
                     )}
-                    PopperProps={{
-                      style: { width: "auto", maxWidth: "300px" },
-                    }}
+                    componentsProps={{ popper: { style: { width: "auto", maxWidth: "300px" } } }}
                     size="small"
                   />
                 </FormControl>
@@ -192,9 +188,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ index, control, dropd
                         size="small"
                       />
                     )}
-                    PopperProps={{
-                      style: { width: "auto", maxWidth: "300px" },
-                    }}
+                    componentsProps={{ popper: { style: { width: "auto", maxWidth: "300px" } } }}
                     size="small"
                   />
                 </FormControl>
@@ -398,9 +392,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ index, control, dropd
                         size="small"
                       />
                     )}
-                    PopperProps={{
-                      style: { width: "auto", maxWidth: "300px" },
-                    }}
+                    componentsProps={{ popper: { style: { width: "auto", maxWidth: "300px" } } }}
                     size="small"
                   />
                 </FormControl>
@@ -423,7 +415,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ index, control, dropd
                       )}
                       getOptionLabel={(option) => option.nombre || ""}
                       value={
-                        dropdownData.vinculo_con_nnya_principal_choices?.find((item) => item.id === field.value) || null
+                        dropdownData.vinculo_con_nnya_principal_choices?.find((item) => item.id === Number(field.value)) || null
                       }
                       onChange={(_, newValue) => field.onChange(newValue ? newValue.id : null)}
                       renderInput={(params) => (
@@ -435,9 +427,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ index, control, dropd
                           size="small"
                         />
                       )}
-                      PopperProps={{
-                        style: { width: "auto", maxWidth: "300px" },
-                      }}
+                      componentsProps={{ popper: { style: { width: "auto", maxWidth: "300px" } } }}
                       size="small"
                     />
                   </FormControl>

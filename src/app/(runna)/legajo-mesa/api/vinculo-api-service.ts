@@ -11,7 +11,9 @@
  * - POST /api/vinculos-legajo/{id}/desvincular/ - Soft delete with justification
  */
 
-import { get, getWithCustomParams, create } from "@/app/api/apiService"
+import { get } from "@/app/api/apiService"
+import axiosInstance from "@/app/api/utils/axiosInstance"
+import { toast } from "react-toastify"
 import type {
   TTipoVinculo,
   TVinculoLegajoCreate,
@@ -331,7 +333,11 @@ export const createVinculo = async (
     })
 
     // Make API call
-    const response = await create<TVinculoLegajoDetail>("vinculos-legajo", data, true, "¡Vínculo creado exitosamente!")
+    const { data: response } = await axiosInstance.post<TVinculoLegajoDetail>(
+      "vinculos-legajo/",
+      data
+    )
+    toast.success("¡Vínculo creado exitosamente!")
 
     console.log("Vínculo creado:", response)
 
@@ -407,12 +413,11 @@ export const desvincularVinculo = async (
     console.log(`Desvinculando vínculo ${vinculoId}`)
 
     // Make API call - Using 'create' since it's a POST endpoint
-    const response = await create<DesvincularVinculoResponse>(
-      `vinculos-legajo/${vinculoId}/desvincular`,
-      data,
-      true,
-      "¡Vínculo desvinculado exitosamente!"
+    const { data: response } = await axiosInstance.post<DesvincularVinculoResponse>(
+      `vinculos-legajo/${vinculoId}/desvincular/`,
+      data
     )
+    toast.success("¡Vínculo desvinculado exitosamente!")
 
     console.log("Vínculo desvinculado:", response)
 

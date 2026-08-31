@@ -137,7 +137,7 @@ export const InformeCierreModal: React.FC<InformeCierreModalProps> = ({
     tamano: archivo.size,
   }))
 
-  const handleSubmit = () => submit({})
+  const handleSubmit = () => submit()
   const handleClose = () => close()
 
   // ========== Render ==========

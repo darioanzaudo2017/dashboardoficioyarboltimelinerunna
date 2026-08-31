@@ -43,9 +43,7 @@ const LinksSection: React.FC<LinksSectionProps> = ({ index, control, dropdownDat
                       size="small"
                     />
                   )}
-                  PopperProps={{
-                    style: { width: "auto", maxWidth: "300px" },
-                  }}
+                  componentsProps={{ popper: { style: { width: "auto", maxWidth: "300px" } } }}
                   size="small"
                 />
               </FormControl>
@@ -78,9 +76,7 @@ const LinksSection: React.FC<LinksSectionProps> = ({ index, control, dropdownDat
                       size="small"
                     />
                   )}
-                  PopperProps={{
-                    style: { width: "auto", maxWidth: "300px" },
-                  }}
+                  componentsProps={{ popper: { style: { width: "auto", maxWidth: "300px" } } }}
                   size="small"
                 />
               </FormControl>

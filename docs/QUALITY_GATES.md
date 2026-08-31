@@ -15,9 +15,10 @@ Los tests unitarios viven en `tests/unit/`. Cada corrección de lógica pura deb
 
 1. `npm run test:run` finaliza sin fallos.
 2. `npm run build` finaliza sin fallos.
-3. `npm run lint` no incorpora errores nuevos. El repositorio todavía contiene deuda histórica de lint y TypeScript, por lo que debe compararse el resultado con la línea base hasta poder activar esos chequeos como bloqueantes.
+3. `npm run typecheck` finaliza sin errores.
+4. `npm run lint` finaliza sin errores. Las advertencias históricas deben reducirse progresivamente y no aumentar.
 
-No se deben relajar `eslint`, TypeScript ni los tests para hacer pasar un cambio. Si un gate histórico no está en verde, el cambio debe documentar su delta y evitar empeorarlo.
+No se deben relajar `eslint`, TypeScript ni los tests para hacer pasar un cambio. El build de Next vuelve a ejecutar TypeScript y ESLint: ya no existen excepciones que permitan desplegar con errores.
 
 ## Limpieza verificada
 

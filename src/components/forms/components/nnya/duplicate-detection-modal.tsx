@@ -39,6 +39,7 @@ import type {
   AlertLevel,
   VincularDemandaRequest,
   CrearConDuplicadoRequest,
+  DuplicateSearchRequest,
 } from "@/app/(runna)/legajo-mesa/types/legajo-duplicado-types"
 import { ALERT_COLORS, ALERT_MESSAGES } from "@/components/forms/constants/duplicate-thresholds"
 import ScoringProgressBar from "./scoring-progress-bar"
@@ -76,11 +77,11 @@ interface DuplicateDetectionModalProps {
   /** Si está procesando alguna acción */
   isProcessing?: boolean
 
-  /** Datos de la demanda a vincular */
-  demandaData?: {
-    tipo_demanda: string
-    descripcion?: string
-  }
+  /** Demanda ya persistida requerida por los endpoints de vinculación. */
+  demandaId?: number
+
+  /** Datos reales del NNyA requeridos para una creación forzada. */
+  nnyaData?: DuplicateSearchRequest
 }
 
 /**
@@ -115,7 +116,8 @@ const DuplicateDetectionModal: React.FC<DuplicateDetectionModalProps> = ({
   onCrearNuevo,
   onSolicitarPermisos,
   isProcessing = false,
-  demandaData,
+  demandaId,
+  nnyaData,
 }) => {
   // Estado de match seleccionado para ver detalle
   const [selectedMatchId, setSelectedMatchId] = useState<number | null>(null)
@@ -169,6 +171,10 @@ const DuplicateDetectionModal: React.FC<DuplicateDetectionModalProps> = ({
    * Acción: Vincular demanda
    */
   const handleVincularClick = (match: LegajoMatch) => {
+    if (!demandaId) {
+      alert("Guarde la demanda antes de vincularla a un legajo existente.")
+      return
+    }
     // Si no tiene permisos, mostrar modal de solicitud
     if (!match.tiene_permisos) {
       setPendingAction({ type: "vincular", legajoId: match.legajo_id })
@@ -186,10 +192,7 @@ const DuplicateDetectionModal: React.FC<DuplicateDetectionModalProps> = ({
 
     // Ejecutar vinculación
     const vincularData: VincularDemandaRequest = {
-      tipo_demanda: demandaData?.tipo_demanda || "",
-      descripcion: demandaData?.descripcion,
-      confirmacion_duplicado: true,
-      score_similitud: match.score,
+      demanda_id: demandaId,
     }
 
     onVincular(match.legajo_id, vincularData)
@@ -207,12 +210,15 @@ const DuplicateDetectionModal: React.FC<DuplicateDetectionModalProps> = ({
    * Confirmación de justificación para crear nuevo
    */
   const handleJustificationConfirm = (justification: string) => {
-    if (!primaryMatch) return
+    if (!primaryMatch || !demandaId || !nnyaData) return
 
     const crearData: CrearConDuplicadoRequest = {
-      duplicado_ignorado_legajo_id: primaryMatch.legajo_id,
-      score_similitud: primaryMatch.score,
+      demanda_id: demandaId,
+      legajo_duplicado_ignorado: primaryMatch.legajo_id,
+      score_duplicado_ignorado: primaryMatch.score,
       justificacion: justification,
+      confirmacion_usuario: true,
+      nnya_data: nnyaData,
     }
 
     onCrearNuevo(crearData)
@@ -327,15 +333,15 @@ const DuplicateDetectionModal: React.FC<DuplicateDetectionModalProps> = ({
                         {formatDate(match.legajo_info.fecha_apertura)}
                       </Typography>
                     </Grid>
-                    {match.legajo_info.urgencia_actual && (
+                    {match.legajo_info.urgencia && (
                       <Grid item xs={12}>
                         <Chip
-                          label={`Urgencia: ${match.legajo_info.urgencia_actual}`}
+                          label={`Urgencia: ${match.legajo_info.urgencia}`}
                           size="small"
                           color={
-                            match.legajo_info.urgencia_actual === "ALTA"
+                            match.legajo_info.urgencia === "ALTA"
                               ? "error"
-                              : match.legajo_info.urgencia_actual === "MEDIA"
+                              : match.legajo_info.urgencia === "MEDIA"
                                 ? "warning"
                                 : "default"
                           }
@@ -365,7 +371,7 @@ const DuplicateDetectionModal: React.FC<DuplicateDetectionModalProps> = ({
                   variant="contained"
                   startIcon={match.tiene_permisos ? <LinkIcon /> : <PersonAddIcon />}
                   onClick={() => handleVincularClick(match)}
-                  disabled={isProcessing}
+                  disabled={isProcessing || !demandaId}
                 >
                   {match.tiene_permisos ? "Vincular a este Legajo" : "Solicitar Acceso"}
                 </Button>
@@ -403,6 +409,11 @@ const DuplicateDetectionModal: React.FC<DuplicateDetectionModalProps> = ({
         </DialogTitle>
 
         <DialogContent>
+          {!demandaId && (
+            <Alert severity="info" sx={{ mb: 2 }}>
+              Guarde primero la demanda para habilitar acciones sobre legajos existentes.
+            </Alert>
+          )}
           {/* Alerta principal */}
           <Alert
             severity={
@@ -462,7 +473,7 @@ const DuplicateDetectionModal: React.FC<DuplicateDetectionModalProps> = ({
           <Button
             startIcon={<AddIcon />}
             onClick={handleCrearNuevoClick}
-            disabled={isProcessing}
+            disabled={isProcessing || !demandaId || !nnyaData}
             variant="outlined"
             color="warning"
           >
@@ -473,7 +484,7 @@ const DuplicateDetectionModal: React.FC<DuplicateDetectionModalProps> = ({
           <Button
             startIcon={primaryMatch.tiene_permisos ? <LinkIcon /> : <PersonAddIcon />}
             onClick={() => handleVincularClick(primaryMatch)}
-            disabled={isProcessing}
+            disabled={isProcessing || !demandaId}
             variant="contained"
             color="primary"
           >
@@ -505,8 +516,7 @@ const DuplicateDetectionModal: React.FC<DuplicateDetectionModalProps> = ({
             numero: primaryMatch.legajo_numero,
             zona: primaryMatch.legajo_info.zona.nombre,
             responsable: {
-              nombre: primaryMatch.legajo_info.responsable.nombre_completo,
-              email: primaryMatch.legajo_info.responsable.email,
+              nombre: primaryMatch.legajo_info.responsable?.nombre_completo || "Sin responsable asignado",
             },
           }}
           isSubmitting={isProcessing}

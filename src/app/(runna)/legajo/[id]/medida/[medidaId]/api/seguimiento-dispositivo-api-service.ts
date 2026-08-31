@@ -61,12 +61,12 @@ class SeguimientoDispositivoApiService {
    * Create seguimiento data for a medida
    */
   async createSeguimiento(data: CreateSeguimientoRequest): Promise<SeguimientoResponse> {
-    return create<SeguimientoResponse>(
+    const response = await axiosInstance.post<SeguimientoResponse>(
       `medidas/${data.medida_id}/seguimiento/`,
-      data,
-      true,
-      'Seguimiento creado exitosamente'
+      data
     )
+    toast.success('Seguimiento creado exitosamente')
+    return response.data
   }
 
   /**
@@ -670,12 +670,12 @@ class SeguimientoDispositivoApiService {
     const formData = new FormData()
     formData.append('file', file)
 
-    return create<{ url: string }>(
+    const response = await axiosInstance.post<{ url: string }>(
       `medidas/${medidaId}/cambio-lugar/${cambioId}/adjunto/`,
-      formData,
-      true,
-      'Archivo adjuntado exitosamente'
+      formData
     )
+    toast.success('Archivo adjuntado exitosamente')
+    return response.data
   }
 
   /**
@@ -687,12 +687,12 @@ class SeguimientoDispositivoApiService {
     const formData = new FormData()
     formData.append('file', file)
 
-    return create<{ url: string }>(
+    const response = await axiosInstance.post<{ url: string }>(
       `medidas/${medidaId}/notas-seguimiento/${notaId}/adjunto/`,
-      formData,
-      true,
-      'Archivo adjuntado exitosamente'
+      formData
     )
+    toast.success('Archivo adjuntado exitosamente')
+    return response.data
   }
 
   /**

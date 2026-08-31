@@ -65,20 +65,20 @@ export const OficiosProgressBars: React.FC<{ oficios: OficioConSemaforo[] }> = (
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 1, width: "100%" }}>
       {oficios.map((oficio, index) => {
-        const semaforo = oficio.semaforo || calculateSemaforo(oficio.fecha_vencimiento || "")
+        const semaforo = oficio.semaforo || calculateSemaforo(oficio.vencimiento || "")
         const colors = getSemaforoColor(semaforo)
-        const progress = oficio.fecha_vencimiento ? calculateProgress(oficio.fecha_vencimiento) : 0
+        const progress = oficio.vencimiento ? calculateProgress(oficio.vencimiento) : 0
 
         // Calcular días restantes
         let diasRestantes = 0
-        if (oficio.fecha_vencimiento) {
+        if (oficio.vencimiento) {
           const hoy = new Date()
-          const vencimiento = new Date(oficio.fecha_vencimiento)
+          const vencimiento = new Date(oficio.vencimiento)
           diasRestantes = Math.ceil((vencimiento.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24))
         }
 
-        const tooltipText = oficio.fecha_vencimiento
-          ? `${oficio.tipo}: ${diasRestantes} días ${diasRestantes >= 0 ? "restantes" : "vencidos"} (${formatDateLocaleAR(oficio.fecha_vencimiento)})`
+        const tooltipText = oficio.vencimiento
+          ? `${oficio.tipo}: ${diasRestantes} días ${diasRestantes >= 0 ? "restantes" : "vencidos"} (${formatDateLocaleAR(oficio.vencimiento)})`
           : `${oficio.tipo}: Sin fecha de vencimiento`
 
         return (
@@ -134,7 +134,7 @@ export const OficiosProgressBars: React.FC<{ oficios: OficioConSemaforo[] }> = (
                 </Box>
 
                 {/* Progress bar */}
-                {oficio.fecha_vencimiento && (
+                {oficio.vencimiento && (
                   <LinearProgress
                     variant="determinate"
                     value={Math.max(0, progress)}
@@ -177,13 +177,13 @@ export const OficiosProgressCompact: React.FC<{ oficios: OficioConSemaforo[] }> 
   })
 
   const mostCritical = sortedOficios[0]
-  const semaforo = mostCritical.semaforo || calculateSemaforo(mostCritical.fecha_vencimiento || "")
+  const semaforo = mostCritical.semaforo || calculateSemaforo(mostCritical.vencimiento || "")
   const colors = getSemaforoColor(semaforo)
 
   let diasRestantes = 0
-  if (mostCritical.fecha_vencimiento) {
+  if (mostCritical.vencimiento) {
     const hoy = new Date()
-    const vencimiento = new Date(mostCritical.fecha_vencimiento)
+    const vencimiento = new Date(mostCritical.vencimiento)
     diasRestantes = Math.ceil((vencimiento.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24))
   }
 

@@ -5,6 +5,8 @@ export interface DropdownOption {
 
 // Interface for adult person data
 export interface AdultoData {
+  personaId?: number
+  demandaPersonaId?: number
   nombre: string
   apellido: string
   fechaNacimiento: string | null
@@ -53,6 +55,7 @@ export interface NnyaData {
   dni: string
   situacionDni: string
   genero: string
+  nacionalidad: string
   observaciones: string
   useDefaultLocalizacion: boolean
   localizacion: {
@@ -69,6 +72,7 @@ export interface NnyaData {
     cpc: string | null
   }
   educacion: {
+    id?: number
     institucion_educativa: { id?: number; nombre: string } | string
     nivel_alcanzado: string
     esta_escolarizado: boolean
@@ -227,8 +231,9 @@ export interface TipoInformacionJudicial {
 }
 
 export interface DropdownData {
-  vinculo_demanda_choices: any
-  vinculo_con_nnya_principal_choices: any
+  vinculo_demanda_choices: DropdownOption[]
+  vinculo_con_nnya_principal_choices: Array<{ id: number; nombre: string }>
+  ocupacion_choices?: DropdownOption[]
   obra_social_choices: any
   intervencion_choices: any
   instituciones_educativas: any
@@ -245,7 +250,7 @@ export interface DropdownData {
   // keep optional for compatibility with the plural variants above.
   gravedad_vulneracion?: any
   urgencia_vulneracion?: any
-  nacionalidad_choices: any
+  nacionalidad_choices: DropdownOption[]
   bloques_datos_remitente: any
   // Backend devuelve los órganos judiciales con su circunscripción asignada
   // ({ id, nombre, bloque_datos_remitente, circunscripcion_judicial })
@@ -257,10 +262,10 @@ export interface DropdownData {
   ambito_vulneracion: any
   categoria_motivo: any
   categoria_submotivo: any
-  tipo_calle_choices: any
-  localidad: any
-  cpc: any
-  barrio: any
+  tipo_calle_choices: DropdownOption[]
+  localidad: Array<{ id: number; nombre: string }>
+  cpc: Array<{ id: number; nombre: string; localidad: number }>
+  barrio: Array<{ id: number; nombre: string; localidad: number }>
   situacion_dni_choices: DropdownOption[]
   genero_choices: DropdownOption[]
   vinculos: { id: string; nombre: string }[]

@@ -202,7 +202,9 @@ export const AndarielMedidas: React.FC<{
             </Typography>
             {medidasActivas.map((m) => (
               <Typography key={m.id} variant="caption" sx={{ display: "block", color: "#fff" }}>
-                • {m.tipo}{m.etapa ? ` — ${m.etapa}` : ""}{m.estado ? ` (${m.estado})` : ""}
+                • {m.tipo_medida}
+                {m.etapa_actual__nombre ? ` — ${m.etapa_actual__nombre}` : ""}
+                {m.etapa_actual__estado ? ` (${m.etapa_actual__estado})` : ""}
               </Typography>
             ))}
           </Box>

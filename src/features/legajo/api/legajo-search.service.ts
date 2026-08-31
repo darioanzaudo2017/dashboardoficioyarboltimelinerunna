@@ -7,7 +7,7 @@
  * - Includes demandas, medidas, legajo, and grupo conviviente info
  */
 
-import { create } from '@/app/api/apiService'
+import axiosInstance from '@/app/api/utils/axiosInstance'
 import type {
   BusquedaNnyaResult,
   BusquedaVinculacionResponse,
@@ -53,7 +53,7 @@ export const buscarNnyaPorDni = async (dni: string): Promise<BusquedaNnyaResult[
   try {
     console.log(`[LEG-01] Searching NNyA by DNI: ${dni}`)
 
-    const response = await create<BusquedaVinculacionResponse>('demanda-busqueda-vinculacion', {
+    const { data: response } = await axiosInstance.post<BusquedaVinculacionResponse>('demanda-busqueda-vinculacion/', {
       dni: dni,
     })
 
@@ -120,7 +120,7 @@ export const buscarNnyaPorNombre = async (
     console.log(`[LEG-01] Searching NNyA by name: ${nombreCompleto}`)
 
     // Use nombre_y_apellido for flexible matching (LEG-01 backend format)
-    const response = await create<BusquedaVinculacionResponse>('demanda-busqueda-vinculacion', {
+    const { data: response } = await axiosInstance.post<BusquedaVinculacionResponse>('demanda-busqueda-vinculacion/', {
       nombre_y_apellido: nombreCompleto,
     })
 
@@ -167,7 +167,7 @@ export const buscarNnyaPorNombreCompleto = async (
   try {
     console.log(`[LEG-01] Searching NNyA by full name: ${nombreCompleto}`)
 
-    const response = await create<BusquedaVinculacionResponse>('demanda-busqueda-vinculacion', {
+    const { data: response } = await axiosInstance.post<BusquedaVinculacionResponse>('demanda-busqueda-vinculacion/', {
       nombre_y_apellido: nombreCompleto,
     })
 

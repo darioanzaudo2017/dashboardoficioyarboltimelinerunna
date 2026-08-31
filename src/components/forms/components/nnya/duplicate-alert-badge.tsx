@@ -57,12 +57,11 @@ const DuplicateAlertBadge: React.FC<DuplicateAlertBadgeProps> = ({
   variant = "chip",
   size = "small",
 }) => {
-  const percentage = Math.round(score * 100)
   const color = ALERT_COLORS[alertLevel]
   const message = ALERT_MESSAGES[alertLevel]
 
   // Obtener icono según nivel
-  const getIcon = () => {
+  const getIcon = (): React.ReactElement => {
     switch (alertLevel) {
       case "CRITICA":
         return <ErrorIcon fontSize={size} />
@@ -71,7 +70,7 @@ const DuplicateAlertBadge: React.FC<DuplicateAlertBadgeProps> = ({
       case "MEDIA":
         return <InfoIcon fontSize={size} />
       default:
-        return null
+        return <InfoIcon fontSize={size} />
     }
   }
 
@@ -88,7 +87,7 @@ const DuplicateAlertBadge: React.FC<DuplicateAlertBadgeProps> = ({
   // Renderizar según variante
   if (variant === "chip") {
     return (
-      <Tooltip title={message.subtitle} arrow>
+      <Tooltip title={`${message.subtitle} (${Math.round(score * 100)}%)`} arrow>
         <Chip
           icon={getIcon()}
           label={getLabel()}

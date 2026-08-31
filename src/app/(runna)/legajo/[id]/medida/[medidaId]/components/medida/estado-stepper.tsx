@@ -39,7 +39,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle"
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked"
 import type { TEstadoEtapaMedida, ResponsableTipo } from "../../types/estado-etapa"
 import type { TipoMedida } from "../../types/medida-api"
-import type { EtapaMedida } from "../../types/medida-api"
+import type { EtapaMedida } from "@/app/(runna)/legajo-mesa/types/medida-api"
 
 // ============================================================================
 // TYPES
@@ -80,10 +80,7 @@ function getActiveEstadoIndex(
     return 0 // Default to first estado
   }
 
-  // estado_especifico can be the full object or null
-  const currentEstadoId = typeof etapaActual.estado_especifico === 'object'
-    ? etapaActual.estado_especifico.id
-    : null
+  const currentEstadoId = etapaActual.estado_especifico
 
   if (!currentEstadoId) {
     return 0
@@ -147,9 +144,7 @@ export const EstadoStepper: React.FC<EstadoStepperProps> = ({
   const activeEstadoIndex = getActiveEstadoIndex(availableEstados, etapaActual)
 
   // Find current estado object
-  const currentEstadoId = typeof etapaActual?.estado_especifico === 'object' && etapaActual.estado_especifico !== null
-    ? etapaActual.estado_especifico.id
-    : null
+  const currentEstadoId = etapaActual?.estado_especifico ?? null
 
   const currentEstado = currentEstadoId
     ? availableEstados.find((e) => e.id === currentEstadoId)

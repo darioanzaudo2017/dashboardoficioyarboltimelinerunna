@@ -57,8 +57,7 @@ export const NotificacionesModal: React.FC<NotificacionesModalProps> = ({
                     label: 'Guardar',
                     onClick: handleSave,
                     variant: 'contained',
-                    color: 'primary',
-                    fullWidth: true
+                    color: 'primary'
                 }
             ]}
         >
@@ -141,4 +140,4 @@ export const NotificacionesModal: React.FC<NotificacionesModalProps> = ({
             </Box>
         </BaseDialog>
     )
-} 
+}

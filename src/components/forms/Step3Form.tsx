@@ -258,12 +258,14 @@ const Step3Form: React.FC<Step3FormProps> = ({ dropdownData, readOnly = false, a
     try {
       setIsProcessingDuplicate(true)
       const response = await vincularDemandaALegajo(legajoId, data)
+      const linkedMatch = duplicatesFound.find((match) => match.legajo_id === legajoId)
+      const legajoNumero = linkedMatch?.legajo_numero || String(legajoId)
 
       // Update form with linked legajo info
       if (currentNnyaIndex !== null) {
         setValue(`ninosAdolescentes.${currentNnyaIndex}.legajo_existente_vinculado`, {
           legajo_id: response.legajo_id,
-          legajo_numero: response.legajo_numero,
+          legajo_numero: legajoNumero,
           fue_vinculado: true,
         })
       }
@@ -273,7 +275,7 @@ const Step3Form: React.FC<Step3FormProps> = ({ dropdownData, readOnly = false, a
       clearResults()
 
       // Show success notification
-      alert(`Demanda vinculada exitosamente al legajo ${response.legajo_numero}`)
+      alert(`Demanda vinculada exitosamente al legajo ${legajoNumero}`)
     } catch (error: any) {
       console.error("Error al vincular demanda:", error)
 
@@ -358,6 +360,7 @@ const Step3Form: React.FC<Step3FormProps> = ({ dropdownData, readOnly = false, a
       dni: "",
       situacionDni: "",
       genero: "",
+      nacionalidad: "",
       observaciones: "",
       useDefaultLocalizacion: true,
       localizacion: {
@@ -390,8 +393,8 @@ const Step3Form: React.FC<Step3FormProps> = ({ dropdownData, readOnly = false, a
         intervencion: "",
         auh: false,
         observaciones: "",
-        institucion_sanitaria: "",
-        medico_cabecera: "",
+        institucion_sanitaria: null,
+        medico_cabecera: null,
       },
       persona_enfermedades: [],
       demanda_persona: {
@@ -578,10 +581,16 @@ const Step3Form: React.FC<Step3FormProps> = ({ dropdownData, readOnly = false, a
           onCrearNuevo={handleCrearNuevoLegajo}
           onSolicitarPermisos={handleSolicitarPermisos}
           isProcessing={isProcessingDuplicate}
-          demandaData={{
-            tipo_demanda: "PROTECCION_INTEGRAL", // TODO: Get from form context
-            descripcion: undefined,
-          }}
+          demandaId={id}
+          nnyaData={currentNnyaIndex !== null && watchedNnyas?.[currentNnyaIndex] ? {
+            nombre: watchedNnyas[currentNnyaIndex].nombre,
+            apellido: watchedNnyas[currentNnyaIndex].apellido,
+            dni: watchedNnyas[currentNnyaIndex].dni
+              ? Number(watchedNnyas[currentNnyaIndex].dni)
+              : null,
+            fecha_nacimiento: watchedNnyas[currentNnyaIndex].fechaNacimiento,
+            genero: watchedNnyas[currentNnyaIndex].genero || null,
+          } : undefined}
         />
       )}
     </>

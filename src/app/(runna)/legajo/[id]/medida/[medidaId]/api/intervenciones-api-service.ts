@@ -588,12 +588,11 @@ export const rechazarIntervencion = async (
     )
 
     // Uses create() for POST to custom action endpoint with data
-    const response = await create<RechazarIntervencionResponse>(
+    const { data: response } = await axiosInstance.post<RechazarIntervencionResponse>(
       `medidas/${medidaId}/intervenciones/${intervencionId}/rechazar/`,
-      data,
-      true,
-      'Intervención rechazada'
+      data
     )
+    toast.success('Intervención rechazada')
 
     console.log("Intervención rechazada successfully:", response)
 
@@ -643,12 +642,11 @@ export const uploadAdjunto = async (
     formData.append("tipo", tipo)
 
     // apiService.create() supports FormData automatically
-    const response = await create<AdjuntoIntervencion>(
+    const { data: response } = await axiosInstance.post<AdjuntoIntervencion>(
       `medidas/${medidaId}/intervenciones/${intervencionId}/adjuntos/`,
-      formData,
-      true,
-      'Adjunto subido exitosamente'
+      formData
     )
+    toast.success('Adjunto subido exitosamente')
 
     console.log("Adjunto uploaded successfully:", response)
 

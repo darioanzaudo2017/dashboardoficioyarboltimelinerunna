@@ -1,5 +1,4 @@
 import React from "react"
-import { Typography } from "@mui/material"
 import { Delete as DeleteIcon } from "@mui/icons-material"
 import BaseDialog from "@/components/shared/BaseDialog"
 
@@ -44,7 +43,7 @@ const DeleteConfirmationDialog: React.FC<DeleteConfirmationDialogProps> = ({
         }
       ]}
     >
-      {/* Content is handled by warning prop */}
+      {null}
     </BaseDialog>
   )
 }

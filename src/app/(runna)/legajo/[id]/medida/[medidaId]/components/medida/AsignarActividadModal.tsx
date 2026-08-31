@@ -5,11 +5,9 @@ import { useState, useMemo } from "react"
 import {
   Box,
   Typography,
-  Button,
   FormControl,
   TextField,
   Autocomplete,
-  CircularProgress,
   List,
   ListItem,
   ListItemText,
@@ -23,12 +21,11 @@ import {
   AssignmentInd as AssignmentIcon,
   CompareArrows as TransferIcon,
 } from "@mui/icons-material"
-import { toast } from "react-toastify"
+import { useQuery } from "@tanstack/react-query"
 import BaseModal from "@/components/shared/BaseModal"
 import { useFormSubmission } from "@/hooks"
 import { actividadService } from "../../services/actividadService"
-import { useCatalogData, useConditionalData, extractArray } from "@/hooks/useApiQuery"
-import type { TActividadPlanTrabajo, THistorialActividad } from "../../types/actividades"
+import { useCatalogData, extractArray } from "@/hooks/useApiQuery"
 import type { Usuario, Zona } from "@/app/(runna)/legajo-mesa/types/asignacion-types"
 
 interface AsignarActividadModalProps {
@@ -67,14 +64,11 @@ const AsignarActividadModal: React.FC<AsignarActividadModalProps> = ({
   }
 
   // Fetch data using TanStack Query - React Query will parallelize these automatically
-  const { data: actividad, isLoading: isLoadingActividad } = useConditionalData<TActividadPlanTrabajo>(
-    `actividades/${actividadId}`,
-    open && !!actividadId,
-    undefined,
-    {
-      queryFn: () => actividadService.get(actividadId!),
-    }
-  )
+  const { data: actividad, isLoading: isLoadingActividad } = useQuery({
+    queryKey: ["actividad-asignar", actividadId],
+    queryFn: () => actividadService.get(actividadId!),
+    enabled: open && actividadId !== null,
+  })
 
   const { data: zonasData, isLoading: isLoadingZonas } = useCatalogData<Zona[]>(
     "zonas/"
@@ -106,14 +100,11 @@ const AsignarActividadModal: React.FC<AsignarActividadModalProps> = ({
     return Array.from(uniqueUsers.values())
   }, [userZonas])
 
-  const { data: historialData, isLoading: isLoadingHistorial } = useConditionalData<THistorialActividad[]>(
-    `actividades/${actividadId}/historial`,
-    open && !!actividadId,
-    undefined,
-    {
-      queryFn: () => actividadService.getHistorial(actividadId!),
-    }
-  )
+  const { data: historialData, isLoading: isLoadingHistorial } = useQuery({
+    queryKey: ["actividad-asignar-historial", actividadId],
+    queryFn: () => actividadService.getHistorial(actividadId!),
+    enabled: open && actividadId !== null,
+  })
 
   // Filter historial for relevant actions
   const historial = useMemo(() => {
@@ -122,7 +113,7 @@ const AsignarActividadModal: React.FC<AsignarActividadModalProps> = ({
       (h) =>
         h.tipo_accion === "ASIGNACION" ||
         h.tipo_accion === "TRANSFERENCIA" ||
-        h.tipo_accion === "MODIFICACION"
+        h.tipo_accion === "EDICION_CAMPOS"
     )
   }, [historialData])
 
@@ -134,7 +125,7 @@ const AsignarActividadModal: React.FC<AsignarActividadModalProps> = ({
     actividad?.responsable_principal || null
   )
   const [selectedResponsablesSecundarios, setSelectedResponsablesSecundarios] = useState<number[]>(
-    actividad?.responsables_secundarios?.map((r) => r.id) || []
+    actividad?.responsables_secundarios || []
   )
   const [comentariosAsignacion, setComentariosAsignacion] = useState("")
 
@@ -242,15 +233,15 @@ const AsignarActividadModal: React.FC<AsignarActividadModalProps> = ({
         return "Asignación"
       case "TRANSFERENCIA":
         return "Transferencia"
-      case "MODIFICACION":
+      case "EDICION_CAMPOS":
         return "Modificación"
       default:
         return accion
     }
   }
 
-  const getUserDisplayName = (user: Usuario) => {
-    return user.nombre_completo || `${user.first_name} ${user.last_name}`.trim() || user.username
+  const getUserDisplayName = (user: { username: string; nombre_completo?: string; full_name?: string; first_name?: string; last_name?: string }) => {
+    return user.nombre_completo || user.full_name || `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim() || user.username
   }
 
   return (
@@ -366,8 +357,8 @@ const AsignarActividadModal: React.FC<AsignarActividadModalProps> = ({
                           <Typography variant="body2" sx={{ fontWeight: 500 }}>
                             Secundarios:
                           </Typography>
-                          {actividad.responsables_secundarios && actividad.responsables_secundarios.length > 0 ? (
-                            actividad.responsables_secundarios.map((r) => (
+                          {actividad.responsables_secundarios_info?.length > 0 ? (
+                            actividad.responsables_secundarios_info.map((r) => (
                               <Chip
                                 key={r.id}
                                 label={getUserDisplayName(r)}
@@ -420,19 +411,20 @@ const AsignarActividadModal: React.FC<AsignarActividadModalProps> = ({
                         />
                       )}
                       renderTags={(value, getTagProps) =>
-                        value.map((option, index) => (
-                          <Chip
-                            key={option.id}
+                        value.map((option, index) => {
+                          const { key, ...tagProps } = getTagProps({ index })
+                          return <Chip
+                            key={key}
                             label={getUserDisplayName(option)}
                             size="small"
-                            {...getTagProps({ index })}
+                            {...tagProps}
                             sx={{
                               bgcolor: "secondary.light",
                               color: "secondary.contrastText",
                               fontWeight: 500,
                             }}
                           />
-                        ))
+                        })
                       }
                       disabled={isSubmitting}
                     />
@@ -600,7 +592,7 @@ const AsignarActividadModal: React.FC<AsignarActividadModalProps> = ({
                               primary={
                                 <Box>
                                   <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>
-                                    {record.descripcion}
+                                    {getAccionLabel(record.tipo_accion)}
                                   </Typography>
                                 </Box>
                               }
@@ -613,14 +605,14 @@ const AsignarActividadModal: React.FC<AsignarActividadModalProps> = ({
                                     sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}
                                   >
                                     <strong>Fecha:</strong> {formatDate(record.fecha_accion)}
-                                    {record.usuario_nombre && (
+                                    {record.usuario?.nombre_completo && (
                                       <>
                                         <span>•</span>
-                                        <strong>Usuario:</strong> {record.usuario_nombre}
+                                        <strong>Usuario:</strong> {record.usuario.nombre_completo}
                                       </>
                                     )}
                                   </Typography>
-                                  {record.comentarios && record.comentarios.trim() !== "" && (
+                                  {(record.motivo || record.observaciones) && (
                                     <Typography
                                       variant="caption"
                                       component="div"
@@ -632,7 +624,7 @@ const AsignarActividadModal: React.FC<AsignarActividadModalProps> = ({
                                         fontStyle: "italic",
                                       }}
                                     >
-                                      <strong>Comentarios:</strong> {record.comentarios}
+                                      <strong>Comentarios:</strong> {record.motivo || record.observaciones}
                                     </Typography>
                                   )}
                                 </Box>

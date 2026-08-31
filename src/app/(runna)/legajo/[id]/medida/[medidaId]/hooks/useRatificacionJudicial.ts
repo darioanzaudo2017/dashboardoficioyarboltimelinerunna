@@ -230,12 +230,9 @@ export function useRatificacionJudicial({
   const hasRatificacion = ratificacion !== null
   const adjuntos = ratificacion?.adjuntos || []
 
-  const isRatificada =
-    ratificacion?.decision === DecisionJudicial.RATIFICADA ?? false
-  const isNoRatificada =
-    ratificacion?.decision === DecisionJudicial.NO_RATIFICADA ?? false
-  const isPendiente =
-    ratificacion?.decision === DecisionJudicial.PENDIENTE ?? false
+  const isRatificada = ratificacion?.decision === DecisionJudicial.RATIFICADA
+  const isNoRatificada = ratificacion?.decision === DecisionJudicial.NO_RATIFICADA
+  const isPendiente = ratificacion?.decision === DecisionJudicial.PENDIENTE
   const isFinal = ratificacion ? isFinalState(ratificacion.decision) : false
 
   const canModify = canModificarRatificacion(ratificacion)

@@ -171,7 +171,9 @@ export const VincularLegajoAdicionalDialog: React.FC<VincularLegajoAdicionalDial
           )}
 
           {results.length === 0 && !searching && query.trim() && (
-            <Alert severity="info">Sin resultados para "{query.trim()}".</Alert>
+            <Alert severity="info">
+              Sin resultados para <strong>{query.trim()}</strong>.
+            </Alert>
           )}
 
           <TextField

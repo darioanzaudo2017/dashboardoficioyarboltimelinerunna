@@ -174,8 +174,8 @@ export const ActividadDetailModal: React.FC<ActividadDetailModalProps> = ({
       <ReabrirButton
         actividad={actividad}
         canReopen={permissions.canReopen}
-        onReabrir={(motivo, nuevoEstado) =>
-          actions.reabrir(actividad.id, { motivo, nuevo_estado: nuevoEstado })
+        onReabrir={(motivo) =>
+          actions.reabrir(actividad.id, { motivo })
         }
         loading={actions.loading}
         onSuccess={handleSuccess}
@@ -184,7 +184,7 @@ export const ActividadDetailModal: React.FC<ActividadDetailModalProps> = ({
       {/* GAP-17: Derivación interna PLTM */}
       <DerivacionInternaDialog
         actividad={actividad}
-        canDerivar={permissions.canDerivar}
+        canDerivar={Boolean(permissions.canDerivar)}
         onReasignar={(responsablesSecundarios) =>
           actions.reasignarResponsables(actividad.id, responsablesSecundarios)
         }
