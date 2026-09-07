@@ -34,6 +34,7 @@ import { useVinculos } from "@/app/(runna)/legajo/[id]/medida/[medidaId]/hooks/u
 import { hasVinculacionAccess } from "@/utils/auth/permissionUtils"
 import CrearVinculoLegajoDialog from "./dialogs/CrearVinculoLegajoDialog"
 import DesvincularVinculoDialog from "./dialogs/DesvincularVinculoDialog"
+import { logger } from "@/utils/logger"
 
 // Type matching actual API response for demanda vinculos
 interface VinculoLegajoDemanda {
@@ -136,7 +137,7 @@ export function ConexionesDemandaTab({ demandaId }: ConexionesDemandaTabProps) {
         // Return the connected demandas
         return allDemandas.filter((demanda: Demanda) => connectedIds.includes(demanda.id))
       } catch (err) {
-        console.error("Error fetching connections:", err)
+        logger.error("Error fetching connections:", err)
         setError("Error al cargar las conexiones de la demanda")
         return []
       }
@@ -153,7 +154,7 @@ export function ConexionesDemandaTab({ demandaId }: ConexionesDemandaTabProps) {
       queryClient.invalidateQueries({ queryKey: ["demandaConexiones", demandaId] })
     },
     onError: (err) => {
-      console.error("Error connecting demandas:", err)
+      logger.error("Error connecting demandas:", err)
       toast.error("Error al conectar las demandas")
     },
   })
@@ -182,7 +183,7 @@ export function ConexionesDemandaTab({ demandaId }: ConexionesDemandaTabProps) {
           "Conexión eliminada exitosamente",
         )
       } catch (err) {
-        console.error("Error deleting connection:", err)
+        logger.error("Error deleting connection:", err)
         throw new Error("Error al eliminar la conexión")
       }
     },
@@ -190,7 +191,7 @@ export function ConexionesDemandaTab({ demandaId }: ConexionesDemandaTabProps) {
       queryClient.invalidateQueries({ queryKey: ["demandaConexiones", demandaId] })
     },
     onError: (err) => {
-      console.error("Error deleting connection:", err)
+      logger.error("Error deleting connection:", err)
       toast.error("Error al eliminar la conexión")
     },
   })
@@ -200,7 +201,7 @@ export function ConexionesDemandaTab({ demandaId }: ConexionesDemandaTabProps) {
   // This includes both tipo_destino="demanda" AND tipo_destino="medida" (for CARGA_OFICIOS workflow)
   useEffect(() => {
     if (demandaId) {
-      console.log('ConexionesDemandaTab: Loading vinculos for demanda:', demandaId)
+      logger.log('ConexionesDemandaTab: Loading vinculos for demanda:', demandaId)
       loadVinculos({
         demanda_id: demandaId,  // ✅ Updated to use demanda_id filter
         activo: true,
@@ -218,12 +219,12 @@ export function ConexionesDemandaTab({ demandaId }: ConexionesDemandaTabProps) {
   // 1. Backend filter: demanda_id parameter filters at database level
   // 2. Frontend verification: Check demanda_id in destino_info for additional safety
   const filteredLegajoVinculos = useMemo(() => {
-    console.log('ConexionesDemandaTab: Filtering vinculos for demanda:', demandaId)
-    console.log('  - raw legajoVinculos:', legajoVinculos)
-    console.log('  - legajoVinculos length:', legajoVinculos?.length || 0)
+    logger.log('ConexionesDemandaTab: Filtering vinculos for demanda:', demandaId)
+    logger.log('  - raw legajoVinculos:', legajoVinculos)
+    logger.log('  - legajoVinculos length:', legajoVinculos?.length || 0)
 
     if (!legajoVinculos || !Array.isArray(legajoVinculos)) {
-      console.log('  - No vinculos array, returning empty')
+      logger.log('  - No vinculos array, returning empty')
       return []
     }
 
@@ -243,12 +244,12 @@ export function ConexionesDemandaTab({ demandaId }: ConexionesDemandaTabProps) {
 
       const shouldInclude = includeDemanda || includeMedida
 
-      console.log(`  - Vinculo ${vinculo.id}: tipo=${vinculo.tipo_destino}, destino_id=${vinculo.destino_info?.id}, demanda_id=${vinculo.destino_info?.demanda_id}, include=${shouldInclude}`)
+      logger.log(`  - Vinculo ${vinculo.id}: tipo=${vinculo.tipo_destino}, destino_id=${vinculo.destino_info?.id}, demanda_id=${vinculo.destino_info?.demanda_id}, include=${shouldInclude}`)
       return shouldInclude
     })
 
-    console.log('  - Filtered result:', filtered)
-    console.log('  - Filtered length:', filtered.length)
+    logger.log('  - Filtered result:', filtered)
+    logger.log('  - Filtered length:', filtered.length)
     return filtered
   }, [legajoVinculos, demandaId])
 

@@ -36,6 +36,7 @@ import {
 } from "../types/ratificacion-judicial-api"
 import RatificacionJudicialAPI from "../api/ratificacion-judicial-api-service"
 import { medidaKeys } from './useMedidaDetail'
+import { logger } from "@/utils/logger"
 
 // ============================================================================
 // HOOK INTERFACE
@@ -141,7 +142,7 @@ export function useRatificacionJudicial({
       setError(null)
       setHistorial(null)
       setHistorialError(null)
-      console.log('[useRatificacionJudicial] State reset for etapa:', etapaId, 'with', initialData.length, 'ratificaciones')
+      logger.log('[useRatificacionJudicial] State reset for etapa:', etapaId, 'with', initialData.length, 'ratificaciones')
     }
   }, [etapaId, initialData])
 
@@ -171,12 +172,12 @@ export function useRatificacionJudicial({
         // No ratificación exists yet - this is a valid state, not an error
         setRatificacion(null)
         setError(null)
-        console.log("No ratificación found for medida", medidaId, "- user can create one")
+        logger.log("No ratificación found for medida", medidaId, "- user can create one")
       } else {
         // Actual error
         const errorMessage = err.message || "Error al cargar ratificación judicial"
         setError(errorMessage)
-        console.error("Error fetching ratificación:", err)
+        logger.error("Error fetching ratificación:", err)
       }
     } finally {
       setIsLoading(false)
@@ -199,7 +200,7 @@ export function useRatificacionJudicial({
       const errorMessage =
         err.message || "Error al cargar historial de ratificaciones"
       setHistorialError(errorMessage)
-      console.error("Error fetching historial:", err)
+      logger.error("Error fetching historial:", err)
     } finally {
       setIsLoadingHistorial(false)
     }
@@ -214,7 +215,7 @@ export function useRatificacionJudicial({
     // Skip fetch if initialData was provided (even if empty array)
     // This prevents fetching ratificaciones from other etapas
     if (initialDataProvided) {
-      console.log('[useRatificacionJudicial] Using initialData from unified endpoint, skipping fetch. Has data:', hasInitialData)
+      logger.log('[useRatificacionJudicial] Using initialData from unified endpoint, skipping fetch. Has data:', hasInitialData)
       return
     }
 

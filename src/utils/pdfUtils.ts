@@ -9,6 +9,8 @@
 // FILE TYPE DETECTION
 // ============================================================================
 
+import { logger } from "@/utils/logger"
+
 /**
  * Check if a file is a PDF based on name or MIME type
  *
@@ -243,7 +245,7 @@ export const downloadFileAuthenticated = async (url: string, fileName: string): 
     // Clean up after a short delay
     setTimeout(() => revokeBlobUrl(blobUrl), 100)
   } catch (error) {
-    console.error("Authenticated download failed:", error)
+    logger.error("Authenticated download failed:", error)
     // Fallback to simple download if authenticated fetch fails
     downloadFile(url, fileName)
   }

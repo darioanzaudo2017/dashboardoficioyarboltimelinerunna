@@ -1,6 +1,7 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { getSession, refreshToken as refreshSessionToken } from '@/utils/auth';
 import posthog from 'posthog-js';
+import { logger } from '@/utils/logger';
 
 const axiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://web-runna-v2legajos.up.railway.app/api',
@@ -29,7 +30,7 @@ export const refreshAccessToken = async (): Promise<string | null> => {
     // read it and rotate the access token.
     return await refreshSessionToken();
   } catch (error) {
-    console.error('Token refresh failed:', error);
+    logger.error('Token refresh failed:', error);
     return null;
   }
 };
@@ -57,7 +58,7 @@ axiosInstance.interceptors.response.use(
       const method = error.config?.method?.toUpperCase();
       const endpoint = error.config?.url || 'Unknown endpoint';
       const status = error.response?.status;
-      console.error(`API Error - ${endpoint}:`, {
+      logger.error(`API Error - ${endpoint}:`, {
         method,
         status,
         data: error.response?.data,

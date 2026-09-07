@@ -11,6 +11,7 @@ import type {
   MedidasQueryParams,
   PaginatedMedidasResponse,
 } from "../types/medida-api"
+import { logger } from "@/utils/logger"
 
 /**
  * Create a new medida for a legajo
@@ -25,17 +26,17 @@ export const createMedida = async (
   data: CreateMedidaRequest
 ): Promise<MedidaDetailResponse> => {
   try {
-    console.log(`Creating medida for legajo ${legajoId}:`, data)
+    logger.log(`Creating medida for legajo ${legajoId}:`, data)
 
     // Make API call - create() already adds trailing slash
     const response = await create<MedidaDetailResponse>(`legajos/${legajoId}/medidas/`, data as Partial<MedidaDetailResponse>)
 
-    console.log("Medida created successfully:", response)
+    logger.log("Medida created successfully:", response)
 
     return response
   } catch (error: any) {
-    console.error(`Error creating medida for legajo ${legajoId}:`, error)
-    console.error("Error details:", {
+    logger.error(`Error creating medida for legajo ${legajoId}:`, error)
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -80,17 +81,17 @@ export const getMedidasByLegajo = async (
       queryParams.offset = String(params.offset)
     }
 
-    console.log(`Fetching medidas for legajo ${legajoId} with params:`, queryParams)
+    logger.log(`Fetching medidas for legajo ${legajoId} with params:`, queryParams)
 
     // Make API call - Backend returns array directly, not paginated
     const response = await get<MedidaBasicResponse[]>(`legajos/${legajoId}/medidas/`, queryParams)
 
-    console.log("Medidas retrieved:", response)
+    logger.log("Medidas retrieved:", response)
 
     return response
   } catch (error: any) {
-    console.error(`Error fetching medidas for legajo ${legajoId}:`, error)
-    console.error("Error details:", {
+    logger.error(`Error fetching medidas for legajo ${legajoId}:`, error)
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -116,18 +117,18 @@ export const getMedidaDetail = async (
   legajoId?: number
 ): Promise<MedidaDetailResponse> => {
   try {
-    console.log(`Fetching medida detail for ID ${id}`, { legajoId })
+    logger.log(`Fetching medida detail for ID ${id}`, { legajoId })
 
     // Make API call - Django requires trailing slash
     const qs = typeof legajoId === "number" ? `?legajo_id=${legajoId}` : ""
     const response = await get<MedidaDetailResponse>(`medidas/${id}/${qs}`)
 
-    console.log("Medida detail retrieved:", response)
+    logger.log("Medida detail retrieved:", response)
 
     return response
   } catch (error: any) {
-    console.error(`Error fetching medida detail ${id}:`, error)
-    console.error("Error details:", {
+    logger.error(`Error fetching medida detail ${id}:`, error)
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -170,17 +171,17 @@ export const getAllMedidas = async (
       queryParams.offset = String(params.offset)
     }
 
-    console.log("Fetching all medidas with params:", queryParams)
+    logger.log("Fetching all medidas with params:", queryParams)
 
     // Make API call - Django requires trailing slash
     const response = await get<PaginatedMedidasResponse>("medidas/", queryParams)
 
-    console.log("All medidas retrieved:", response)
+    logger.log("All medidas retrieved:", response)
 
     return response
   } catch (error: any) {
-    console.error("Error fetching all medidas:", error)
-    console.error("Error details:", {
+    logger.error("Error fetching all medidas:", error)
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,

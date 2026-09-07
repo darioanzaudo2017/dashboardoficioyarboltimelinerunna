@@ -24,6 +24,7 @@ import {
   buildRatificacionFormData,
   buildUpdateRatificacionFormData,
 } from "../types/ratificacion-judicial-api"
+import { logger } from "@/utils/logger"
 
 // ============================================================================
 // API FUNCTIONS
@@ -43,19 +44,19 @@ export async function getRatificacion(
   medidaId: number
 ): Promise<RatificacionJudicial[]> {
   try {
-    console.log(`Fetching ratificación for medida ${medidaId}`)
+    logger.log(`Fetching ratificación for medida ${medidaId}`)
 
     // Make API call using apiService
     const response = await get<RatificacionJudicial[]>(
       `medidas/${medidaId}/ratificacion/`
     )
 
-    console.log("Ratificación retrieved:", response)
+    logger.log("Ratificación retrieved:", response)
 
     return response
   } catch (error: any) {
-    console.error(`Error fetching ratificación for medida ${medidaId}:`, error)
-    console.error("Error details:", {
+    logger.error(`Error fetching ratificación for medida ${medidaId}:`, error)
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -85,7 +86,7 @@ export async function createRatificacion(
   data: CreateRatificacionJudicialRequest
 ): Promise<RatificacionJudicial> {
   try {
-    console.log(`Creating ratificación for medida ${medidaId}:`, data)
+    logger.log(`Creating ratificación for medida ${medidaId}:`, data)
 
     // Build FormData (multipart/form-data)
     const formData = buildRatificacionFormData(data)
@@ -98,12 +99,12 @@ export async function createRatificacion(
     )
     toast.success('Ratificación judicial registrada exitosamente')
 
-    console.log("Ratificación created successfully:", response)
+    logger.log("Ratificación created successfully:", response)
 
     return response
   } catch (error: any) {
-    console.error(`Error creating ratificación for medida ${medidaId}:`, error)
-    console.error("Error details:", {
+    logger.error(`Error creating ratificación for medida ${medidaId}:`, error)
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -134,7 +135,7 @@ export async function updateRatificacion(
   data: UpdateRatificacionJudicialRequest
 ): Promise<RatificacionJudicial> {
   try {
-    console.log(`Updating ratificación for medida ${medidaId}:`, data)
+    logger.log(`Updating ratificación for medida ${medidaId}:`, data)
 
     // Build FormData (multipart/form-data)
     const formData = buildUpdateRatificacionFormData(data)
@@ -156,12 +157,12 @@ export async function updateRatificacion(
       }
     )
 
-    console.log("Ratificación updated successfully:", response.data)
+    logger.log("Ratificación updated successfully:", response.data)
 
     return response.data
   } catch (error: any) {
-    console.error(`Error updating ratificación for medida ${medidaId}:`, error)
-    console.error("Error details:", {
+    logger.error(`Error updating ratificación for medida ${medidaId}:`, error)
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -184,19 +185,19 @@ export async function getRatificacionHistorial(
   medidaId: number
 ): Promise<RatificacionJudicialHistorial> {
   try {
-    console.log(`Fetching ratificación historial for medida ${medidaId}`)
+    logger.log(`Fetching ratificación historial for medida ${medidaId}`)
 
     // Make API call using apiService
     const response = await get<RatificacionJudicialHistorial>(
       `medidas/${medidaId}/ratificacion/historial/`
     )
 
-    console.log("Ratificación historial retrieved:", response)
+    logger.log("Ratificación historial retrieved:", response)
 
     return response
   } catch (error: any) {
-    console.error(`Error fetching ratificación historial for medida ${medidaId}:`, error)
-    console.error("Error details:", {
+    logger.error(`Error fetching ratificación historial for medida ${medidaId}:`, error)
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -237,7 +238,7 @@ export async function getRatificacionActiva(
 
     return null
   } catch (error) {
-    console.error("Error getting ratificación activa:", error)
+    logger.error("Error getting ratificación activa:", error)
     return null
   }
 }
@@ -255,7 +256,7 @@ export async function hasRatificacionActiva(
     const activa = await getRatificacionActiva(medidaId)
     return activa !== null
   } catch (error) {
-    console.error("Error checking ratificación:", error)
+    logger.error("Error checking ratificación:", error)
     return false
   }
 }

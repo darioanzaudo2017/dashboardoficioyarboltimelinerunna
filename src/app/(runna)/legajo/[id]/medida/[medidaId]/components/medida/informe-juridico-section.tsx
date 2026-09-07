@@ -64,6 +64,7 @@ import type { MedioNotificacion, InformeJuridicoBasicResponse } from "../../type
 import type { EstadoEtapa } from "@/app/(runna)/legajo-mesa/types/medida-api"
 import type { CrearYEnviarInformeJuridicoRequest } from "../../types/informe-juridico-api"
 import { SectionCard } from "./shared/section-card"
+import { logger } from "@/utils/logger"
 
 // ============================================================================
 // INTERFACES
@@ -230,7 +231,7 @@ export const InformeJuridicoSection: React.FC<InformeJuridicoSectionProps> = ({
         onInformeEnviado()
       }
     } catch (error) {
-      console.error("Error creating and sending informe:", error)
+      logger.error("Error creating and sending informe:", error)
       // Error is already shown in dialog
     }
   }
@@ -253,7 +254,7 @@ export const InformeJuridicoSection: React.FC<InformeJuridicoSectionProps> = ({
         onInformeEnviado()
       }
     } catch (error: any) {
-      console.error("Error sending informe:", error)
+      logger.error("Error sending informe:", error)
       alert(error.message || "Error al enviar informe jurídico")
     }
   }

@@ -48,6 +48,7 @@ import type {
   RatificacionJudicial,
 } from "../../types/ratificacion-judicial-api"
 import { DecisionJudicial } from "../../types/ratificacion-judicial-api"
+import { logger } from "@/utils/logger"
 
 // ============================================================================
 // INTERFACES
@@ -186,7 +187,7 @@ export const RatificacionJudicialSection: React.FC<RatificacionJudicialSectionPr
       setDialogOpen(false)
       if (onRatificacionRegistrada) onRatificacionRegistrada()
     } catch (error) {
-      console.error("Error creating ratificación:", error)
+      logger.error("Error creating ratificación:", error)
     }
   }
 
@@ -196,7 +197,7 @@ export const RatificacionJudicialSection: React.FC<RatificacionJudicialSectionPr
       setDialogOpen(false)
       if (onRatificacionRegistrada) onRatificacionRegistrada()
     } catch (error) {
-      console.error("Error updating ratificación:", error)
+      logger.error("Error updating ratificación:", error)
     }
   }
 

@@ -8,6 +8,7 @@ import type {
   LegajoMatch,
 } from "@/app/(runna)/legajo-mesa/types/legajo-duplicado-types"
 import { DUPLICATE_SEARCH_DEBOUNCE_MS, DUPLICATE_THRESHOLDS } from "../constants/duplicate-thresholds"
+import { logger } from "@/utils/logger"
 
 /**
  * Estado del hook
@@ -158,18 +159,18 @@ export function useDuplicateDetection(
           error: null,
         }))
 
-        console.log("Ejecutando búsqueda de duplicados:", searchData)
+        logger.log("Ejecutando búsqueda de duplicados:", searchData)
 
         // Llamar al servicio API
         const response = await buscarDuplicados(searchData)
 
         // Verificar si la búsqueda fue cancelada
         if (abortController.signal.aborted) {
-          console.log("Búsqueda cancelada")
+          logger.log("Búsqueda cancelada")
           return
         }
 
-        console.log("Respuesta de búsqueda:", response)
+        logger.log("Respuesta de búsqueda:", response)
 
         // Filtrar matches por threshold
         const duplicates = response.matches.filter(
@@ -191,7 +192,7 @@ export function useDuplicateDetection(
           onDuplicatesFound(duplicates)
         }
       } catch (error: any) {
-        console.error("Error en búsqueda de duplicados:", error)
+        logger.error("Error en búsqueda de duplicados:", error)
 
         // No mostrar error si fue cancelada
         if (error.name === "CanceledError" || error.message === "canceled") {
@@ -225,7 +226,7 @@ export function useDuplicateDetection(
     (data: Partial<DuplicateSearchRequest>) => {
       // Validar que los datos sean suficientes
       if (!debeEjecutarBusqueda(data)) {
-        console.log("Datos insuficientes para búsqueda")
+        logger.log("Datos insuficientes para búsqueda")
         return
       }
 
@@ -239,7 +240,7 @@ export function useDuplicateDetection(
 
       // Si los datos son idénticos a la última búsqueda, no buscar de nuevo
       if (dataHash === lastSearchDataRef.current) {
-        console.log("Datos idénticos a última búsqueda, saltando...")
+        logger.log("Datos idénticos a última búsqueda, saltando...")
         return
       }
 
@@ -260,13 +261,13 @@ export function useDuplicateDetection(
 
       // Si hay DNI válido (8 dígitos), búsqueda inmediata sin debounce
       if (validarDNI(data.dni)) {
-        console.log("DNI completo detectado - búsqueda inmediata")
+        logger.log("DNI completo detectado - búsqueda inmediata")
         executeSearch(searchData)
         return
       }
 
       // Para nombre/apellido, aplicar debounce
-      console.log(`Búsqueda con debounce de ${debounceMs}ms`)
+      logger.log(`Búsqueda con debounce de ${debounceMs}ms`)
       debounceTimerRef.current = setTimeout(() => {
         executeSearch(searchData)
       }, debounceMs)

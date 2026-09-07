@@ -21,6 +21,7 @@ import WarningIcon from "@mui/icons-material/Warning"
 import { useUser } from "@/utils/auth/userZustand"
 import { useCeseMedida } from "../../hooks/useCeseMedida"
 import { CeseMedidaModal } from "./cese-medida-modal"
+import { logger } from "@/utils/logger"
 
 interface MedidaHeaderProps {
   medidaData: {
@@ -122,19 +123,19 @@ export const MedidaHeader: React.FC<MedidaHeaderProps> = ({
       )
     }
 
-    console.log('getSubtipoOptionsMPJ called - tipo:', tipoMedidaMPJ, 'options count:', options.length)
+    logger.log('getSubtipoOptionsMPJ called - tipo:', tipoMedidaMPJ, 'options count:', options.length)
     return options
   }
 
   const handleTipoMedidaMPJChange = (value: string) => {
-    console.log('MPJ Tipo changed to:', value)
+    logger.log('MPJ Tipo changed to:', value)
     setTipoMedidaMPJ(value)
     setSubtipoMedidaMPJ('') // Reset subtipo when tipo changes
     onFieldChange?.('tipo_medida_mpj', value)
   }
 
   const handleSubtipoMedidaMPJChange = (value: string) => {
-    console.log('MPJ Subtipo changed to:', value)
+    logger.log('MPJ Subtipo changed to:', value)
     setSubtipoMedidaMPJ(value)
     onFieldChange?.('subtipo_medida_mpj', value)
   }

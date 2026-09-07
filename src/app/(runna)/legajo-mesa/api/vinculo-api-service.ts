@@ -27,6 +27,7 @@ import type {
   TipoVinculoCodigo,
 } from "../types/vinculo-types"
 import { MIN_CARACTERES_JUSTIFICACION_VINCULO } from "../types/vinculo-types"
+import { logger } from "@/utils/logger"
 
 // ============================================================================
 // TIPO VINCULO (CATALOG)
@@ -47,26 +48,26 @@ import { MIN_CARACTERES_JUSTIFICACION_VINCULO } from "../types/vinculo-types"
  */
 export const getTiposVinculo = async (): Promise<TTipoVinculo[]> => {
   try {
-    console.log("Obteniendo tipos de vínculo...")
+    logger.log("Obteniendo tipos de vínculo...")
 
     const response = await get<TTipoVinculo[] | PaginatedResponse<TTipoVinculo>>("tipos-vinculo/?page_size=500")
 
     // Handle both array and paginated response formats
     if (Array.isArray(response)) {
-      console.log(`Tipos de vínculo obtenidos: ${response.length} (array format)`)
+      logger.log(`Tipos de vínculo obtenidos: ${response.length} (array format)`)
       return response
     }
 
     // Handle paginated response
     if (response && 'results' in response && Array.isArray(response.results)) {
-      console.log(`Tipos de vínculo obtenidos: ${response.results.length} de ${response.count} (paginated format)`)
+      logger.log(`Tipos de vínculo obtenidos: ${response.results.length} de ${response.count} (paginated format)`)
       return response.results
     }
 
-    console.warn("Respuesta inválida de tipos de vínculo:", response)
+    logger.warn("Respuesta inválida de tipos de vínculo:", response)
     return []
   } catch (error: any) {
-    console.error("Error obteniendo tipos de vínculo:", error)
+    logger.error("Error obteniendo tipos de vínculo:", error)
 
     if (error?.response?.status === 500) {
       throw new Error("Error del servidor. Por favor, intente nuevamente más tarde.")
@@ -124,7 +125,7 @@ export const getVinculos = async (
   params?: VinculosLegajoQueryParams
 ): Promise<PaginatedResponse<TVinculoLegajoList>> => {
   try {
-    console.log("Obteniendo vínculos con filtros:", params)
+    logger.log("Obteniendo vínculos con filtros:", params)
 
     // Build query parameters
     const queryParams: Record<string, string> = {}
@@ -165,20 +166,20 @@ export const getVinculos = async (
       queryParams.page_size = params.page_size.toString()
     }
 
-    console.log('Query params being sent:', queryParams)
+    logger.log('Query params being sent:', queryParams)
 
     const response = await get<PaginatedResponse<TVinculoLegajoList> | TVinculoLegajoList[]>(
       "vinculos-legajo/",
       queryParams
     )
 
-    console.log('Raw response:', response)
-    console.log('Response type:', Array.isArray(response) ? 'array' : 'object')
+    logger.log('Raw response:', response)
+    logger.log('Response type:', Array.isArray(response) ? 'array' : 'object')
 
     // Handle both array and paginated response formats
     if (Array.isArray(response)) {
       // Backend returned plain array, convert to paginated format
-      console.log(`Vínculos obtenidos: ${response.length} (array format)`)
+      logger.log(`Vínculos obtenidos: ${response.length} (array format)`)
       return {
         count: response.length,
         next: null,
@@ -188,7 +189,7 @@ export const getVinculos = async (
     }
 
     if (!response) {
-      console.warn("Respuesta inválida de vínculos:", response)
+      logger.warn("Respuesta inválida de vínculos:", response)
       return {
         count: 0,
         next: null,
@@ -198,12 +199,12 @@ export const getVinculos = async (
     }
 
     // Backend returned paginated response
-    console.log(`Vínculos obtenidos: ${response.results?.length || 0} de ${response.count || 0}`)
-    console.log('Response results:', response.results)
+    logger.log(`Vínculos obtenidos: ${response.results?.length || 0} de ${response.count || 0}`)
+    logger.log('Response results:', response.results)
 
     return response
   } catch (error: any) {
-    console.error("Error obteniendo vínculos:", error)
+    logger.error("Error obteniendo vínculos:", error)
 
     if (error?.response?.status === 400) {
       const errorData = error.response.data
@@ -235,15 +236,15 @@ export const getVinculos = async (
  */
 export const getVinculoDetail = async (vinculoId: number): Promise<TVinculoLegajoDetail> => {
   try {
-    console.log(`Obteniendo detalle de vínculo ${vinculoId}`)
+    logger.log(`Obteniendo detalle de vínculo ${vinculoId}`)
 
     const response = await get<TVinculoLegajoDetail>(`vinculos-legajo/${vinculoId}/`)
 
-    console.log("Detalle de vínculo obtenido:", response)
+    logger.log("Detalle de vínculo obtenido:", response)
 
     return response
   } catch (error: any) {
-    console.error("Error obteniendo detalle de vínculo:", error)
+    logger.error("Error obteniendo detalle de vínculo:", error)
 
     if (error?.response?.status === 404) {
       throw new Error("Vínculo no encontrado")
@@ -326,7 +327,7 @@ export const createVinculo = async (
       throw new Error("No se puede vincular un legajo a sí mismo")
     }
 
-    console.log("Creando vínculo:", {
+    logger.log("Creando vínculo:", {
       legajo_origen: data.legajo_origen,
       tipo_vinculo: data.tipo_vinculo,
       destino: data.legajo_destino || data.medida_destino || data.demanda_destino,
@@ -339,11 +340,11 @@ export const createVinculo = async (
     )
     toast.success("¡Vínculo creado exitosamente!")
 
-    console.log("Vínculo creado:", response)
+    logger.log("Vínculo creado:", response)
 
     return response
   } catch (error: any) {
-    console.error("Error creando vínculo:", error)
+    logger.error("Error creando vínculo:", error)
 
     // Handle specific error cases
     if (error?.response?.status === 400) {
@@ -410,7 +411,7 @@ export const desvincularVinculo = async (
       )
     }
 
-    console.log(`Desvinculando vínculo ${vinculoId}`)
+    logger.log(`Desvinculando vínculo ${vinculoId}`)
 
     // Make API call - Using 'create' since it's a POST endpoint
     const { data: response } = await axiosInstance.post<DesvincularVinculoResponse>(
@@ -419,11 +420,11 @@ export const desvincularVinculo = async (
     )
     toast.success("¡Vínculo desvinculado exitosamente!")
 
-    console.log("Vínculo desvinculado:", response)
+    logger.log("Vínculo desvinculado:", response)
 
     return response
   } catch (error: any) {
-    console.error("Error desvinculando vínculo:", error)
+    logger.error("Error desvinculando vínculo:", error)
 
     // Handle specific error cases
     if (error?.response?.status === 400) {

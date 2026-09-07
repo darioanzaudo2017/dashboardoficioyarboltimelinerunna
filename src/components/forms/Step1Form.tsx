@@ -36,6 +36,7 @@ import {
   FileUploadSection as SharedFileUploadSection,
   type FileItem,
 } from "@/components/shared/FileUploadSection"
+import { logger } from "@/utils/logger"
 
 // NOTE: CARGA_OFICIOS dropdowns have been moved to the specialized CargaOficiosForm component
 
@@ -221,7 +222,7 @@ const Step1Form: React.FC<{
     // Check if this legajo is already in the list
     const alreadyAdded = currentVinculos.some((v) => v.legajo === legajoId)
     if (alreadyAdded) {
-      console.log("Legajo already added to vinculos")
+      logger.log("Legajo already added to vinculos")
       return
     }
 
@@ -254,7 +255,7 @@ const Step1Form: React.FC<{
         }
       }, 100)
     } catch (error) {
-      console.error("Error fetching legajo details:", error)
+      logger.error("Error fetching legajo details:", error)
       // Still add the vinculo but without full details
       const newVinculo = {
         legajo: legajoId,
@@ -296,7 +297,7 @@ const Step1Form: React.FC<{
 
     // If we have valid data, search for vinculaciones
     if (codigoValido || (calleValida && localidadValida)) {
-      console.log(
+      logger.log(
         "Buscando vinculaciones con:",
         codigoValido ? `Código: ${codigoValido.codigo}` : "",
         calleValida ? `Calle: ${watchedLocalizacion.calle}` : "",

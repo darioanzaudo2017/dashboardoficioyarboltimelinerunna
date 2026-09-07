@@ -59,6 +59,7 @@ import {
 } from "../../api/informe-cierre-api-service"
 import type { InformeCierre } from "../../types/informe-cierre-api"
 import type { MedidaDetailResponse } from "../../types/medida-api"
+import { logger } from "@/utils/logger"
 
 // ============================================================================
 // PROPS
@@ -140,7 +141,7 @@ export const InformeCierreSection: React.FC<InformeCierreSectionProps> = ({
             })
             informeActivo.adjuntos = adjuntos
           } catch (error) {
-            console.error("Error loading adjuntos for informe closure:", error)
+            logger.error("Error loading adjuntos for informe closure:", error)
             // Still show the informe even if adjuntos fail
             informeActivo.adjuntos = informeActivo.adjuntos || []
           }
@@ -150,7 +151,7 @@ export const InformeCierreSection: React.FC<InformeCierreSectionProps> = ({
         setInforme(null)
       }
     } catch (error) {
-      console.error("Error loading informe cierre:", error)
+      logger.error("Error loading informe cierre:", error)
       showSnackbar("Error al cargar el informe de cierre", "error")
     } finally {
       setIsLoadingInforme(false)

@@ -47,6 +47,7 @@ import { useNotaAval } from "../../hooks/useNotaAval"
 import { useNotaAvalAdjuntos } from "../../hooks/useNotaAvalAdjuntos"
 import { WizardModal, type WizardStep } from "../medida/shared/wizard-modal"
 import { FileUploadSection, type FileItem } from "@/components/shared/FileUploadSection"
+import { logger } from "@/utils/logger"
 
 // ============================================================================
 // INTERFACES
@@ -182,7 +183,7 @@ export const NotaAvalDialog: React.FC<NotaAvalDialogProps> = ({
         try {
           await uploadFile(fileToUpload.file)
         } catch (error) {
-          console.error(`Error uploading file ${fileToUpload.file.name}:`, error)
+          logger.error(`Error uploading file ${fileToUpload.file.name}:`, error)
           // Continue with other files even if one fails
         }
       }
@@ -193,7 +194,7 @@ export const NotaAvalDialog: React.FC<NotaAvalDialogProps> = ({
       // 4. Close dialog
       handleClose()
     } catch (error) {
-      console.error("Error emitting nota de aval:", error)
+      logger.error("Error emitting nota de aval:", error)
     }
   }
 

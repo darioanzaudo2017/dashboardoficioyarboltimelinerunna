@@ -172,13 +172,12 @@ export interface RatificacionJudicialHistorial {
 /**
  * Extract user name from usuario_registro_nombre
  * Similar pattern to other MED-XX helpers
+ *
+ * La implementación vive en `./user-name`; se re-exporta acá para no romper los
+ * imports existentes. Para toda entrada `string | undefined` —el único tipo que
+ * esta variante aceptaba— la función canónica devuelve exactamente lo mismo.
  */
-export function extractUserName(
-  userName: string | undefined
-): string {
-  if (!userName) return "Usuario desconocido"
-  return userName
-}
+export { extractUserName } from './user-name'
 
 /**
  * Check if ratificación can be modified

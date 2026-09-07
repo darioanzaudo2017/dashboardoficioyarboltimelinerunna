@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation'
 import { createLegajo } from '../api/legajo-creation.service'
 import type { CreateLegajoManualRequest } from '../types/legajo-creation.types'
 import { track, AnalyticsEvent } from '@/utils/analytics'
+import { logger } from '@/utils/logger'
 
 /**
  * Hook for creating legajo manually
@@ -42,7 +43,7 @@ export const useCreateLegajo = () => {
     },
 
     onError: (error: unknown) => {
-      console.error('Mutation error in useCreateLegajo:', error)
+      logger.error('Mutation error in useCreateLegajo:', error)
       // Error toasts are already handled in the service
       // Additional error handling can be added here if needed
     },
@@ -75,7 +76,7 @@ export const useAutorizarAdmision = () => {
     },
 
     onError: (error: unknown) => {
-      console.error('Error in useAutorizarAdmision:', error)
+      logger.error('Error in useAutorizarAdmision:', error)
       // Error handling done in service
     },
   })

@@ -357,6 +357,14 @@ export const MEDIO_NOTIFICACION_LABELS: Record<MedioNotificacion, string> = {
 
 /**
  * Helper para extraer nombre de usuario de string o EquipoLegalInfo
+ *
+ * NO se unificó con `./user-name` a propósito: esta variante omite el fallback
+ * a `username` y el chequeo de `trim()`, así que difiere de forma observable
+ * cuando `nombre_completo` llega vacío o en blanco (caso alcanzable: el
+ * `get_full_name()` del backend devuelve `""` si el usuario no tiene nombre ni
+ * apellido cargados). Unificarla cambiaría lo que se muestra en
+ * `informe-juridico-section` y `adjuntos-informe-juridico`.
+ * Ver `claudedocs/CONSOLIDACION_FRONTEND_2026-09-07.md`.
  */
 export const extractUserName = (value: string | EquipoLegalInfo | undefined | null): string => {
   if (!value) return 'Usuario desconocido'

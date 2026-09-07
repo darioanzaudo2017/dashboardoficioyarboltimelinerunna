@@ -24,6 +24,7 @@ import { useRouter } from "next/navigation"
 import { fetchCaseData } from "@/components/forms/utils/apiToFormData"
 import { useUser } from "@/utils/auth/userZustand"
 import { hasVinculacionAccess } from "@/utils/auth/permissionUtils"
+import { logger } from "@/utils/logger"
 
 interface TabPanelProps {
   children?: React.ReactNode
@@ -90,7 +91,7 @@ export default function DemandaDetail({ params, onClose, isFullPage = false }: D
           const data = await fetchCaseData(params.id)
           setFormData(data)
         } catch (err) {
-          console.error("Error loading case data:", err)
+          logger.error("Error loading case data:", err)
           setError("Error loading case data. Please try again.")
         } finally {
           setIsLoading(false)
@@ -207,7 +208,7 @@ export default function DemandaDetail({ params, onClose, isFullPage = false }: D
         }, 1500)
       }
     } catch (err) {
-      console.error("Error updating case status:", err)
+      logger.error("Error updating case status:", err)
       // El manejo del error se realiza en el servicio API
     } finally {
       setIsSubmitting(false)
@@ -235,7 +236,7 @@ export default function DemandaDetail({ params, onClose, isFullPage = false }: D
         })
       }
     } catch (err) {
-      console.error("Error al marcar como subido al Poder Judicial:", err)
+      logger.error("Error al marcar como subido al Poder Judicial:", err)
     } finally {
       setIsMarkingSubido(false)
     }

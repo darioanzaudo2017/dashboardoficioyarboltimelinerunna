@@ -1,6 +1,7 @@
 import * as XLSX from "xlsx"
 import { getCurrentDateISO } from "@/utils/dateUtils"
 import { track, AnalyticsEvent } from "@/utils/analytics"
+import { logger } from "@/utils/logger"
 
 interface ExportOptions {
   fileName?: string
@@ -19,7 +20,7 @@ export const ExcelExportService = {
    */
   exportToExcel: (data: any[], options: ExportOptions = {}) => {
     if (!data || data.length === 0) {
-      console.warn("No data to export")
+      logger.warn("No data to export")
       return
     }
 
@@ -77,7 +78,7 @@ export const ExcelExportService = {
 
       return true
     } catch (error) {
-      console.error("Error exporting to Excel:", error)
+      logger.error("Error exporting to Excel:", error)
       return false
     }
   },

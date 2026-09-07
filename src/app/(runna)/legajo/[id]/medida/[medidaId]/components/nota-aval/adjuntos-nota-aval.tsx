@@ -18,6 +18,7 @@ import { Box, Typography, Chip, CircularProgress, Alert } from "@mui/material"
 import { useNotaAvalAdjuntos } from "../../hooks/useNotaAvalAdjuntos"
 import type { AdjuntoNotaAval } from "../../types/nota-aval-api"
 import { FileUploadSection, type FileItem } from "@/components/shared/FileUploadSection"
+import { logger } from "@/utils/logger"
 
 // ============================================================================
 // INTERFACES
@@ -85,7 +86,7 @@ export const AdjuntosNotaAval: React.FC<AdjuntosNotaAvalProps> = ({
     try {
       await uploadFile(file)
     } catch (error) {
-      console.error("Error uploading file:", error)
+      logger.error("Error uploading file:", error)
     }
   }
 
@@ -95,7 +96,7 @@ export const AdjuntosNotaAval: React.FC<AdjuntosNotaAvalProps> = ({
     try {
       await deleteAdjunto(typeof adjuntoId === "number" ? adjuntoId : Number(adjuntoId))
     } catch (error) {
-      console.error("Error deleting adjunto:", error)
+      logger.error("Error deleting adjunto:", error)
     }
   }
 

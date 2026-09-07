@@ -31,6 +31,7 @@ import { UnifiedActivityTab } from './actividad/UnifiedActivityTab'
 import { HistorialTab } from './actividad/HistorialTab'
 import { TransferenciasTab } from './actividad/TransferenciasTab'
 import { DerivacionInternaDialog } from './actividad/DerivacionInternaDialog'
+import { logger } from '@/utils/logger'
 
 interface ActividadDetailModalProps {
   open: boolean
@@ -237,7 +238,7 @@ export const ActividadDetailModal: React.FC<ActividadDetailModalProps> = ({
             canEdit={permissions.canEdit}
             onSave={async (updatedFields) => {
               // TODO: Implement update actividad fields API call
-              console.log('Update fields:', updatedFields)
+              logger.log('Update fields:', updatedFields)
               return null
             }}
             loading={actions.loading}

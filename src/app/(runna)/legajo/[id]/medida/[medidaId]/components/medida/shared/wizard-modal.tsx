@@ -34,6 +34,7 @@ import {
 import CloseIcon from "@mui/icons-material/Close"
 import NavigateNextIcon from "@mui/icons-material/NavigateNext"
 import NavigateBeforeIcon from "@mui/icons-material/NavigateBefore"
+import { logger } from "@/utils/logger"
 
 export interface WizardStep {
   label: string
@@ -96,7 +97,7 @@ class WizardContentBoundary extends Component<
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error("Error al renderizar un paso del asistente:", error, info)
+    logger.error("Error al renderizar un paso del asistente:", error, info)
   }
 
   componentDidUpdate(previousProps: WizardContentBoundaryProps) {

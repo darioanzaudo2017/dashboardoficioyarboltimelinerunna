@@ -41,6 +41,7 @@ import {
   type PersonaRelacionadaCreateNueva,
   type Ocupacion,
 } from "../../types/personas-relacionadas-api"
+import { logger } from "@/utils/logger"
 
 interface AgregarPersonaRelacionadaModalProps {
   open: boolean
@@ -196,7 +197,7 @@ export default function AgregarPersonaRelacionadaModal({
         await addExistenteMutation.mutateAsync(data)
         onSuccess()
       } catch (err) {
-        console.error("Error adding existente:", err)
+        logger.error("Error adding existente:", err)
       }
     } else {
       // Nueva persona
@@ -236,7 +237,7 @@ export default function AgregarPersonaRelacionadaModal({
         await addNuevaMutation.mutateAsync(data)
         onSuccess()
       } catch (err) {
-        console.error("Error adding nueva:", err)
+        logger.error("Error adding nueva:", err)
       }
     }
   }

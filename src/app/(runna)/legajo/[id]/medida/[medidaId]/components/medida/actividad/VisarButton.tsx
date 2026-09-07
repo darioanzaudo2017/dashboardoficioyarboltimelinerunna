@@ -20,6 +20,7 @@ import {
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import CancelIcon from '@mui/icons-material/Cancel'
 import { toast } from 'react-toastify'
+import { logger } from '@/utils/logger'
 
 interface VisarButtonProps {
   actividadId: number
@@ -106,7 +107,7 @@ export const VisarButton: React.FC<VisarButtonProps> = ({
         setError('Error al procesar el visado')
       }
     } catch (error: any) {
-      console.error('Error al visar actividad:', error)
+      logger.error('Error al visar actividad:', error)
       setError(error?.message || 'Error al procesar el visado')
       toast.error('Error al procesar el visado', {
         position: 'top-center',

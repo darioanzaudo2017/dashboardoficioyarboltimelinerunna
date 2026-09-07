@@ -9,6 +9,7 @@ import SaveIcon from "@mui/icons-material/Save"
 import type { TallerRecreativo } from "../../../types/seguimiento-dispositivo"
 import { seguimientoDispositivoService } from "../../../api/seguimiento-dispositivo-api-service"
 import { toast } from "react-toastify"
+import { logger } from "@/utils/logger"
 
 interface TalleresSectionProps {
   medidaId?: number
@@ -52,7 +53,7 @@ export const TalleresSection: React.FC<TalleresSectionProps> = ({
         setTalleres([{ orden: 1, nombre_taller: '' }])
       }
     } catch (error) {
-      console.error('Error fetching talleres:', error)
+      logger.error('Error fetching talleres:', error)
       setTalleres([{ orden: 1, nombre_taller: '' }])
     } finally {
       setLoading(false)
@@ -94,7 +95,7 @@ export const TalleresSection: React.FC<TalleresSectionProps> = ({
       const updated = talleres.map((t, i) => i === index ? savedTaller : t)
       setTalleres(updated)
     } catch (error) {
-      console.error('Error saving taller:', error)
+      logger.error('Error saving taller:', error)
     } finally {
       setSaving(null)
     }
@@ -127,7 +128,7 @@ export const TalleresSection: React.FC<TalleresSectionProps> = ({
           .map((t, i) => ({ ...t, orden: i + 1 }))
         setTalleres(updated)
       } catch (error) {
-        console.error('Error deleting taller:', error)
+        logger.error('Error deleting taller:', error)
       }
     } else {
       // Just remove from local state (unsaved taller)

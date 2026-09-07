@@ -39,6 +39,7 @@ import { useDraftStore } from "./utils/userDraftStore"
 import { fetchDropdownData } from "./utils/fetchFormCase"
 import VinculosManager from "./components/VinculosManager"
 import FormSection from "./components/form-section"
+import { logger } from "@/utils/logger"
 
 // Step 0: Objetivo Selection
 const objetivoStep = {
@@ -209,13 +210,13 @@ const MultiStepForm: React.FC<MultiStepFormProps> = ({
   const mutation = useMutation({
     mutationFn: (data: FormData) => submitFormData(data, id),
     onSuccess: (data) => {
-      console.log("Form submitted successfully:", data)
+      logger.log("Form submitted successfully:", data)
       // Clear draft after successful submission
       clearDraft(formId)
       onSubmit(data)
     },
     onError: (error) => {
-      console.error("Error submitting form:", error)
+      logger.error("Error submitting form:", error)
       toast.error("Error al enviar el formulario. Por favor, intente nuevamente.")
     },
   })
@@ -324,7 +325,7 @@ const MultiStepForm: React.FC<MultiStepFormProps> = ({
   }
 
   const handleFormSubmit = methods.handleSubmit((data) => {
-    console.log("Form data before submission:", data)
+    logger.log("Form data before submission:", data)
 
     // REG-01: Validate vinculos if they exist
     if (data.vinculos && data.vinculos.length > 0) {

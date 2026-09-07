@@ -24,6 +24,7 @@ import {
   isPdfFile,
   downloadFileAuthenticated
 } from '@/utils/pdfUtils'
+import { logger } from '@/utils/logger'
 
 interface AdjuntoCardProps {
   adjunto: TAdjuntoActividad
@@ -61,7 +62,7 @@ export const AdjuntoCard: React.FC<AdjuntoCardProps> = ({ adjunto }) => {
       // Fetch the file and trigger download with correct filename
       await downloadFileAuthenticated(adjunto.archivo, adjunto.nombre_original)
     } catch (error) {
-      console.error('Error downloading file:', error)
+      logger.error('Error downloading file:', error)
       // Fallback: open in new tab
       window.open(adjunto.archivo, '_blank')
     } finally {

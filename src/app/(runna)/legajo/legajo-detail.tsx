@@ -32,6 +32,7 @@ import PersonaDetailModalEnhanced from "./[id]/medida/[medidaId]/components/dial
 
 // Importar tipos
 import { getMedidasByLegajo } from "../legajo-mesa/api/medidas-api-service"
+import { logger } from "@/utils/logger"
 
 interface LegajoDetailProps {
   params: {
@@ -127,7 +128,7 @@ export default function LegajoDetail({ params, onClose, isFullPage = false }: Le
 
       setOpenEditDatosDialog(false)
     } catch (error) {
-      console.error("Error saving datos personales:", error)
+      logger.error("Error saving datos personales:", error)
       throw error // Let the dialog handle the error display
     }
   }

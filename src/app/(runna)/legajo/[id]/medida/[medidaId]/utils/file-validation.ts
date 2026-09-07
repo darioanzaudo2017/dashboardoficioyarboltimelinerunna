@@ -7,7 +7,11 @@
  * - Size formatting
  */
 
-import { formatFileSize, getFileExtension as getExtension } from "@/utils/fileUtils"
+import {
+  formatFileSize,
+  getFileExtension as getExtension,
+  isAllowedExtension as isExtensionIn,
+} from "@/utils/fileUtils"
 
 // Re-export for backward compatibility
 export { formatFileSize, getExtension as getFileExtension }
@@ -100,12 +104,16 @@ export const validateFiles = (files: File[]): FileValidationResult => {
 /**
  * Check if file extension is allowed
  *
+ * Delega en `isAllowedExtension` de `@/utils/fileUtils` (la versión general,
+ * parametrizada por lista) aplicándole la lista de este módulo. Es la misma
+ * computación que hacía la copia local: ambas resolvían la extensión con
+ * `getFileExtension` de `@/utils/fileUtils` y la buscaban en `ALLOWED_EXTENSIONS`.
+ *
  * @param filename File name
  * @returns True if extension is allowed
  */
 export const isAllowedExtension = (filename: string): boolean => {
-  const extension = getExtension(filename)
-  return ALLOWED_EXTENSIONS.includes(extension)
+  return isExtensionIn(filename, ALLOWED_EXTENSIONS)
 }
 
 /**

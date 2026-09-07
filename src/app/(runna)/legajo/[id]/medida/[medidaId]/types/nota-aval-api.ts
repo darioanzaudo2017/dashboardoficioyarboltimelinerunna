@@ -292,16 +292,9 @@ export const DECISION_DESCRIPTIONS: Record<TNotaAvalDecision, string> = {
 /**
  * Helper para extraer nombre de usuario de string o DirectorInfo
  * Falls back to username if nombre_completo is empty
+ *
+ * La implementación vive en `./user-name`; se re-exporta acá para no romper
+ * los imports existentes. `DirectorInfo` es estructuralmente compatible con
+ * `UserNameSource`.
  */
-export const extractUserName = (value: string | DirectorInfo | undefined | null): string => {
-  if (!value) return 'Usuario desconocido'
-  if (typeof value === 'string') return value || 'Usuario desconocido'
-  // Try nombre_completo first, then username, then fallback
-  if (value.nombre_completo && value.nombre_completo.trim()) {
-    return value.nombre_completo
-  }
-  if (value.username && value.username.trim()) {
-    return value.username
-  }
-  return 'Usuario desconocido'
-}
+export { extractUserName } from './user-name'

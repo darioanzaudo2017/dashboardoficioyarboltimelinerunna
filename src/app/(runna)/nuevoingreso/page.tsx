@@ -25,6 +25,7 @@ import { useDraftStore } from "@/components/forms/utils/userDraftStore"
 import { ArrowBack, Save, Delete, Refresh } from "@mui/icons-material"
 import { DemandaSuccessModal } from "./components/DemandaSuccessModal"
 import type { DemandaCreatedResponse } from "./types/demanda-response"
+import { logger } from "@/utils/logger"
 
 const Home: React.FC = () => {
   const router = useRouter()
@@ -51,7 +52,7 @@ const Home: React.FC = () => {
     const checkForDraft = () => {
       const draft = getDraft(formId)
       if (draft && isDraftNotEmpty(draft)) {
-        console.log("Draft found:", draft)
+        logger.log("Draft found:", draft)
         // Show the modal if a draft exists with content
         setShowDraftModal(true)
       }
@@ -117,7 +118,7 @@ const Home: React.FC = () => {
     // convertir una respuesta incompleta en una creación aparente.
     if (!("demanda" in data) || !Number.isInteger(data.demanda?.id) || data.demanda.id <= 0) {
       const message = "La demanda fue procesada, pero el servidor devolvió una respuesta incompleta. Recargue la Mesa de Entrada antes de reintentar."
-      console.error(message, data)
+      logger.error(message, data)
       setError(message)
       toast.error(message)
       return

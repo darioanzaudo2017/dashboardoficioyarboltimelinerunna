@@ -3,6 +3,7 @@
 import axiosInstance from "@/app/api/utils/axiosInstance"
 import { useCallback, useRef, useEffect } from "react"
 import { debounce } from "lodash"
+import { logger } from "@/utils/logger"
 
 // Types for the API request and response
 interface LocalizacionData {
@@ -36,7 +37,7 @@ export const buscarVinculacion = async (data: BusquedaVinculacionRequest): Promi
     )
     return response.data
   } catch (error) {
-    console.error("Error al buscar vinculación:", error)
+    logger.error("Error al buscar vinculación:", error)
     return { demanda_ids: [], match_descriptions: [] }
   }
 }
@@ -96,7 +97,7 @@ export const useBusquedaVinculacion = (delay = 500) => {
         })
         callback(result)
       } catch (error) {
-        console.error("Error en búsqueda por nombre y apellido:", error)
+        logger.error("Error en búsqueda por nombre y apellido:", error)
         callback({ demanda_ids: [], match_descriptions: [] })
       }
     }, delay),
@@ -118,7 +119,7 @@ export const useBusquedaVinculacion = (delay = 500) => {
         })
         callback(result)
       } catch (error) {
-        console.error("Error en búsqueda por DNI:", error)
+        logger.error("Error en búsqueda por DNI:", error)
         callback({ demanda_ids: [], match_descriptions: [] })
       }
     }, delay),
@@ -177,7 +178,7 @@ export const useBusquedaVinculacion = (delay = 500) => {
 
           // Solo realizar la búsqueda si hay al menos un criterio válido Y ha habido cambios
           if (shouldSearch && (nombreCambio || dniCambio || codigoCambio || localizacionCambio)) {
-            console.log("Realizando búsqueda con datos:", data)
+            logger.log("Realizando búsqueda con datos:", data)
             const result = await buscarVinculacion({
               ...data,
               demanda,
@@ -186,16 +187,16 @@ export const useBusquedaVinculacion = (delay = 500) => {
             return result
           } else {
             if (shouldSearch) {
-              console.log("Criterios de búsqueda sin cambios, omitiendo búsqueda")
+              logger.log("Criterios de búsqueda sin cambios, omitiendo búsqueda")
             } else {
-              console.log("No hay criterios de búsqueda válidos")
+              logger.log("No hay criterios de búsqueda válidos")
             }
             const emptyResult = { demanda_ids: [], match_descriptions: [] }
             if (callback) callback(emptyResult)
             return emptyResult
           }
         } catch (error) {
-          console.error("Error en búsqueda completa:", error)
+          logger.error("Error en búsqueda completa:", error)
           const emptyResult = { demanda_ids: [], match_descriptions: [] }
           if (callback) callback(emptyResult)
           return emptyResult

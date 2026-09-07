@@ -22,6 +22,7 @@ import {
   deleteAdjuntoNotaAval,
 } from '../api/nota-aval-api-service'
 import { formatFileSize } from '@/utils/fileUtils'
+import { logger } from '@/utils/logger'
 
 // ============================================================================
 // QUERY KEYS
@@ -220,7 +221,7 @@ export const useNotaAvalAdjuntos = (
         autoClose: 5000,
       })
 
-      console.error('Error uploading adjunto:', error)
+      logger.error('Error uploading adjunto:', error)
 
       // Clear progress
       setUploadProgress(null)
@@ -253,7 +254,7 @@ export const useNotaAvalAdjuntos = (
         autoClose: 5000,
       })
 
-      console.error('Error deleting adjunto:', error)
+      logger.error('Error deleting adjunto:', error)
     },
   })
 

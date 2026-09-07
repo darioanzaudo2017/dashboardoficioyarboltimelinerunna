@@ -12,6 +12,7 @@
 import { create } from '@/app/api/apiService'
 import type { TipoEtapa } from '../types/estado-etapa'
 import type { EtapaMedida } from '../types/medida-api'
+import { logger } from '@/utils/logger'
 
 // ============================================================================
 // REQUEST/RESPONSE TYPES
@@ -63,7 +64,7 @@ export const transicionarEtapa = async (
   data: CreateEtapaRequest
 ): Promise<CreateEtapaResponse> => {
   try {
-    console.log(`[EtapaService] Transitioning to new etapa for medida ${medidaId}:`, data)
+    logger.log(`[EtapaService] Transitioning to new etapa for medida ${medidaId}:`, data)
 
     // Use correct endpoint: transicionar-etapa
     const response = await create<CreateEtapaResponse>(
@@ -71,12 +72,12 @@ export const transicionarEtapa = async (
       data as Partial<CreateEtapaResponse>
     )
 
-    console.log('[EtapaService] Etapa transition successful:', response)
+    logger.log('[EtapaService] Etapa transition successful:', response)
 
     return response
   } catch (error: any) {
-    console.error(`[EtapaService] Error transitioning etapa for medida ${medidaId}:`, error)
-    console.error('[EtapaService] Error details:', {
+    logger.error(`[EtapaService] Error transitioning etapa for medida ${medidaId}:`, error)
+    logger.error('[EtapaService] Error details:', {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -100,7 +101,7 @@ export const createEtapa = async (
   data: CreateEtapaRequest
 ): Promise<CreateEtapaResponse> => {
   // Redirect to correct implementation for backward compatibility
-  console.warn('[EtapaService] createEtapa is deprecated. Use transicionarEtapa() instead.')
+  logger.warn('[EtapaService] createEtapa is deprecated. Use transicionarEtapa() instead.')
   return transicionarEtapa(medidaId, data)
 }
 

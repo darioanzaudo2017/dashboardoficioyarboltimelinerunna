@@ -26,6 +26,7 @@ import type {
   TipoDispositivo,
   CategoriaIntervencion,
 } from "../types/intervencion-api"
+import { logger } from "@/utils/logger"
 
 // ============================================================================
 // CRUD OPERATIONS (MED-02a)
@@ -44,7 +45,7 @@ export const createIntervencion = async (
   data: CreateIntervencionRequest
 ): Promise<IntervencionResponse> => {
   try {
-    console.log(`Creating intervención for medida ${medidaId}:`, data)
+    logger.log(`Creating intervención for medida ${medidaId}:`, data)
 
     // Make API call - create() already adds trailing slash
     const response = await create<IntervencionResponse>(
@@ -52,12 +53,12 @@ export const createIntervencion = async (
       data as Partial<IntervencionResponse>
     )
 
-    console.log("Intervención created successfully:", response)
+    logger.log("Intervención created successfully:", response)
 
     return response
   } catch (error: any) {
-    console.error(`Error creating intervención for medida ${medidaId}:`, error)
-    console.error("Error details:", {
+    logger.error(`Error creating intervención for medida ${medidaId}:`, error)
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -118,7 +119,7 @@ export const getIntervencionesByMedida = async (
       queryParams.offset = String(params.offset)
     }
 
-    console.log(`Fetching intervenciones for medida ${medidaId} with params:`, queryParams)
+    logger.log(`Fetching intervenciones for medida ${medidaId} with params:`, queryParams)
 
     // Make API call - Backend returns array directly
     const response = await get<IntervencionResponse[]>(
@@ -126,12 +127,12 @@ export const getIntervencionesByMedida = async (
       queryParams
     )
 
-    console.log("Intervenciones retrieved:", response)
+    logger.log("Intervenciones retrieved:", response)
 
     return response
   } catch (error: any) {
-    console.error(`Error fetching intervenciones for medida ${medidaId}:`, error)
-    console.error("Error details:", {
+    logger.error(`Error fetching intervenciones for medida ${medidaId}:`, error)
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -153,22 +154,22 @@ export const getIntervencionDetail = async (
   intervencionId: number
 ): Promise<IntervencionResponse> => {
   try {
-    console.log(`Fetching intervención detail: medida ${medidaId}, intervención ${intervencionId}`)
+    logger.log(`Fetching intervención detail: medida ${medidaId}, intervención ${intervencionId}`)
 
     // Make API call - Django requires trailing slash
     const response = await get<IntervencionResponse>(
       `medidas/${medidaId}/intervenciones/${intervencionId}/`
     )
 
-    console.log("Intervención detail retrieved:", response)
+    logger.log("Intervención detail retrieved:", response)
 
     return response
   } catch (error: any) {
-    console.error(
+    logger.error(
       `Error fetching intervención detail: medida ${medidaId}, intervención ${intervencionId}`,
       error
     )
-    console.error("Error details:", {
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -192,7 +193,7 @@ export const updateIntervencion = async (
   data: UpdateIntervencionRequest
 ): Promise<IntervencionResponse> => {
   try {
-    console.log(`Updating intervención: medida ${medidaId}, intervención ${intervencionId}`, data)
+    logger.log(`Updating intervención: medida ${medidaId}, intervención ${intervencionId}`, data)
 
     // Make API call - update() uses PATCH and adds trailing slash
     // update(endpoint, id, data) - pass intervencionId as the ID parameter
@@ -202,15 +203,15 @@ export const updateIntervencion = async (
       data as Partial<IntervencionResponse>
     )
 
-    console.log("Intervención updated successfully:", response)
+    logger.log("Intervención updated successfully:", response)
 
     return response
   } catch (error: any) {
-    console.error(
+    logger.error(
       `Error updating intervención: medida ${medidaId}, intervención ${intervencionId}`,
       error
     )
-    console.error("Error details:", {
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -231,18 +232,18 @@ export const deleteIntervencion = async (
   intervencionId: number
 ): Promise<void> => {
   try {
-    console.log(`Deleting intervención: medida ${medidaId}, intervención ${intervencionId}`)
+    logger.log(`Deleting intervención: medida ${medidaId}, intervención ${intervencionId}`)
 
     // Make API call - remove() uses DELETE and adds trailing slash
     await remove(`medidas/${medidaId}/intervenciones`, intervencionId)
 
-    console.log("Intervención deleted successfully")
+    logger.log("Intervención deleted successfully")
   } catch (error: any) {
-    console.error(
+    logger.error(
       `Error deleting intervención: medida ${medidaId}, intervención ${intervencionId}`,
       error
     )
-    console.error("Error details:", {
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -317,7 +318,7 @@ export const crearYEnviarIntervencion = async (
   tipos?: string[]
 ): Promise<CrearYEnviarResponse> => {
   try {
-    console.log(`Creating and sending intervención for medida ${medidaId}:`, data)
+    logger.log(`Creating and sending intervención for medida ${medidaId}:`, data)
 
     // If files are provided, use multipart/form-data
     if (archivos && archivos.length > 0) {
@@ -379,7 +380,7 @@ export const crearYEnviarIntervencion = async (
         }
       )
 
-      console.log("Intervención created and sent successfully:", response)
+      logger.log("Intervención created and sent successfully:", response)
       toast.success(response.mensaje || 'Intervención creada y enviada exitosamente')
 
       return response
@@ -390,14 +391,14 @@ export const crearYEnviarIntervencion = async (
         data
       )
 
-      console.log("Intervención created and sent successfully:", response)
+      logger.log("Intervención created and sent successfully:", response)
       toast.success(response.mensaje || 'Intervención creada y enviada exitosamente')
 
       return response
     }
   } catch (error: any) {
-    console.error(`Error creating and sending intervención for medida ${medidaId}:`, error)
-    console.error("Error details:", {
+    logger.error(`Error creating and sending intervención for medida ${medidaId}:`, error)
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -438,7 +439,7 @@ export const uploadAdjuntosBatch = async (
   tipos: string[]
 ): Promise<BatchUploadResponse> => {
   try {
-    console.log(
+    logger.log(
       `Batch uploading ${archivos.length} adjuntos: medida ${medidaId}, intervención ${intervencionId}`
     )
 
@@ -462,7 +463,7 @@ export const uploadAdjuntosBatch = async (
       }
     )
 
-    console.log("Batch upload completed:", response)
+    logger.log("Batch upload completed:", response)
 
     if (response.exitosos > 0) {
       toast.success(`${response.exitosos} archivo(s) subido(s) exitosamente`)
@@ -473,11 +474,11 @@ export const uploadAdjuntosBatch = async (
 
     return response
   } catch (error: any) {
-    console.error(
+    logger.error(
       `Error batch uploading adjuntos: medida ${medidaId}, intervención ${intervencionId}`,
       error
     )
-    console.error("Error details:", {
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -504,7 +505,7 @@ export const enviarIntervencion = async (
   intervencionId: number
 ): Promise<EnviarIntervencionResponse> => {
   try {
-    console.log(`Enviando intervención: medida ${medidaId}, intervención ${intervencionId}`)
+    logger.log(`Enviando intervención: medida ${medidaId}, intervención ${intervencionId}`)
 
     // PATCH to custom action endpoint (backend registers enviar/ as PATCH)
     const { data: response } = await axiosInstance.patch<EnviarIntervencionResponse>(
@@ -513,15 +514,15 @@ export const enviarIntervencion = async (
     )
     toast.success('Intervención enviada exitosamente')
 
-    console.log("Intervención enviada successfully:", response)
+    logger.log("Intervención enviada successfully:", response)
 
     return response
   } catch (error: any) {
-    console.error(
+    logger.error(
       `Error enviando intervención: medida ${medidaId}, intervención ${intervencionId}`,
       error
     )
-    console.error("Error details:", {
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -544,7 +545,7 @@ export const aprobarIntervencion = async (
   intervencionId: number
 ): Promise<AprobarIntervencionResponse> => {
   try {
-    console.log(`Aprobando intervención: medida ${medidaId}, intervención ${intervencionId}`)
+    logger.log(`Aprobando intervención: medida ${medidaId}, intervención ${intervencionId}`)
 
     // Uses create() with empty object for POST to custom action endpoint
     const response = await create<AprobarIntervencionResponse>(
@@ -554,15 +555,15 @@ export const aprobarIntervencion = async (
       'Intervención aprobada exitosamente'
     )
 
-    console.log("Intervención aprobada successfully:", response)
+    logger.log("Intervención aprobada successfully:", response)
 
     return response
   } catch (error: any) {
-    console.error(
+    logger.error(
       `Error aprobando intervención: medida ${medidaId}, intervención ${intervencionId}`,
       error
     )
-    console.error("Error details:", {
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -587,7 +588,7 @@ export const rechazarIntervencion = async (
   data: RechazarIntervencionRequest
 ): Promise<RechazarIntervencionResponse> => {
   try {
-    console.log(
+    logger.log(
       `Rechazando intervención: medida ${medidaId}, intervención ${intervencionId}`,
       data
     )
@@ -599,15 +600,15 @@ export const rechazarIntervencion = async (
     )
     toast.success('Intervención rechazada')
 
-    console.log("Intervención rechazada successfully:", response)
+    logger.log("Intervención rechazada successfully:", response)
 
     return response
   } catch (error: any) {
-    console.error(
+    logger.error(
       `Error rechazando intervención: medida ${medidaId}, intervención ${intervencionId}`,
       error
     )
-    console.error("Error details:", {
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -637,7 +638,7 @@ export const uploadAdjunto = async (
   tipo: string
 ): Promise<AdjuntoIntervencion> => {
   try {
-    console.log(
+    logger.log(
       `Uploading adjunto: medida ${medidaId}, intervención ${intervencionId}, tipo ${tipo}`
     )
 
@@ -653,15 +654,15 @@ export const uploadAdjunto = async (
     )
     toast.success('Adjunto subido exitosamente')
 
-    console.log("Adjunto uploaded successfully:", response)
+    logger.log("Adjunto uploaded successfully:", response)
 
     return response
   } catch (error: any) {
-    console.error(
+    logger.error(
       `Error uploading adjunto: medida ${medidaId}, intervención ${intervencionId}`,
       error
     )
-    console.error("Error details:", {
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -692,7 +693,7 @@ export const getAdjuntos = async (
       queryParams.tipo = params.tipo
     }
 
-    console.log(
+    logger.log(
       `Fetching adjuntos: medida ${medidaId}, intervención ${intervencionId} with params:`,
       queryParams
     )
@@ -703,15 +704,15 @@ export const getAdjuntos = async (
       queryParams
     )
 
-    console.log("Adjuntos retrieved:", response)
+    logger.log("Adjuntos retrieved:", response)
 
     return response
   } catch (error: any) {
-    console.error(
+    logger.error(
       `Error fetching adjuntos: medida ${medidaId}, intervención ${intervencionId}`,
       error
     )
-    console.error("Error details:", {
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -734,20 +735,20 @@ export const deleteAdjunto = async (
   adjuntoId: number
 ): Promise<void> => {
   try {
-    console.log(
+    logger.log(
       `Deleting adjunto: medida ${medidaId}, intervención ${intervencionId}, adjunto ${adjuntoId}`
     )
 
     // Make API call
     await remove(`medidas/${medidaId}/intervenciones/${intervencionId}/adjuntos`, adjuntoId)
 
-    console.log("Adjunto deleted successfully")
+    logger.log("Adjunto deleted successfully")
   } catch (error: any) {
-    console.error(
+    logger.error(
       `Error deleting adjunto: medida ${medidaId}, intervención ${intervencionId}, adjunto ${adjuntoId}`,
       error
     )
-    console.error("Error details:", {
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -768,16 +769,16 @@ export const deleteAdjunto = async (
  */
 export const getCategorias = async (): Promise<CategoriasResponse> => {
   try {
-    console.log("Fetching categorias from /api/categorias/")
+    logger.log("Fetching categorias from /api/categorias/")
 
     const response = await get<CategoriasResponse>("categorias/")
 
-    console.log("Categorias retrieved successfully:", response)
+    logger.log("Categorias retrieved successfully:", response)
 
     return response
   } catch (error: any) {
-    console.error("Error fetching categorias:", error)
-    console.error("Error details:", {
+    logger.error("Error fetching categorias:", error)
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -810,15 +811,15 @@ export interface TipoDispositivoWithSubtipos extends TipoDispositivo {
  */
 export const getTiposDispositivo = async (): Promise<TipoDispositivoWithSubtipos[]> => {
   try {
-    console.log("Fetching tipos dispositivo with nested subtipos")
+    logger.log("Fetching tipos dispositivo with nested subtipos")
 
     const response = await get<TipoDispositivoWithSubtipos[]>("tipos-dispositivo/")
 
-    console.log("Tipos dispositivo retrieved:", response)
+    logger.log("Tipos dispositivo retrieved:", response)
 
     return response
   } catch (error: any) {
-    console.error("Error fetching tipos dispositivo:", error)
+    logger.error("Error fetching tipos dispositivo:", error)
     throw error
   }
 }
@@ -829,11 +830,11 @@ export const getTiposDispositivo = async (): Promise<TipoDispositivoWithSubtipos
  */
 export const getCategoriasIntervencion = async (): Promise<CategoriaIntervencion[]> => {
   try {
-    console.log("Fetching categorias intervencion")
+    logger.log("Fetching categorias intervencion")
 
     return await get<CategoriaIntervencion[]>("categorias-intervencion/")
   } catch (error: any) {
-    console.error("Error fetching categorias intervencion:", error)
+    logger.error("Error fetching categorias intervencion:", error)
     throw error
   }
 }

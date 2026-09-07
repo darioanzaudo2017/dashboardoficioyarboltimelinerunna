@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import { cookies } from "next/headers";
 import { JwtPayload } from "jsonwebtoken";
 import { UserPermissions } from './userZustand';
+import { logger } from '@/utils/logger';
 
 const authClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://web-runna-v2legajos.up.railway.app/api',
@@ -98,7 +99,7 @@ export const getSession = async (returnUserData: boolean = false): Promise<strin
           cookieStore.set('refreshToken', response.data.refresh, authCookieOptions);
         }
       } catch (error) {
-        console.error('Error refreshing token:', error);
+        logger.error('Error refreshing token:', error);
         return null;
       }
     }
@@ -114,11 +115,11 @@ export const getSession = async (returnUserData: boolean = false): Promise<strin
       });
       return response.data;
     } catch (error) {
-      console.error('Error fetching user data:', error);
+      logger.error('Error fetching user data:', error);
       return null;
     }
   } catch (error) {
-    console.error('Error in getSession:', error);
+    logger.error('Error in getSession:', error);
     return null;
   }
 };
@@ -141,7 +142,7 @@ export async function refreshToken(): Promise<string | null> {
     const refreshTokenValue = cookieStore.get('refreshToken')?.value;
 
     if (!refreshTokenValue) {
-      console.warn('No refresh token available');
+      logger.warn('No refresh token available');
       return null;
     }
 
@@ -162,7 +163,7 @@ export async function refreshToken(): Promise<string | null> {
 
     return null;
   } catch (error) {
-    console.error('Token refresh failed:', error);
+    logger.error('Token refresh failed:', error);
     // Clear tokens on refresh failure
     const cookieStore = cookies();
     cookieStore.delete('accessToken');

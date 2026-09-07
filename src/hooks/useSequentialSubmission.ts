@@ -44,6 +44,7 @@ import {
   type UseSequentialSubmissionReturn,
   defaultErrorExtractor,
 } from './useFormSubmission.types'
+import { logger } from '@/utils/logger'
 
 // ============================================================================
 // HOOK
@@ -163,7 +164,7 @@ export function useSequentialSubmission(
           } catch (stepError) {
             // If step is optional, log and continue
             if (step.optional) {
-              console.warn(`Optional step "${step.id}" failed:`, stepError)
+              logger.warn(`Optional step "${step.id}" failed:`, stepError)
               if (showStepToasts) {
                 toast.warning(`Paso opcional "${step.name}" falló`)
               }

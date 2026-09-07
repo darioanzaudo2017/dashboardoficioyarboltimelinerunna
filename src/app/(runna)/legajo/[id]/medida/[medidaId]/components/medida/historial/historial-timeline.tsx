@@ -24,6 +24,7 @@ import type { HistorialSeguimientoQueryParams } from "../../../types/historial-s
 import { HistorialEventCard } from "./historial-event-card"
 import { HistorialFilters } from "./historial-filters"
 import { HistorialResumenCards, CategoriaBreakdown } from "./historial-resumen-cards"
+import { logger } from "@/utils/logger"
 
 interface HistorialTimelineProps {
   medidaId: number
@@ -91,7 +92,7 @@ export const HistorialTimeline: React.FC<HistorialTimelineProps> = ({
   }, [medidaId, numeroMedida, filters, exportMutation])
 
   const handleDeepLinkClick = useCallback((url: string) => {
-    console.log('Deep link clicked:', url)
+    logger.log('Deep link clicked:', url)
   }, [])
 
   const totalPages = historialData

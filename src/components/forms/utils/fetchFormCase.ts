@@ -1,5 +1,6 @@
 import type { DropdownData } from "../types/formTypes"
 import { get } from "@/app/api/apiService"
+import { logger } from "@/utils/logger"
 
 const normalizeTiposVinculo = (data: unknown): DropdownData["tipos_vinculo"] => {
   if (Array.isArray(data)) {
@@ -22,20 +23,20 @@ const normalizeTiposVinculo = (data: unknown): DropdownData["tipos_vinculo"] => 
 export const fetchDropdownData = async (): Promise<DropdownData> => {
     try {
       const response = await get<DropdownData>("registro-demanda-form-dropdowns/")
-      console.log("Fetched dropdown data:", response)
+      logger.log("Fetched dropdown data:", response)
 
       // REG-01: Load tipos de vínculo for vinculation during registration
       let tiposVinculo: DropdownData["tipos_vinculo"] = []
       try {
         const tiposVinculoResponse = await get<unknown>("tipos-vinculo/")
         tiposVinculo = normalizeTiposVinculo(tiposVinculoResponse)
-        console.log("Fetched tipos de vínculo:", tiposVinculoResponse)
+        logger.log("Fetched tipos de vínculo:", tiposVinculoResponse)
 
         if (!Array.isArray(tiposVinculoResponse)) {
-          console.warn("Tipos de vínculo response was not an array. Normalized payload:", tiposVinculo)
+          logger.warn("Tipos de vínculo response was not an array. Normalized payload:", tiposVinculo)
         }
       } catch (vinculoError) {
-        console.warn("Could not fetch tipos_vinculo, continuing without them:", vinculoError)
+        logger.warn("Could not fetch tipos_vinculo, continuing without them:", vinculoError)
       }
 
       return {
@@ -43,7 +44,7 @@ export const fetchDropdownData = async (): Promise<DropdownData> => {
         tipos_vinculo: tiposVinculo || [],
       }
     } catch (error: any) {
-      console.error("Error al obtener los datos del formulario:", error)
+      logger.error("Error al obtener los datos del formulario:", error)
       throw error
     }
   }

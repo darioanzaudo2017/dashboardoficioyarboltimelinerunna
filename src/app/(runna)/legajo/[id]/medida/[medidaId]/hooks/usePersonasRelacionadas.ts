@@ -29,6 +29,7 @@ import type {
   PersonaRelacionadaRequest,
   TipoVinculoPersona,
 } from "../types/personas-relacionadas-api"
+import { logger } from "@/utils/logger"
 
 // ============================================================================
 // QUERY KEYS
@@ -157,7 +158,7 @@ export const useAddPersonaRelacionadaExistente = (legajoId: number) => {
       toast.success("Persona relacionada agregada exitosamente")
     },
     onError: (error: any) => {
-      console.error("[useAddPersonaRelacionadaExistente] Error:", error)
+      logger.error("[useAddPersonaRelacionadaExistente] Error:", error)
       const message =
         error?.response?.data?.detail ||
         error?.response?.data?.message ||
@@ -186,7 +187,7 @@ export const useAddPersonaRelacionadaNueva = (legajoId: number) => {
       toast.success("Persona relacionada creada y vinculada exitosamente")
     },
     onError: (error: any) => {
-      console.error("[useAddPersonaRelacionadaNueva] Error:", error)
+      logger.error("[useAddPersonaRelacionadaNueva] Error:", error)
       const message =
         error?.response?.data?.detail ||
         error?.response?.data?.message ||
@@ -215,7 +216,7 @@ export const useUpdatePersonaRelacionada = (legajoId: number) => {
       toast.success("Persona relacionada actualizada exitosamente")
     },
     onError: (error: any) => {
-      console.error("[useUpdatePersonaRelacionada] Error:", error)
+      logger.error("[useUpdatePersonaRelacionada] Error:", error)
       const message =
         error?.response?.data?.detail ||
         error?.response?.data?.message ||
@@ -244,7 +245,7 @@ export const useDesvincularPersonaRelacionada = (legajoId: number) => {
       toast.success("Persona desvinculada exitosamente")
     },
     onError: (error: any) => {
-      console.error("[useDesvincularPersonaRelacionada] Error:", error)
+      logger.error("[useDesvincularPersonaRelacionada] Error:", error)
       const message =
         error?.response?.data?.detail ||
         error?.response?.data?.message ||
@@ -273,7 +274,7 @@ export const useBatchUpdatePersonasRelacionadas = (legajoId: number) => {
       toast.success("Personas relacionadas actualizadas exitosamente")
     },
     onError: (error: any) => {
-      console.error("[useBatchUpdatePersonasRelacionadas] Error:", error)
+      logger.error("[useBatchUpdatePersonasRelacionadas] Error:", error)
       const message =
         error?.response?.data?.detail ||
         error?.response?.data?.message ||

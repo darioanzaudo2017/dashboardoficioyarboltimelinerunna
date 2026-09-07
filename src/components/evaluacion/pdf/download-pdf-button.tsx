@@ -7,6 +7,7 @@ import { PictureAsPdf as PdfIcon } from "@mui/icons-material"
 import InformePDF from "./informe-pdf"
 import { pdf } from "@react-pdf/renderer"
 import { track, AnalyticsEvent } from "@/utils/analytics"
+import { logger } from "@/utils/logger"
 
 // Dynamic import para evitar errores SSR con Next.js
 const PDFDownloadLink = dynamic(() => import("@react-pdf/renderer").then((mod) => mod.PDFDownloadLink), { ssr: false })
@@ -31,7 +32,7 @@ export default function DownloadPDFButton({ data, label = "Generar PDF", onGener
         // Call the callback with the blob
         onGenerate(blob, fileName)
       } catch (error) {
-        console.error("Error generating PDF:", error)
+        logger.error("Error generating PDF:", error)
       } finally {
         setIsGenerating(false)
       }

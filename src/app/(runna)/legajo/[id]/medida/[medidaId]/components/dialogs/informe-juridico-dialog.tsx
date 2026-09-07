@@ -67,6 +67,7 @@ import type {
 } from "../../types/informe-juridico-api"
 import { getCurrentDateISO } from "@/utils/dateUtils"
 import { FileUploadSection } from "@/components/shared/FileUploadSection"
+import { logger } from "@/utils/logger"
 
 // ============================================================================
 // INTERFACES
@@ -400,7 +401,7 @@ export const InformeJuridicoDialog: React.FC<InformeJuridicoDialogProps> = ({
 
       onClose()
     } catch (error: any) {
-      console.error("Error creating informe jurídico:", error)
+      logger.error("Error creating informe jurídico:", error)
       setSubmitError(error.message || "Error al crear y enviar informe jurídico")
     }
   }

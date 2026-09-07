@@ -18,6 +18,7 @@ import type {
   AdjuntosNotaAvalQueryParams,
   UploadAdjuntoResponse,
 } from "../types/nota-aval-api"
+import { logger } from "@/utils/logger"
 
 // ============================================================================
 // CRUD OPERATIONS - NOTA DE AVAL
@@ -65,7 +66,7 @@ export const getNotasAvalByMedida = async (
       queryParams.offset = String(params.offset)
     }
 
-    console.log(`Fetching notas de aval for medida ${medidaId} with params:`, queryParams)
+    logger.log(`Fetching notas de aval for medida ${medidaId} with params:`, queryParams)
 
     // Make API call - Backend returns array directly
     const response = await get<NotaAvalBasicResponse[]>(
@@ -73,15 +74,15 @@ export const getNotasAvalByMedida = async (
       queryParams
     )
 
-    console.log("Notas de aval retrieved:", response)
-    console.log("First nota structure:", response[0])
-    console.log("emitido_por_detalle type:", typeof response[0]?.emitido_por_detalle)
-    console.log("emitido_por_detalle value:", response[0]?.emitido_por_detalle)
+    logger.log("Notas de aval retrieved:", response)
+    logger.log("First nota structure:", response[0])
+    logger.log("emitido_por_detalle type:", typeof response[0]?.emitido_por_detalle)
+    logger.log("emitido_por_detalle value:", response[0]?.emitido_por_detalle)
 
     return response
   } catch (error: any) {
-    console.error(`Error fetching notas de aval for medida ${medidaId}:`, error)
-    console.error("Error details:", {
+    logger.error(`Error fetching notas de aval for medida ${medidaId}:`, error)
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -103,22 +104,22 @@ export const getNotaAvalDetail = async (
   notaAvalId: number
 ): Promise<NotaAvalResponse> => {
   try {
-    console.log(`Fetching nota de aval detail: medida ${medidaId}, nota ${notaAvalId}`)
+    logger.log(`Fetching nota de aval detail: medida ${medidaId}, nota ${notaAvalId}`)
 
     // Make API call - Django requires trailing slash
     const response = await get<NotaAvalResponse>(
       `medidas/${medidaId}/nota-aval/${notaAvalId}/`
     )
 
-    console.log("Nota de aval detail retrieved:", response)
+    logger.log("Nota de aval detail retrieved:", response)
 
     return response
   } catch (error: any) {
-    console.error(
+    logger.error(
       `Error fetching nota de aval detail: medida ${medidaId}, nota ${notaAvalId}`,
       error
     )
-    console.error("Error details:", {
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -154,7 +155,7 @@ export const createNotaAval = async (
   data: CreateNotaAvalRequest
 ): Promise<CreateNotaAvalResponse> => {
   try {
-    console.log(`Creating nota de aval for medida ${medidaId}:`, data)
+    logger.log(`Creating nota de aval for medida ${medidaId}:`, data)
 
     // Ensure medida_id is set
     const requestData = {
@@ -168,12 +169,12 @@ export const createNotaAval = async (
       requestData as Partial<CreateNotaAvalResponse>
     )
 
-    console.log("Nota de aval created successfully:", response)
+    logger.log("Nota de aval created successfully:", response)
 
     return response
   } catch (error: any) {
-    console.error(`Error creating nota de aval for medida ${medidaId}:`, error)
-    console.error("Error details:", {
+    logger.error(`Error creating nota de aval for medida ${medidaId}:`, error)
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -204,7 +205,7 @@ export const uploadAdjuntoNotaAval = async (
   file: File,
 ): Promise<AdjuntoNotaAval> => {
   try {
-    console.log(`Uploading adjunto to nota de aval: medida ${medidaId}`)
+    logger.log(`Uploading adjunto to nota de aval: medida ${medidaId}`)
 
     // Validate file type
     if (file.type !== 'application/pdf') {
@@ -230,12 +231,12 @@ export const uploadAdjuntoNotaAval = async (
       'Archivo adjuntado exitosamente'
     )
 
-    console.log("Adjunto uploaded successfully:", response)
+    logger.log("Adjunto uploaded successfully:", response)
 
     return response
   } catch (error: any) {
-    console.error(`Error uploading adjunto: medida ${medidaId}`, error)
-    console.error("Error details:", {
+    logger.error(`Error uploading adjunto: medida ${medidaId}`, error)
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
     })
@@ -263,7 +264,7 @@ export const getAdjuntosNotaAval = async (
       queryParams.nota_aval = String(params.nota_aval)
     }
 
-    console.log(`Fetching adjuntos nota de aval: medida ${medidaId} with params:`, queryParams)
+    logger.log(`Fetching adjuntos nota de aval: medida ${medidaId} with params:`, queryParams)
 
     // Make API call
     const response = await get<AdjuntoNotaAval[]>(
@@ -271,12 +272,12 @@ export const getAdjuntosNotaAval = async (
       queryParams
     )
 
-    console.log("Adjuntos nota de aval retrieved:", response)
+    logger.log("Adjuntos nota de aval retrieved:", response)
 
     return response
   } catch (error: any) {
-    console.error(`Error fetching adjuntos nota de aval: medida ${medidaId}`, error)
-    console.error("Error details:", {
+    logger.error(`Error fetching adjuntos nota de aval: medida ${medidaId}`, error)
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -299,18 +300,18 @@ export const deleteAdjuntoNotaAval = async (
   adjuntoId: number
 ): Promise<void> => {
   try {
-    console.log(`Deleting adjunto nota de aval: medida ${medidaId}, adjunto ${adjuntoId}`)
+    logger.log(`Deleting adjunto nota de aval: medida ${medidaId}, adjunto ${adjuntoId}`)
 
     // REFACTORED: Use apiService.remove() which handles authentication automatically
     await remove(`medidas/${medidaId}/nota-aval/adjuntos`, adjuntoId)
 
-    console.log("Adjunto nota de aval deleted successfully")
+    logger.log("Adjunto nota de aval deleted successfully")
   } catch (error: any) {
-    console.error(
+    logger.error(
       `Error deleting adjunto nota de aval: medida ${medidaId}, adjunto ${adjuntoId}`,
       error
     )
-    console.error("Error details:", {
+    logger.error("Error details:", {
       message: error?.message,
     })
     throw error
@@ -338,7 +339,7 @@ export const getMostRecentNotaAval = async (
 
     return notas.length > 0 ? notas[0] : null
   } catch (error) {
-    console.error(`Error getting most recent nota de aval for medida ${medidaId}:`, error)
+    logger.error(`Error getting most recent nota de aval for medida ${medidaId}:`, error)
     return null
   }
 }
@@ -354,7 +355,7 @@ export const hasNotasAval = async (medidaId: number): Promise<boolean> => {
     const notas = await getNotasAvalByMedida(medidaId, { limit: 1 })
     return notas.length > 0
   } catch (error) {
-    console.error(`Error checking if medida ${medidaId} has notas de aval:`, error)
+    logger.error(`Error checking if medida ${medidaId} has notas de aval:`, error)
     return false
   }
 }

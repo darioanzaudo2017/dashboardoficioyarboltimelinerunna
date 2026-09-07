@@ -13,6 +13,7 @@ import { UserPermissions } from "@/utils/auth/userZustand"
 import { useQuery } from "@tanstack/react-query"
 import { get } from "@/app/api/apiService"
 import { usePathname } from "next/navigation"
+import { logger } from "@/utils/logger"
 
 interface NotificationSummaryItem {
   id: string
@@ -107,7 +108,7 @@ export default function Header() {
         window.location.href = "/login";
       }, 500);
     } catch (error) {
-      console.error("No se pudo cerrar la sesión:", error);
+      logger.error("No se pudo cerrar la sesión:", error);
       toast.error("No se pudo cerrar la sesión. Intentá nuevamente.");
     }
   }

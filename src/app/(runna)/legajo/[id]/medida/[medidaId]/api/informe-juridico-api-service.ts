@@ -24,6 +24,7 @@ import type {
   CrearYEnviarInformeJuridicoRequest,
   CrearYEnviarInformeJuridicoResponse,
 } from "../types/informe-juridico-api"
+import { logger } from "@/utils/logger"
 
 // ============================================================================
 // CRUD OPERATIONS - INFORME JURÍDICO
@@ -72,7 +73,7 @@ export const getInformesJuridicosByMedida = async (
       queryParams.offset = String(params.offset)
     }
 
-    console.log(`Fetching informes jurídicos for medida ${medidaId} with params:`, queryParams)
+    logger.log(`Fetching informes jurídicos for medida ${medidaId} with params:`, queryParams)
 
     // Make API call - Backend returns array directly
     const response = await get<InformeJuridicoBasicResponse[]>(
@@ -80,12 +81,12 @@ export const getInformesJuridicosByMedida = async (
       queryParams
     )
 
-    console.log("Informes jurídicos retrieved:", response)
+    logger.log("Informes jurídicos retrieved:", response)
 
     return response
   } catch (error: any) {
-    console.error(`Error fetching informes jurídicos for medida ${medidaId}:`, error)
-    console.error("Error details:", {
+    logger.error(`Error fetching informes jurídicos for medida ${medidaId}:`, error)
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -107,7 +108,7 @@ export const getInformeJuridicoDetail = async (
   informeJuridicoId: number
 ): Promise<InformeJuridicoResponse> => {
   try {
-    console.log(
+    logger.log(
       `Fetching informe jurídico detail: medida ${medidaId}, informe ${informeJuridicoId}`
     )
 
@@ -116,15 +117,15 @@ export const getInformeJuridicoDetail = async (
       `medidas/${medidaId}/informe-juridico/${informeJuridicoId}/`
     )
 
-    console.log("Informe jurídico detail retrieved:", response)
+    logger.log("Informe jurídico detail retrieved:", response)
 
     return response
   } catch (error: any) {
-    console.error(
+    logger.error(
       `Error fetching informe jurídico detail: medida ${medidaId}, informe ${informeJuridicoId}`,
       error
     )
-    console.error("Error details:", {
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -159,7 +160,7 @@ export const createInformeJuridico = async (
   data: CreateInformeJuridicoRequest
 ): Promise<CreateInformeJuridicoResponse> => {
   try {
-    console.log(`Creating informe jurídico for medida ${medidaId}:`, data)
+    logger.log(`Creating informe jurídico for medida ${medidaId}:`, data)
 
     // Make API call - create() already adds trailing slash
     const response = await create<CreateInformeJuridicoResponse>(
@@ -167,12 +168,12 @@ export const createInformeJuridico = async (
       data as Partial<CreateInformeJuridicoResponse>
     )
 
-    console.log("Informe jurídico created successfully:", response)
+    logger.log("Informe jurídico created successfully:", response)
 
     return response
   } catch (error: any) {
-    console.error(`Error creating informe jurídico for medida ${medidaId}:`, error)
-    console.error("Error details:", {
+    logger.error(`Error creating informe jurídico for medida ${medidaId}:`, error)
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -201,7 +202,7 @@ export const updateInformeJuridico = async (
   data: Partial<CreateInformeJuridicoRequest>
 ): Promise<InformeJuridicoResponse> => {
   try {
-    console.log(`Updating informe jurídico: medida ${medidaId}, informe ${informeJuridicoId}`, data)
+    logger.log(`Updating informe jurídico: medida ${medidaId}, informe ${informeJuridicoId}`, data)
 
     // Uses update() which sends PATCH request
     // update(endpoint, id, data) - pass informeJuridicoId as the ID parameter
@@ -211,15 +212,15 @@ export const updateInformeJuridico = async (
       data as Partial<InformeJuridicoResponse>
     )
 
-    console.log("Informe jurídico updated successfully:", response)
+    logger.log("Informe jurídico updated successfully:", response)
 
     return response
   } catch (error: any) {
-    console.error(
+    logger.error(
       `Error updating informe jurídico: medida ${medidaId}, informe ${informeJuridicoId}`,
       error
     )
-    console.error("Error details:", {
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -255,7 +256,7 @@ export const enviarInformeJuridico = async (
   medidaId: number
 ): Promise<EnviarInformeJuridicoResponse> => {
   try {
-    console.log(`Enviando informe jurídico for medida ${medidaId}`)
+    logger.log(`Enviando informe jurídico for medida ${medidaId}`)
 
     // POST to custom action endpoint (urls.py line 243: {'post': 'enviar_informe'})
     const response = await create<EnviarInformeJuridicoResponse>(
@@ -265,12 +266,12 @@ export const enviarInformeJuridico = async (
       'Informe jurídico enviado exitosamente'
     )
 
-    console.log("Informe jurídico enviado successfully:", response)
+    logger.log("Informe jurídico enviado successfully:", response)
 
     return response
   } catch (error: any) {
-    console.error(`Error enviando informe jurídico for medida ${medidaId}:`, error)
-    console.error("Error details:", {
+    logger.error(`Error enviando informe jurídico for medida ${medidaId}:`, error)
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -308,7 +309,7 @@ export const crearYEnviarInformeJuridico = async (
   data: CrearYEnviarInformeJuridicoRequest
 ): Promise<CrearYEnviarInformeJuridicoResponse> => {
   try {
-    console.log(`[crearYEnviarInformeJuridico] Creating and sending informe for medida ${medidaId}`)
+    logger.log(`[crearYEnviarInformeJuridico] Creating and sending informe for medida ${medidaId}`)
 
     // Validate informe_oficial is provided
     if (!data.informe_oficial) {
@@ -367,12 +368,12 @@ export const crearYEnviarInformeJuridico = async (
     )
     toast.success('Informe jurídico creado y enviado exitosamente')
 
-    console.log('[crearYEnviarInformeJuridico] Success:', response)
+    logger.log('[crearYEnviarInformeJuridico] Success:', response)
 
     return response
   } catch (error: any) {
-    console.error(`[crearYEnviarInformeJuridico] Error for medida ${medidaId}:`, error)
-    console.error('Error details:', {
+    logger.error(`[crearYEnviarInformeJuridico] Error for medida ${medidaId}:`, error)
+    logger.error('Error details:', {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -410,7 +411,7 @@ export const uploadAdjuntoInformeJuridico = async (
   descripcion?: string,
 ): Promise<AdjuntoInformeJuridico> => {
   try {
-    console.log(
+    logger.log(
       `Uploading adjunto to informe jurídico: medida ${medidaId}, tipo ${tipoAdjunto}`
     )
 
@@ -440,12 +441,12 @@ export const uploadAdjuntoInformeJuridico = async (
     )
     toast.success('Adjunto subido exitosamente')
 
-    console.log("Adjunto uploaded successfully:", response)
+    logger.log("Adjunto uploaded successfully:", response)
 
     return response
   } catch (error: any) {
-    console.error(`Error uploading adjunto: medida ${medidaId}`, error)
-    console.error("Error details:", {
+    logger.error(`Error uploading adjunto: medida ${medidaId}`, error)
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -478,7 +479,7 @@ export const getAdjuntosInformeJuridico = async (
       queryParams.tipo_adjunto = params.tipo_adjunto
     }
 
-    console.log(
+    logger.log(
       `Fetching adjuntos informe jurídico: medida ${medidaId} with params:`,
       queryParams
     )
@@ -489,12 +490,12 @@ export const getAdjuntosInformeJuridico = async (
       queryParams
     )
 
-    console.log("Adjuntos informe jurídico retrieved:", response)
+    logger.log("Adjuntos informe jurídico retrieved:", response)
 
     return response
   } catch (error: any) {
-    console.error(`Error fetching adjuntos informe jurídico: medida ${medidaId}`, error)
-    console.error("Error details:", {
+    logger.error(`Error fetching adjuntos informe jurídico: medida ${medidaId}`, error)
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -519,20 +520,20 @@ export const deleteAdjuntoInformeJuridico = async (
   adjuntoId: number
 ): Promise<void> => {
   try {
-    console.log(
+    logger.log(
       `Deleting adjunto informe jurídico: medida ${medidaId}, adjunto ${adjuntoId}`
     )
 
     // Uses remove() for DELETE request
     await remove(`medidas/${medidaId}/informe-juridico/adjuntos`, adjuntoId)
 
-    console.log("Adjunto informe jurídico deleted successfully")
+    logger.log("Adjunto informe jurídico deleted successfully")
   } catch (error: any) {
-    console.error(
+    logger.error(
       `Error deleting adjunto informe jurídico: medida ${medidaId}, adjunto ${adjuntoId}`,
       error
     )
-    console.error("Error details:", {
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -562,7 +563,7 @@ export const getInformeJuridicoByMedida = async (
 
     return informes.length > 0 ? informes[0] : null
   } catch (error) {
-    console.error(`Error getting informe jurídico for medida ${medidaId}:`, error)
+    logger.error(`Error getting informe jurídico for medida ${medidaId}:`, error)
     return null
   }
 }
@@ -578,7 +579,7 @@ export const hasInformeJuridico = async (medidaId: number): Promise<boolean> => 
     const informes = await getInformesJuridicosByMedida(medidaId, { limit: 1 })
     return informes.length > 0
   } catch (error) {
-    console.error(`Error checking if medida ${medidaId} has informe jurídico:`, error)
+    logger.error(`Error checking if medida ${medidaId} has informe jurídico:`, error)
     return false
   }
 }
@@ -623,7 +624,7 @@ export const enviarInformeJuridicoAJuzgado = async (
 
     return response
   } catch (error: any) {
-    console.error(
+    logger.error(
       `Error enviando informe al juzgado for medida ${medidaId}:`,
       error?.response?.data || error
     )
@@ -645,7 +646,7 @@ export const canSendInformeJuridico = async (medidaId: number): Promise<boolean>
     if (!informe.tiene_informe_oficial) return false
     return true
   } catch (error) {
-    console.error(`Error checking if informe jurídico can be sent for medida ${medidaId}:`, error)
+    logger.error(`Error checking if informe jurídico can be sent for medida ${medidaId}:`, error)
     return false
   }
 }

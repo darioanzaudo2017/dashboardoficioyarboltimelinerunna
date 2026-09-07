@@ -31,6 +31,7 @@ import type {
   CrearYEnviarInformeJuridicoRequest,
   CrearYEnviarInformeJuridicoResponse,
 } from "../types/informe-juridico-api"
+import { logger } from "@/utils/logger"
 
 // ============================================================================
 // INTERFACES
@@ -159,7 +160,7 @@ export const useInformeJuridico = (
           await fetchAdjuntos(informeId)
         }
       } catch (error: any) {
-        console.error("Error fetching informe jurídico detail:", error)
+        logger.error("Error fetching informe jurídico detail:", error)
         setInformeError(error.message || "Error al cargar informe jurídico")
       } finally {
         setIsLoadingInforme(false)
@@ -190,7 +191,7 @@ export const useInformeJuridico = (
         setAdjuntos([])
       }
     } catch (error: any) {
-      console.error("Error fetching informe jurídico:", error)
+      logger.error("Error fetching informe jurídico:", error)
       setInformeError(error.message || "Error al cargar informe jurídico")
       setInformeJuridico(null)
     } finally {
@@ -219,7 +220,7 @@ export const useInformeJuridico = (
         })
         setAdjuntos(adjuntosData)
       } catch (error: any) {
-        console.error("Error fetching adjuntos:", error)
+        logger.error("Error fetching adjuntos:", error)
         setAdjuntosError(error.message || "Error al cargar adjuntos")
       } finally {
         setIsLoadingAdjuntos(false)
@@ -259,7 +260,7 @@ export const useInformeJuridico = (
 
         return newInforme
       } catch (error: any) {
-        console.error("Error creating informe jurídico:", error)
+        logger.error("Error creating informe jurídico:", error)
         const errorMsg = error.message || "Error al crear informe jurídico"
         setInformeError(errorMsg)
         toast.error(errorMsg, {
@@ -309,7 +310,7 @@ export const useInformeJuridico = (
 
         return updatedInforme
       } catch (error: any) {
-        console.error("Error updating informe jurídico:", error)
+        logger.error("Error updating informe jurídico:", error)
         const errorMsg = error.message || "Error al actualizar informe jurídico"
         setInformeError(errorMsg)
         toast.error(errorMsg, {
@@ -341,15 +342,15 @@ export const useInformeJuridico = (
         setIsLoadingInforme(true)
         setInformeError(null)
 
-        console.log('[useInformeJuridico] Creating and sending informe with unified endpoint')
+        logger.log('[useInformeJuridico] Creating and sending informe with unified endpoint')
 
         const response = await crearYEnviarInformeJuridico(medidaId, data)
 
-        console.log('[useInformeJuridico] Unified create+send success:', response)
+        logger.log('[useInformeJuridico] Unified create+send success:', response)
 
         // Update cache with new medida state from response
         if (response.medida?.etapa_actual) {
-          console.log('[useInformeJuridico] Updating cache with new etapa_actual:', response.medida.etapa_actual)
+          logger.log('[useInformeJuridico] Updating cache with new etapa_actual:', response.medida.etapa_actual)
           queryClient.setQueryData(
             medidaKeys.detail(medidaId),
             (oldData: any) => {
@@ -370,7 +371,7 @@ export const useInformeJuridico = (
             refetchType: 'active'
           })
         } catch (invalidateErr) {
-          console.warn('[useInformeJuridico] Cache invalidation failed:', invalidateErr)
+          logger.warn('[useInformeJuridico] Cache invalidation failed:', invalidateErr)
         }
 
         // Refetch to update local state
@@ -383,7 +384,7 @@ export const useInformeJuridico = (
 
         return response
       } catch (error: any) {
-        console.error('[useInformeJuridico] Error in createAndSendInforme:', error)
+        logger.error('[useInformeJuridico] Error in createAndSendInforme:', error)
         const errorMsg = error.response?.data?.detail || error.message || 'Error al crear y enviar informe jurídico'
         setInformeError(errorMsg)
         toast.error(errorMsg, {
@@ -427,7 +428,7 @@ export const useInformeJuridico = (
 
         return newAdjunto
       } catch (error: any) {
-        console.error("Error uploading adjunto:", error)
+        logger.error("Error uploading adjunto:", error)
         const errorMsg = error.message || "Error al subir adjunto"
         setAdjuntosError(errorMsg)
         throw new Error(errorMsg)
@@ -452,7 +453,7 @@ export const useInformeJuridico = (
         // Refetch adjuntos and informe to update counts
         await fetchInforme()
       } catch (error: any) {
-        console.error("Error deleting adjunto:", error)
+        logger.error("Error deleting adjunto:", error)
         const errorMsg = error.message || "Error al eliminar adjunto"
         setAdjuntosError(errorMsg)
         throw new Error(errorMsg)
@@ -506,7 +507,7 @@ export const useInformeJuridico = (
 
       return response
     } catch (error: any) {
-      console.error("Error enviando informe jurídico:", error)
+      logger.error("Error enviando informe jurídico:", error)
       const errorMsg = error.message || "Error al enviar informe jurídico"
       setInformeError(errorMsg)
       toast.error(errorMsg, {
@@ -538,7 +539,7 @@ export const useInformeJuridico = (
       setInformeError(null)
       setAdjuntosError(null)
 
-      console.log('[useInformeJuridico] State reset for etapa:', etapaId, 'with', initialData.length, 'informes')
+      logger.log('[useInformeJuridico] State reset for etapa:', etapaId, 'with', initialData.length, 'informes')
     }
   }, [etapaId, initialData])
 
@@ -551,7 +552,7 @@ export const useInformeJuridico = (
     // Skip fetch if initialData was provided (even if empty array)
     // This prevents fetching informes from other etapas
     if (initialDataProvided) {
-      console.log('[useInformeJuridico] Using initialData from unified endpoint, skipping fetch. Has data:', hasInitialData)
+      logger.log('[useInformeJuridico] Using initialData from unified endpoint, skipping fetch. Has data:', hasInitialData)
       return
     }
 

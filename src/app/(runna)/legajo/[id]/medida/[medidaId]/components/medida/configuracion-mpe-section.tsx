@@ -43,6 +43,8 @@ import { toast } from "react-toastify"
 import axiosInstance from "@/app/api/utils/axiosInstance"
 import type { ConfiguracionDispositivoMPE } from "@/app/(runna)/legajo-mesa/types/medida-api"
 import { formatDateLocaleAR } from "@/utils/dateUtils"
+import { logger } from "@/utils/logger"
+import { buildConfiguracionErrorMessages } from "./shared/configuracion-error-messages"
 
 // ============================================================================
 // INTERFACES
@@ -85,10 +87,10 @@ const getTiposDispositivoMPE = async (): Promise<TipoDispositivo[]> => {
     const response = await axiosInstance.get<TipoDispositivo[]>('/tipos-dispositivo/', {
       params: { categoria: 'MPE' }
     })
-    console.log('[ConfiguracionMPE] Tipos dispositivo MPE loaded:', response.data)
+    logger.log('[ConfiguracionMPE] Tipos dispositivo MPE loaded:', response.data)
     return response.data
   } catch (error) {
-    console.error('[ConfiguracionMPE] Error loading tipos dispositivo:', error)
+    logger.error('[ConfiguracionMPE] Error loading tipos dispositivo:', error)
     throw error
   }
 }
@@ -127,15 +129,7 @@ interface UpdateConfiguracionResponse {
 /**
  * API Error codes from the new endpoint
  */
-const ERROR_MESSAGES: Record<string, string> = {
-  TIPO_MEDIDA_INVALIDO: 'Esta medida no es de tipo MPE',
-  DATOS_REQUERIDOS: 'Debe proporcionar al menos un campo para actualizar',
-  TIPO_DISPOSITIVO_INVALIDO: 'El tipo de dispositivo seleccionado no existe o está inactivo',
-  SUBTIPO_DISPOSITIVO_INVALIDO: 'El subtipo de dispositivo seleccionado no existe o está inactivo',
-  SUBTIPO_NO_COINCIDE: 'El subtipo no pertenece al tipo de dispositivo seleccionado',
-  PERMISO_DENEGADO: 'No tiene permisos para modificar este legajo',
-  SIN_INTERVENCION: 'No existe ninguna intervención para esta medida',
-}
+const ERROR_MESSAGES: Record<string, string> = buildConfiguracionErrorMessages('MPE')
 
 /**
  * Update device configuration via new independent endpoint
@@ -184,14 +178,14 @@ export const ConfiguracionMPESection: React.FC<ConfiguracionMPESectionProps> = (
   // Log error for debugging
   useEffect(() => {
     if (tiposError) {
-      console.error('[ConfiguracionMPE] Error fetching tipos:', tiposError)
+      logger.error('[ConfiguracionMPE] Error fetching tipos:', tiposError)
     }
   }, [tiposError])
 
   // Refetch tipos when dialog opens if data is empty
   useEffect(() => {
     if (dialogOpen && tiposDispositivo.length === 0 && !isLoadingTipos && !tiposError) {
-      console.log('[ConfiguracionMPE] Dialog opened with empty tipos, refetching...')
+      logger.log('[ConfiguracionMPE] Dialog opened with empty tipos, refetching...')
       refetchTipos()
     }
   }, [dialogOpen, tiposDispositivo.length, isLoadingTipos, tiposError, refetchTipos])
@@ -216,7 +210,7 @@ export const ConfiguracionMPESection: React.FC<ConfiguracionMPESectionProps> = (
       onConfigUpdated?.()
     },
     onError: (error: any) => {
-      console.error('Error updating configuracion:', error)
+      logger.error('Error updating configuracion:', error)
       const errorCode = error?.response?.data?.error
       const errorDetail = error?.response?.data?.detail
       const errorSubtipo = error?.response?.data?.subtipo_dispositivo_id

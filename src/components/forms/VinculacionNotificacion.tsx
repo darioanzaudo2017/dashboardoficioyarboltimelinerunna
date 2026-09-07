@@ -10,6 +10,7 @@ import { useEffect, useState } from "react"
 import { create } from "@/app/api/apiService"
 import { useUser } from "@/utils/auth/userZustand"
 import { hasVinculacionAccess } from "@/utils/auth/permissionUtils"
+import { logger } from "@/utils/logger"
 
 interface VinculacionResult {
   demanda_ids: number[]
@@ -120,7 +121,7 @@ const VinculacionNotification: React.FC<VinculacionNotificationProps> = ({
       // Opcional: recargar la página o actualizar los datos
       // router.refresh()
     } catch (error) {
-      console.error("Error al vincular demandas:", error)
+      logger.error("Error al vincular demandas:", error)
     } finally {
       setIsVinculando(false)
     }

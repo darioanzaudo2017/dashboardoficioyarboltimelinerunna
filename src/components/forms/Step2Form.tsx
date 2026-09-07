@@ -20,6 +20,7 @@ import { useBusquedaVinculacion } from "./utils/conexionesApi"
 import VinculacionNotification from "./VinculacionNotificacion"
 import { get } from "@/app/api/apiService"
 import AdultoCard from "./components/adulto/adulto-card"
+import { logger } from "@/utils/logger"
 
 interface Step2FormProps {
   control: Control<FormData>
@@ -66,7 +67,7 @@ const Step2Form: React.FC<Step2FormProps> = ({ control, dropdownData, readOnly =
     // Check duplicates
     const alreadyAdded = currentVinculos.some((v) => v.legajo === legajoId)
     if (alreadyAdded) {
-      console.log("Legajo already added to vinculos")
+      logger.log("Legajo already added to vinculos")
       return
     }
 
@@ -97,7 +98,7 @@ const Step2Form: React.FC<Step2FormProps> = ({ control, dropdownData, readOnly =
         }
       }, 100)
     } catch (error) {
-      console.error("Error fetching legajo details:", error)
+      logger.error("Error fetching legajo details:", error)
       // Fallback with minimal info
       const newVinculo = {
         legajo: legajoId,

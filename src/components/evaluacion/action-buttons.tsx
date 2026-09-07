@@ -23,6 +23,7 @@ import axiosInstance from "@/app/api/utils/axiosInstance"
 import { useUser } from "@/utils/auth/userZustand"
 import { fetchUsuarios } from "@/app/(runna)/legajo-mesa/api/legajo-asignacion-api-service"
 import { normalizeApiText } from "@/components/evaluacion/utils/evaluacion-data-mappers"
+import { logger } from "@/utils/logger"
 
 // Dynamic imports para evitar errores SSR con Next.js
 const DownloadPDFButton = dynamic(() => import("./pdf/download-pdf-button"), {
@@ -154,7 +155,7 @@ export default function ActionButtons({
           data?.registrado_por_user_zona?.id ||
           null
 
-        console.log("Loading usuarios for zona:", zonaId)
+        logger.log("Loading usuarios for zona:", zonaId)
 
         // Fetch all usuarios (API doesn't properly filter by zona)
         const allUsuarios = await fetchUsuarios()
@@ -168,7 +169,7 @@ export default function ActionButtons({
               usuario.zonas &&
               usuario.zonas.some((userZona: any) => userZona.zona === zonaId)
           })
-          console.log(`Filtered ${usuarios.length} active usuarios for zona ${zonaId}`)
+          logger.log(`Filtered ${usuarios.length} active usuarios for zona ${zonaId}`)
         } else {
           // If no zona specified, still filter by active status
           usuarios = allUsuarios.filter((usuario: any) => usuario.is_active)
@@ -206,7 +207,7 @@ export default function ActionButtons({
 
         setFirmantesDisponibles(firmantesFromAPI)
       } catch (error) {
-        console.error("Error loading usuarios for firmantes:", error)
+        logger.error("Error loading usuarios for firmantes:", error)
         toast.error("Error al cargar lista de usuarios", {
           position: "top-center",
           autoClose: 3000,
@@ -258,9 +259,9 @@ export default function ActionButtons({
       const newFiles = fileManagementRef?.current?.getFiles() || []
       const allAdjuntos = [...adjuntos, ...newFiles]
 
-      console.log("Total adjuntos to send:", allAdjuntos.length)
-      console.log("Existing adjuntos:", adjuntos.length)
-      console.log("New files from FileManagement:", newFiles.length)
+      logger.log("Total adjuntos to send:", allAdjuntos.length)
+      logger.log("Existing adjuntos:", adjuntos.length)
+      logger.log("New files from FileManagement:", newFiles.length)
 
       // Get user data for all authorization actions
       const localidad_usuario = normalizeApiText(data?.InformacionGeneral?.Localidad)
@@ -323,15 +324,15 @@ export default function ActionButtons({
         // Append files using the field name "uploaded_files" as specified in API docs
         const newFilesToUpload = allAdjuntos.filter(adjunto => adjunto instanceof File)
         newFilesToUpload.forEach((file) => {
-          console.log("Appending File:", file.name)
+          logger.log("Appending File:", file.name)
           formData.append("uploaded_files", file)
         })
 
-        console.log("Sending FormData with", newFilesToUpload.length, "files")
+        logger.log("Sending FormData with", newFilesToUpload.length, "files")
 
         // Send as multipart/form-data - apiService.create() supports FormData
         const response = await create<any>("evaluaciones/", formData, false)
-        console.log("API Response:", response)
+        logger.log("API Response:", response)
 
         toast.success("Solicitud de tomar medida enviada exitosamente", {
           position: "top-center",
@@ -365,15 +366,15 @@ export default function ActionButtons({
         // Append files using the field name "uploaded_files"
         const newFilesToUpload = allAdjuntos.filter(adjunto => adjunto instanceof File)
         newFilesToUpload.forEach((file) => {
-          console.log("Appending File:", file.name)
+          logger.log("Appending File:", file.name)
           formData.append("uploaded_files", file)
         })
 
-        console.log("Sending FormData with", newFilesToUpload.length, "files")
+        logger.log("Sending FormData with", newFilesToUpload.length, "files")
 
         // Send as multipart/form-data - apiService.create() supports FormData
         const response = await create<any>("evaluaciones", formData, false)
-        console.log("API Response:", response)
+        logger.log("API Response:", response)
 
         toast.success("Solicitud de archivar enviada exitosamente", {
           position: "top-center",
@@ -405,11 +406,11 @@ export default function ActionButtons({
         // Append files using the field name "uploaded_files"
         const newFilesToUpload = allAdjuntos.filter(adjunto => adjunto instanceof File)
         newFilesToUpload.forEach((file) => {
-          console.log("Appending File:", file.name)
+          logger.log("Appending File:", file.name)
           formData.append("uploaded_files", file)
         })
 
-        console.log("Sending FormData with", newFilesToUpload.length, "files")
+        logger.log("Sending FormData with", newFilesToUpload.length, "files")
 
         if (action === "autorizar") {
           // LEG-02: Autorizar admisión y crear legajos automáticamente
@@ -419,7 +420,7 @@ export default function ActionButtons({
             `evaluaciones/${demandaId}/autorizar/?autorizar=true`,
             formData
           )
-          console.log("API Response:", response)
+          logger.log("API Response:", response)
 
           // Show success message
           const nnyaCount = response.evaluacion_personas?.length || 0
@@ -433,7 +434,7 @@ export default function ActionButtons({
             `evaluaciones/${demandaId}/autorizar/?autorizar=false`,
             formData
           )
-          console.log("API Response:", response)
+          logger.log("API Response:", response)
 
           toast.success("Solicitud no autorizar enviada exitosamente", {
             position: "top-center",
@@ -442,7 +443,7 @@ export default function ActionButtons({
         }
       }
     } catch (error) {
-      console.error(`Error in ${action}:`, error)
+      logger.error(`Error in ${action}:`, error)
       toast.error(`Error al procesar la solicitud de ${action}`, {
         position: "top-center",
         autoClose: 3000,

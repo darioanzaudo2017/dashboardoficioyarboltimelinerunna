@@ -21,6 +21,7 @@ import type {
   PlantillaInfoResponse,
   InformeSeguimientoAdjunto,
 } from "../types/informe-seguimiento-api"
+import { logger } from "@/utils/logger"
 
 // ============================================================================
 // CRUD OPERATIONS - INFORMES DE SEGUIMIENTO
@@ -66,7 +67,7 @@ export const getInformesSeguimiento = async (
       queryParams.offset = String(params.offset)
     }
 
-    console.log(`Fetching informes de seguimiento for medida ${medidaId} with params:`, queryParams)
+    logger.log(`Fetching informes de seguimiento for medida ${medidaId} with params:`, queryParams)
 
     // Make API call - Backend returns array directly
     const response = await get<InformeSeguimientoListItem[]>(
@@ -74,12 +75,12 @@ export const getInformesSeguimiento = async (
       queryParams
     )
 
-    console.log("Informes de seguimiento retrieved:", response)
+    logger.log("Informes de seguimiento retrieved:", response)
 
     return response
   } catch (error: any) {
-    console.error(`Error fetching informes de seguimiento for medida ${medidaId}:`, error)
-    console.error("Error details:", {
+    logger.error(`Error fetching informes de seguimiento for medida ${medidaId}:`, error)
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -101,7 +102,7 @@ export const getInformeSeguimientoDetail = async (
   informeId: number
 ): Promise<InformeSeguimiento> => {
   try {
-    console.log(
+    logger.log(
       `Fetching informe de seguimiento detail: medida ${medidaId}, informe ${informeId}`
     )
 
@@ -109,15 +110,15 @@ export const getInformeSeguimientoDetail = async (
       `medidas/${medidaId}/informes-seguimiento/${informeId}/`
     )
 
-    console.log("Informe de seguimiento detail retrieved:", response)
+    logger.log("Informe de seguimiento detail retrieved:", response)
 
     return response
   } catch (error: any) {
-    console.error(
+    logger.error(
       `Error fetching informe de seguimiento detail: medida ${medidaId}, informe ${informeId}`,
       error
     )
-    console.error("Error details:", {
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -150,7 +151,7 @@ export const completarInforme = async (
   payload: CompletarInformePayload
 ): Promise<CompletarInformeResponse> => {
   try {
-    console.log(`Completando informe de seguimiento: medida ${medidaId}, informe ${informeId}`)
+    logger.log(`Completando informe de seguimiento: medida ${medidaId}, informe ${informeId}`)
 
     // Create FormData if there's a file, otherwise send JSON
     let body: FormData | Record<string, any>
@@ -177,15 +178,15 @@ export const completarInforme = async (
       'Informe completado exitosamente'
     )
 
-    console.log("Informe de seguimiento completado:", response)
+    logger.log("Informe de seguimiento completado:", response)
 
     return response
   } catch (error: any) {
-    console.error(
+    logger.error(
       `Error completando informe de seguimiento: medida ${medidaId}, informe ${informeId}`,
       error
     )
-    console.error("Error details:", {
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -213,7 +214,7 @@ export const subirPlantilla = async (
   file: File
 ): Promise<SubirPlantillaResponse> => {
   try {
-    console.log(
+    logger.log(
       `Subiendo plantilla para informe de seguimiento: medida ${medidaId}, informe ${informeId}`
     )
 
@@ -227,15 +228,15 @@ export const subirPlantilla = async (
       'Plantilla subida exitosamente'
     )
 
-    console.log("Plantilla subida:", response)
+    logger.log("Plantilla subida:", response)
 
     return response
   } catch (error: any) {
-    console.error(
+    logger.error(
       `Error subiendo plantilla: medida ${medidaId}, informe ${informeId}`,
       error
     )
-    console.error("Error details:", {
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -277,7 +278,7 @@ export const getPlantillaInfo = async (
  */
 export const descargarPlantilla = async (medidaId: number): Promise<Blob> => {
   try {
-    console.log(`Descargando plantilla for medida ${medidaId}`)
+    logger.log(`Descargando plantilla for medida ${medidaId}`)
 
     const response = await axiosInstance.get(
       `medidas/${medidaId}/informes-seguimiento/plantilla/descargar/`,
@@ -286,12 +287,12 @@ export const descargarPlantilla = async (medidaId: number): Promise<Blob> => {
       }
     )
 
-    console.log("Plantilla downloaded")
+    logger.log("Plantilla downloaded")
 
     return response.data
   } catch (error: any) {
-    console.error(`Error downloading plantilla for medida ${medidaId}:`, error)
-    console.error("Error details:", {
+    logger.error(`Error downloading plantilla for medida ${medidaId}:`, error)
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -317,7 +318,7 @@ export const getAdjuntos = async (
   informeId: number
 ): Promise<InformeSeguimientoAdjunto[]> => {
   try {
-    console.log(
+    logger.log(
       `Fetching adjuntos for informe de seguimiento: medida ${medidaId}, informe ${informeId}`
     )
 
@@ -325,15 +326,15 @@ export const getAdjuntos = async (
       `medidas/${medidaId}/informes-seguimiento/${informeId}/adjuntos/`
     )
 
-    console.log("Adjuntos retrieved:", response)
+    logger.log("Adjuntos retrieved:", response)
 
     return response
   } catch (error: any) {
-    console.error(
+    logger.error(
       `Error fetching adjuntos: medida ${medidaId}, informe ${informeId}`,
       error
     )
-    console.error("Error details:", {
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -359,7 +360,7 @@ export const uploadAdjunto = async (
   descripcion?: string
 ): Promise<InformeSeguimientoAdjunto> => {
   try {
-    console.log(
+    logger.log(
       `Uploading adjunto to informe de seguimiento: medida ${medidaId}, informe ${informeId}`
     )
 
@@ -376,15 +377,15 @@ export const uploadAdjunto = async (
       'Adjunto subido exitosamente'
     )
 
-    console.log("Adjunto uploaded:", response)
+    logger.log("Adjunto uploaded:", response)
 
     return response
   } catch (error: any) {
-    console.error(
+    logger.error(
       `Error uploading adjunto: medida ${medidaId}, informe ${informeId}`,
       error
     )
-    console.error("Error details:", {
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -407,7 +408,7 @@ export const deleteAdjunto = async (
   adjuntoId: number
 ): Promise<void> => {
   try {
-    console.log(
+    logger.log(
       `Deleting adjunto: medida ${medidaId}, informe ${informeId}, adjunto ${adjuntoId}`
     )
 
@@ -416,13 +417,13 @@ export const deleteAdjunto = async (
       adjuntoId
     )
 
-    console.log("Adjunto deleted successfully")
+    logger.log("Adjunto deleted successfully")
   } catch (error: any) {
-    console.error(
+    logger.error(
       `Error deleting adjunto: medida ${medidaId}, informe ${informeId}, adjunto ${adjuntoId}`,
       error
     )
-    console.error("Error details:", {
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -450,7 +451,7 @@ export const getInformesPendientes = async (
       (informe) => informe.estado === 'PENDIENTE' || informe.estado === 'VENCIDO'
     )
   } catch (error) {
-    console.error(`Error getting informes pendientes for medida ${medidaId}:`, error)
+    logger.error(`Error getting informes pendientes for medida ${medidaId}:`, error)
     return []
   }
 }
@@ -480,7 +481,7 @@ export const getInformesCountByEstado = async (
 
     return counts
   } catch (error) {
-    console.error(`Error getting informes count for medida ${medidaId}:`, error)
+    logger.error(`Error getting informes count for medida ${medidaId}:`, error)
     return {
       PENDIENTE: 0,
       VENCIDO: 0,

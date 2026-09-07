@@ -55,6 +55,7 @@ import type {
   TipoAdjuntoInformeJuridico,
 } from "../../types/informe-juridico-api"
 import { formatFileSize } from '@/utils/fileUtils'
+import { logger } from "@/utils/logger"
 
 // ============================================================================
 // INTERFACES
@@ -159,7 +160,7 @@ export const AdjuntosInformeJuridico: React.FC<AdjuntosInformeJuridicoProps> = (
     try {
       await onDelete(adjuntoId)
     } catch (error) {
-      console.error("Error deleting adjunto:", error)
+      logger.error("Error deleting adjunto:", error)
     }
   }
 
@@ -252,7 +253,7 @@ export const AdjuntosInformeJuridico: React.FC<AdjuntosInformeJuridicoProps> = (
       setSelectedFile(null)
       setDescripcion("")
     } catch (error: any) {
-      console.error("Error uploading file:", error)
+      logger.error("Error uploading file:", error)
       setUploadError(error.message || "Error al subir archivo")
     }
   }

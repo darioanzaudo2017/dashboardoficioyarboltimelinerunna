@@ -25,6 +25,7 @@ import { FileUploadSection, type FileItem } from "@/app/(runna)/legajo/[id]/medi
 import { useApiQuery, useCatalogData, extractArray } from "@/hooks/useApiQuery"
 import { usePdfViewer } from "@/hooks"
 import { isPdfFile } from "@/utils/pdfUtils"
+import { logger } from "@/utils/logger"
 
 // URL base para los archivos
 const BASE_URL = "https://web-runna-v2legajos.up.railway.app"
@@ -164,7 +165,7 @@ export function EnviarRespuestaForm({ demandaId }: EnviarRespuestaFormProps) {
       await fetchRespuestas()
       setSnackbar({ open: true, message: "Respuesta enviada con éxito", severity: "success" })
     } catch (err) {
-      console.error("Error submitting respuesta:", err)
+      logger.error("Error submitting respuesta:", err)
       setError("Error al enviar la respuesta")
       setSnackbar({
         open: true,
@@ -361,7 +362,7 @@ export function EnviarRespuestaForm({ demandaId }: EnviarRespuestaFormProps) {
                     try {
                       const date = new Date(dateString)
                       if (isNaN(date.getTime())) {
-                        console.error("Fecha inválida:", value)
+                        logger.error("Fecha inválida:", value)
                         return "Fecha inválida"
                       }
                       // Formatear en español
@@ -373,7 +374,7 @@ export function EnviarRespuestaForm({ demandaId }: EnviarRespuestaFormProps) {
                         minute: "2-digit",
                       })
                     } catch (error) {
-                      console.error("Error al formatear fecha:", error, value)
+                      logger.error("Error al formatear fecha:", error, value)
                       return "Fecha inválida"
                     }
                   },

@@ -13,6 +13,7 @@ import {
   mapEvaluacionActividad,
   normalizeApiText,
 } from "@/components/evaluacion/utils/evaluacion-data-mappers"
+import { logger } from "@/utils/logger"
 
 // Función para obtener los datos de la demanda
 // REFACTORED: Use apiService.get() instead of axiosInstance
@@ -226,7 +227,7 @@ const transformApiData = (apiData: any) => {
         descripcionSituacion = descripcionEvaluacion
       }
     } catch (error) {
-      console.error("Error parsing latest_evaluacion:", error)
+      logger.error("Error parsing latest_evaluacion:", error)
     }
   }
 
@@ -275,7 +276,7 @@ export default function EvaluacionContent() {
   try {
     transformedData = data ? transformApiData(data) : null
   } catch (error) {
-    console.error("Error transforming API data:", error)
+    logger.error("Error transforming API data:", error)
     return (
       <Box sx={{ maxWidth: "1200px", mx: "auto", p: 5 }}>
         <Alert severity="error">
