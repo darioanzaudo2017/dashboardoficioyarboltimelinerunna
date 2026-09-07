@@ -225,6 +225,208 @@ propio directorio: 0 resultados en los tres clusters principales).
 
 Total: **26 archivos, 5.847 líneas.**
 
-**No se borraron**: el encargo acotaba el alcance a los 57 candidatos, y una segunda ola
-merece su propio ciclo de verificación y su propio gate. Con la evidencia ya reunida es un
-seguimiento de bajo riesgo si se quiere recuperar ~5.800 líneas más.
+**No se borraron en esa pasada**: el encargo acotaba el alcance a los 57 candidatos, y una
+segunda ola merece su propio ciclo de verificación y su propio gate.
+
+> **Estado: EJECUTADA.** Ver §7.
+
+---
+
+## 7. Segunda ola — EJECUTADA
+
+Ejecutada en un segundo ciclo con verificación propia e independiente: la lista de §6 **no
+se tomó como dada**, se reconstruyó desde cero y luego se comparó. El resultado coincidió
+exactamente en los 26 archivos.
+
+### 7.1 Metodología (tres métodos que tenían que converger)
+
+**Método 1 — grafo estricto de imports + alcanzabilidad.**
+Se reconstruyó el grafo sobre los 469 archivos de código de `src/`, `tests/`, `stories/` y
+los configs de la raíz, resolviendo especificadores como el bundler: alias `@/*` → `./src/*`,
+rutas relativas, extensiones `.ts/.tsx/.js/.jsx/.mjs/.cjs/.json`, resolución de `index.*`,
+`export * from` de barrels, `import()` dinámico (con comentarios mágicos de webpack),
+`require()` y `vi.mock()/jest.mock()`.
+
+Raíces usadas (32): archivos especiales del App Router bajo `src/app/` — `page`, `layout`,
+`loading`, `error`, `route`, `not-found`, `template`, `default`, `global-error`, `sitemap`,
+`robots`, `manifest`, `icon`, `opengraph-image`… — con **match case-insensitive** para
+capturar `Loading.tsx`; todo lo que cuelga de `src/app/api/`; `src/middleware.ts`;
+`tests/**` y `stories/**`; y los configs de raíz (`tailwind.config.ts`, `next.config.mjs`,
+`vitest.config.mts`, `postcss.config.mjs`, `next-env.d.ts`).
+
+Resultado: 443 alcanzables, **26 muertos, 5.873 líneas**.
+
+**Método 2 — sobreaproximación máxima.**
+Se rehízo el grafo tratando **cualquier literal de string** (comillas simples, dobles o
+backticks) que empiece con `.` o `@/` como si fuera una dependencia, no sólo los que están
+en posición de especificador de import. Es deliberadamente demasiado permisivo: si la ruta
+de un candidato apareciera en *cualquier* string de un archivo vivo — un registry, un mapa
+de rutas, una config — el archivo saldría vivo.
+
+Resultado: **los mismos 26 archivos, sin diferencias.**
+
+**Método 3 — resolución case-insensitive.**
+Se repitió el método 2 indexando todas las rutas en minúsculas, para reproducir cómo
+resuelve APFS en macOS. Es la trampa que ya había hecho falsa la sospecha sobre `Loading.tsx`.
+
+Resultado: **los mismos 26 archivos.** Ni uno nuevo, ni uno rescatado.
+
+**Método 4 — contraverificación textual.**
+Se cargó el repo entero en memoria (586 archivos de texto, cualquier extensión: `.md`,
+`.json`, `.yaml`, `.html`, configs; excluyendo `node_modules/`, `.next/`, `.git/`,
+`tmp_test/`, `tsconfig.tsbuildinfo` y `package-lock.json`) y para cada candidato se buscó
+su basename y **cada símbolo exportado** con límite de palabra. Cada coincidencia fuera del
+propio cluster se revisó a mano.
+
+### 7.2 Riesgos descartados y falsos positivos resueltos a mano
+
+| Riesgo | Resultado |
+|---|---|
+| Imports dinámicos no literales | **0 en todo el repo.** Se buscó `import(` seguido de algo que no fuera comilla ni comentario mágico. |
+| Registries por string | Cubierto por el método 2: ninguna ruta de candidato aparece en ningún literal de un archivo vivo. |
+| Homónimos que parecen uso vivo | Tres casos, todos resueltos: ver abajo. |
+| Colisión de mayúsculas tipo `Loading.tsx` | Cubierto por el método 3: 0 diferencias. |
+| Alias de webpack | `next.config.mjs` sólo define `canvas: false` y `encoding: false`. |
+
+**Homónimos que había que descartar uno por uno:**
+
+- **`ActionButtons`**: `evaluacion-tabs.tsx:30` hace `import ActionButtons from "./action-buttons"`,
+  pero ese specifier es relativo a `src/components/evaluacion/` y resuelve a
+  `src/components/evaluacion/action-buttons.tsx`, que sigue vivo. El borrado es el homónimo
+  de `medida/[medidaId]/components/medida/shared/`.
+- **`legajos-service`**: `legajos-table.tsx:69` hace `import { exportLegajosToExcel } from "./legajos-service"`,
+  relativo a `legajo-mesa/ui/` → resuelve a `legajo-mesa/ui/legajos-service.ts`, vivo. El
+  borrado es `legajo-mesa/mock-data/legajos-service.ts`.
+- **`SectionConfig`**: existe una definición viva e independiente en
+  `medida/[medidaId]/types/workflow.ts:298`. Nadie importaba la del `section-configs.ts` borrado.
+- **`SearchBar`**: las 8 coincidencias del basename son `LegajoSearchBar`, otro componente
+  vivo. Con límite de palabra, `SearchBar` tiene 0 usos fuera del archivo borrado.
+- **`updateLegajo`**: las coincidencias son `updateLegajoPrioridad` y `updateLegajoDatosPersonales`,
+  ambos vivos en `legajo-mesa/api/legajos-api-service.ts`.
+
+Todos los demás aciertos de basename y de símbolos exportados cayeron en `claudedocs/**.md`
+y `stories/**` — documentación que describe el código borrado, no código que lo use.
+
+### 7.3 Archivos eliminados (27 archivos, 6.371 líneas)
+
+Conteo de líneas según `git diff --numstat bde04be..HEAD`.
+
+#### Tanda 1 — cluster `persona-completa` (8 archivos, 1.958 líneas) · commit `a57c74d`
+
+Cluster cerrado: `index.ts` y `display/index.ts` son barrels que reexportan la sección y los
+cuatro displays; todos importan los tipos. Ninguna referencia externa a `persona-completa`
+en `src/`, `tests/` ni `stories/`.
+
+| Archivo | Líneas |
+|---|---:|
+| `src/components/legajo/persona-completa/PersonaCompletaSection.tsx` | 575 |
+| `src/components/legajo/persona-completa/display/HealthDisplay.tsx` | 405 |
+| `src/components/legajo/persona-completa/display/PersonalInfoDisplay.tsx` | 335 |
+| `src/components/legajo/persona-completa/display/VulnerabilityDisplay.tsx` | 319 |
+| `src/components/legajo/persona-completa/display/EducationDisplay.tsx` | 171 |
+| `src/components/legajo/persona-completa/types/persona-completa.types.ts` | 122 |
+| `src/components/legajo/persona-completa/index.ts` | 27 |
+| `src/components/legajo/persona-completa/display/index.ts` | 4 |
+
+#### Tanda 2 — cluster workflow de `medida/[medidaId]` (8 archivos, 2.636 líneas) · commit `50e03e7`
+
+Implementación del "workflow unificado" que el `page.tsx` de la ruta nunca llegó a adoptar:
+usa los componentes vigentes. La única arista interna es `section-configs.ts` → `document-list.tsx`;
+los otros seis no tienen ningún importador.
+
+| Archivo | Líneas |
+|---|---:|
+| `.../api/workflow-api-facade.ts` | 686 |
+| `.../components/medida/shared/unified-workflow-modal.tsx` | 583 |
+| `.../utils/permissions.ts` | 412 |
+| `.../hooks/useWorkflowData.ts` | 282 |
+| `.../components/medida/intervencion-actions.tsx` | 250 |
+| `.../components/medida/shared/section-configs.ts` | 194 |
+| `.../components/medida/shared/document-list.tsx` | 131 |
+| `.../components/medida/shared/action-buttons.tsx` | 99 |
+
+(prefijo `src/app/(runna)/legajo/[id]/medida/[medidaId]`)
+
+#### Tanda 3 — cluster `utils/userPreferences` (3 archivos, 136 líneas) · commit `70edc6d`
+
+`index.ts` reexporta hook y servicio; el hook importa el servicio. La cadena
+`userPreferences` no aparece en ningún otro archivo del repo.
+
+| Archivo | Líneas |
+|---|---:|
+| `src/utils/userPreferences/useUserPreferences.ts` | 80 |
+| `src/utils/userPreferences/userPreferences.service.ts` | 50 |
+| `src/utils/userPreferences/index.ts` | 6 |
+
+#### Tanda 4 — sueltos + un fixture (8 archivos, 1.641 líneas) · commit `1286aca`
+
+| Archivo | Líneas | Evidencia |
+|---|---:|---|
+| `src/components/forms/RegistroLegajoForm.tsx` | 533 | Sin importadores. `RegistroLegajoForm` sólo aparece en `stories/LEG-02_Creacion_Legajo.md`. |
+| `src/app/(runna)/legajo-mesa/mock-data/legajos.json` | 522 | **Muerto por transitividad.** Su único referenciador era `mock-data/legajos-service.ts`, borrado en este mismo commit. |
+| `src/components/shared/DocumentUploadModal.tsx` | 221 | Sin importadores; 0 coincidencias del basename en código. |
+| `src/app/(runna)/legajo-mesa/mock-data/legajos-service.ts` | 146 | El `"./legajos-service"` vivo resuelve a `legajo-mesa/ui/`, otro archivo. |
+| `src/components/evaluacion/api/indicadores-service.ts` | 98 | Sin importadores. Par duplicado con el de abajo; ninguno de los dos se usa. |
+| `src/components/evaluacion/indicadores-service.ts` | 70 | Ídem. |
+| `src/components/layoutComponents/SearchBar.tsx` | 35 | Las coincidencias son `LegajoSearchBar`, otro componente. |
+| `src/app/(runna)/oficios/types.ts` | 15 | `DemandaAllItem`: **1 sola aparición en todo el repo**, su propia definición. |
+
+> **Nota sobre `oficios/types.ts`:** de sus 15 líneas, 8 son un comentario que documenta el
+> comportamiento del endpoint `GET /registro-demanda-form/` (ignora los query params y
+> siempre devuelve el array completo sin paginar; es la única fuente donde vive el
+> SAC/expediente/oficio web real). El *tipo* estaba muerto, pero **ese conocimiento no lo
+> está**. Recuperable con `git show 1286aca^:'src/app/(runna)/oficios/types.ts'` si se
+> quiere reubicar el comentario junto al código que consulta ese endpoint.
+
+> **Nota sobre `legajos.json`:** es el único archivo eliminado que **no** estaba en la lista
+> de 26 de §6, porque aquella sólo contemplaba archivos de código. Se incluyó por ser un
+> huérfano transitivo demostrable: cero referencias una vez borrado su único consumidor.
+
+### 7.4 Archivos CONSERVADOS
+
+| Archivo | Motivo |
+|---|---|
+| `src/app/(runna)/evaluacion/Loading.tsx` | **No tocado, igual que en la primera ola.** En macOS (APFS case-insensitive) el resolver de Next lo encuentra al pedir `<dir>/loading`, así que probablemente está actuando como UI de carga de `/evaluacion`; en Linux no. Sigue siendo un bug latente de portabilidad, no código muerto, y sigue siendo una decisión de producto (renombrar a `loading.tsx` o borrar deliberadamente). Se trató como entrypoint en los tres métodos. |
+
+**No hubo archivos dudosos.** Los tres métodos de grafo dieron exactamente el mismo conjunto
+y la contraverificación textual no dejó ninguna coincidencia sin explicar, así que ningún
+candidato quedó en zona gris. Ninguna tanda necesitó revertirse.
+
+### 7.5 Estado final de los gates
+
+| Gate | Resultado |
+|---|---|
+| `npm run typecheck` (baseline, antes de tocar nada) | exit 0 |
+| `npm run build` (baseline) | exit 0 |
+| `npm run typecheck` tras tanda 1 | exit 0 |
+| `npm run typecheck` tras tanda 2 | exit 0 |
+| `npm run typecheck` tras tanda 3 | exit 0 |
+| `npm run typecheck` tras tanda 4 | exit 0 |
+| `npm run build` final | **exit 0** |
+
+El build final genera **las mismas 15 rutas** que antes de la limpieza (`/`, `/_not-found`,
+`/demanda/[id]`, `/evaluacion`, `/indicadores`, `/legajo-mesa`, `/legajo/[id]`,
+`/legajo/[id]/arbol`, `/legajo/[id]/medida/[medidaId]`, `/legajo/[id]/medida/[medidaId]/arbol`,
+`/legajo/actividades`, `/login`, `/mesadeentrada`, `/nuevoingreso`, `/oficios`) más el
+middleware. No se perdió ninguna ruta.
+
+### 7.6 ¿Hay una tercera ola?
+
+**No.** Reejecutado el grafo después de los borrados: **435 archivos en `src/`, 435
+alcanzables, 0 muertos**. El grafo de imports del proyecto quedó cerrado — cada archivo de
+`src/` se alcanza desde un entrypoint del App Router, `src/app/api/`, `middleware.ts` o
+`tests/`. Las dos olas juntas eliminaron **83 archivos y 17.570 líneas**.
+
+### 7.7 Commits de la segunda ola
+
+| Commit | Contenido |
+|---|---|
+| `a57c74d` | Cluster `persona-completa` (8 archivos, 1.958 líneas) |
+| `50e03e7` | Cluster workflow de `medida/[medidaId]` (8 archivos, 2.636 líneas) |
+| `70edc6d` | Cluster `utils/userPreferences` (3 archivos, 136 líneas) |
+| `1286aca` | 7 sueltos + fixture `legajos.json` (8 archivos, 1.641 líneas) |
+
+Igual que en la primera ola, cada commit incluye **sólo** las rutas borradas de su tanda
+(`git rm` con rutas explícitas, nunca `git add -A` ni `git add .`). El cambio ajeno
+pendiente en el working tree (`" .env.local.template"` → `.env.local.template`) quedó
+**intacto y sin commitear**.
