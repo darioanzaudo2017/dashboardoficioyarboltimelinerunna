@@ -44,6 +44,7 @@ import axiosInstance from "@/app/api/utils/axiosInstance"
 import type { ConfiguracionDispositivoMPE } from "@/app/(runna)/legajo-mesa/types/medida-api"
 import { formatDateLocaleAR } from "@/utils/dateUtils"
 import { logger } from "@/utils/logger"
+import { buildConfiguracionErrorMessages } from "./shared/configuracion-error-messages"
 
 // ============================================================================
 // INTERFACES
@@ -128,15 +129,7 @@ interface UpdateConfiguracionResponse {
 /**
  * API Error codes from the new endpoint
  */
-const ERROR_MESSAGES: Record<string, string> = {
-  TIPO_MEDIDA_INVALIDO: 'Esta medida no es de tipo MPE',
-  DATOS_REQUERIDOS: 'Debe proporcionar al menos un campo para actualizar',
-  TIPO_DISPOSITIVO_INVALIDO: 'El tipo de dispositivo seleccionado no existe o está inactivo',
-  SUBTIPO_DISPOSITIVO_INVALIDO: 'El subtipo de dispositivo seleccionado no existe o está inactivo',
-  SUBTIPO_NO_COINCIDE: 'El subtipo no pertenece al tipo de dispositivo seleccionado',
-  PERMISO_DENEGADO: 'No tiene permisos para modificar este legajo',
-  SIN_INTERVENCION: 'No existe ninguna intervención para esta medida',
-}
+const ERROR_MESSAGES: Record<string, string> = buildConfiguracionErrorMessages('MPE')
 
 /**
  * Update device configuration via new independent endpoint
