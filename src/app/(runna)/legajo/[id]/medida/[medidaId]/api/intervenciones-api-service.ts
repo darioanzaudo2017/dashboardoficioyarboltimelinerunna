@@ -327,8 +327,13 @@ export const crearYEnviarIntervencion = async (
       // Add all form fields
       formData.append('fecha_intervencion', data.fecha_intervencion)
       formData.append('motivo_id', String(data.motivo_id))
-      formData.append('categoria_intervencion_id', String(data.categoria_intervencion_id))
       formData.append('intervencion_especifica', data.intervencion_especifica)
+
+      // Opcional: sin el guard, un valor ausente viajaba como el string "null"
+      // y el backend intentaba resolverlo como PK.
+      if (data.categoria_intervencion_id) {
+        formData.append('categoria_intervencion_id', String(data.categoria_intervencion_id))
+      }
 
       if (data.sub_motivo_id) {
         formData.append('sub_motivo_id', String(data.sub_motivo_id))
