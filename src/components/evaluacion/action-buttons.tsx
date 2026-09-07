@@ -117,6 +117,10 @@ export default function ActionButtons({
   const [tipoMedidaEvaluado, setTipoMedidaEvaluado] = useState<string>("")
   const user = useUser((state) => state.user)
 
+  // Decision ya registrada por el tecnico (viene de latest_evaluacion)
+  const solicitudTecnicoPrevia = normalizeApiText(data?.SolicitudTecnico)
+  const tipoMedidaSolicitado = normalizeApiText(data?.TipoMedidaEvaluado)
+
   // Admin: puede actuar como técnico y como director (ambos flujos)
   const isAdmin = user?.is_superuser === true
 
@@ -131,6 +135,15 @@ export default function ActionButtons({
       setSelectedChildrenIds(nnyaIds);
     }
   }, [nnyaIds]);
+
+  // El tipo de medida que solicito el tecnico ya viene en la evaluacion guardada.
+  // Sin esto el selector volvia vacio al reabrir la evaluacion y no quedaba
+  // registro visible de que se habia pedido.
+  useEffect(() => {
+    if (tipoMedidaSolicitado) {
+      setTipoMedidaEvaluado(tipoMedidaSolicitado)
+    }
+  }, [tipoMedidaSolicitado]);
 
   // Fetch users from API for firmantes filtered by zona
   useEffect(() => {
@@ -454,6 +467,29 @@ export default function ActionButtons({
     firmantes: firmantes,
   }
 
+  // Resumen de lo que ya pidio el tecnico. Se muestra siempre que exista una
+  // solicitud registrada, para que el director no tenga que inferirlo de la
+  // documentacion adjunta.
+  const TIPO_MEDIDA_LABELS: Record<string, string> = {
+    MPI: "Medida de Protección Integral (MPI)",
+    MPE: "Medida de Protección Excepcional (MPE)",
+    MPJ: "Medida Penal Juvenil (MPJ)",
+  }
+
+  const solicitudTecnicoResumen = solicitudTecnicoPrevia ? (
+    <Chip
+      color="info"
+      variant="outlined"
+      size="small"
+      label={
+        tipoMedidaSolicitado
+          ? `Solicitud del técnico: ${solicitudTecnicoPrevia} - ${TIPO_MEDIDA_LABELS[tipoMedidaSolicitado] || tipoMedidaSolicitado}`
+          : `Solicitud del técnico: ${solicitudTecnicoPrevia}`
+      }
+      sx={{ maxWidth: "100%" }}
+    />
+  ) : null
+
   // Botones del flujo del Técnico (solicitud de archivo / tomar medida)
   const tecnicoActions = (
     <>
@@ -531,7 +567,14 @@ export default function ActionButtons({
         >
           <MenuItem value="MPI">Medida de Protección Integral (MPI)</MenuItem>
           <MenuItem value="MPE">Medida de Protección Excepcional (MPE)</MenuItem>
-          <MenuItem value="MPJ">Medida Penal Juvenil (MPJ)</MenuItem>
+          {/* MPJ ya no se solicita desde acá (entra por el circuito de oficios),
+              pero si una evaluación vieja lo tiene guardado hay que poder
+              mostrarlo en vez de dejar el selector en un valor fuera de rango. */}
+          {tipoMedidaEvaluado === "MPJ" && (
+            <MenuItem value="MPJ" disabled>
+              Medida Penal Juvenil (MPJ)
+            </MenuItem>
+          )}
         </Select>
       </FormControl>
 
@@ -653,6 +696,7 @@ export default function ActionButtons({
             <Typography variant="caption" sx={{ fontWeight: "bold", color: "primary.main", letterSpacing: 0.5 }}>
               DIRECTOR
             </Typography>
+            {solicitudTecnicoResumen}
             <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, alignItems: "center" }}>
               {directorActions}
             </Box>
@@ -661,6 +705,7 @@ export default function ActionButtons({
       ) : (
         // Resto de roles: un solo flujo, sin etiquetas
         <>
+          {solicitudTecnicoResumen}
           {!isDirector && tecnicoActions}
           {isDirector && directorActions}
         </>

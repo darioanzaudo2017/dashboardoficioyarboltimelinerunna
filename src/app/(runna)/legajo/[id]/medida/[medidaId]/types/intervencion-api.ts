@@ -38,6 +38,8 @@ export interface TipoDispositivo {
   nombre: string
   descripcion?: string
   activo?: boolean
+  categoria?: 'MPI' | 'MPE' | 'MPJ'
+  categoria_display?: string
 }
 
 /**

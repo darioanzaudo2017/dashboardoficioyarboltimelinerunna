@@ -975,7 +975,16 @@ export const useRegistroIntervencion = ({
       if (!formData.tipo_dispositivo_id) {
         errors.tipo_dispositivo_id = "El tipo de dispositivo es obligatorio"
       }
-      if (!formData.subtipo_dispositivo_id) {
+      // El dispositivo de resguardo solo es exigible cuando el tipo elegido
+      // tiene subtipos cargados en el catálogo. Hay tipos (ej. familia extensa,
+      // familia comunitaria) que no tienen dispositivos asociados: exigirlo ahí
+      // dejaba el formulario sin forma de avanzar.
+      const tipoSeleccionado = tiposDispositivo.find(
+        (tipo) => tipo.id === formData.tipo_dispositivo_id
+      )
+      const tieneSubtipos = (tipoSeleccionado?.subtipos?.length ?? 0) > 0
+
+      if (tieneSubtipos && !formData.subtipo_dispositivo_id) {
         errors.subtipo_dispositivo_id = "El dispositivo de resguardo es obligatorio"
       }
     }

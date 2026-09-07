@@ -288,10 +288,25 @@ export const IntervencionModal: React.FC<IntervencionModalProps> = ({
         }
     }
 
+    // El catalogo /tipos-dispositivo/ devuelve las tres categorias (MPI/MPE/MPJ)
+    // juntas. Mostramos solo los de la medida en curso; si el catalogo no tiene
+    // ninguno de esa categoria (datos viejos sin categorizar) caemos al listado
+    // completo para no dejar el selector vacio.
+    const tiposDispositivoDeCategoria = tiposDispositivo.filter(
+        (tipo) => tipo.categoria === tipoMedida
+    )
+    const tiposDispositivoVisibles =
+        tiposDispositivoDeCategoria.length > 0 ? tiposDispositivoDeCategoria : tiposDispositivo
+
     const selectedTipoDispositivo = tiposDispositivo.find(
         (tipo) => tipo.id === formData.tipo_dispositivo_id
     )
     const subtiposDispositivo = selectedTipoDispositivo?.subtipos || []
+
+    // Hay tipos de dispositivo sin subtipos en el catalogo (familia extensa,
+    // familia comunitaria, etc.). En esos casos el campo no puede ser obligatorio
+    // porque no habria opcion posible que elegir.
+    const tieneSubtiposDisponibles = subtiposDispositivo.length > 0
 
     // ============================================================================
     // HANDLERS - Save & State Transitions
@@ -870,7 +885,7 @@ export const IntervencionModal: React.FC<IntervencionModalProps> = ({
                                                 disabled={!canEdit || isLoadingCatalogs}
                                             >
                                                 <MenuItem value="">Seleccionar</MenuItem>
-                                                {tiposDispositivo.map((tipo) => (
+                                                {tiposDispositivoVisibles.map((tipo) => (
                                                     <MenuItem key={tipo.id} value={tipo.id}>
                                                         {tipo.nombre}
                                                     </MenuItem>
@@ -881,13 +896,17 @@ export const IntervencionModal: React.FC<IntervencionModalProps> = ({
                                             )}
                                         </FormControl>
 
-                                        <FormControl fullWidth required error={!!validationErrors.subtipo_dispositivo_id}>
+                                        <FormControl
+                                            fullWidth
+                                            required={tieneSubtiposDisponibles}
+                                            error={!!validationErrors.subtipo_dispositivo_id}
+                                        >
                                             <InputLabel>Dispositivo de resguardo</InputLabel>
                                             <Select
                                                 value={formData.subtipo_dispositivo_id || ''}
-                                                onChange={(e) => updateField('subtipo_dispositivo_id', Number(e.target.value))}
+                                                onChange={(e) => updateField('subtipo_dispositivo_id', e.target.value ? Number(e.target.value) : null)}
                                                 label="Dispositivo de resguardo"
-                                                disabled={!canEdit || !formData.tipo_dispositivo_id || isLoadingCatalogs}
+                                                disabled={!canEdit || !formData.tipo_dispositivo_id || isLoadingCatalogs || !tieneSubtiposDisponibles}
                                             >
                                                 <MenuItem value="">Seleccionar</MenuItem>
                                                 {subtiposDispositivo.map((subtipo) => (
@@ -900,6 +919,12 @@ export const IntervencionModal: React.FC<IntervencionModalProps> = ({
                                                 <FormHelperText>{validationErrors.subtipo_dispositivo_id}</FormHelperText>
                                             ) : !formData.tipo_dispositivo_id ? (
                                                 <FormHelperText>Seleccione primero un tipo de dispositivo</FormHelperText>
+                                            ) : isLoadingCatalogs ? (
+                                                <FormHelperText>Cargando dispositivos...</FormHelperText>
+                                            ) : !tieneSubtiposDisponibles ? (
+                                                <FormHelperText>
+                                                    Este tipo de dispositivo no tiene dispositivos de resguardo cargados - puede continuar
+                                                </FormHelperText>
                                             ) : null}
                                         </FormControl>
                                     </>
