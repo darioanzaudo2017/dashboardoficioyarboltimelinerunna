@@ -36,6 +36,7 @@ import { debounce } from "lodash"
 import { ExternalLink } from "lucide-react"
 import { useRouter } from "next/navigation"
 import BaseDialog from "@/components/shared/BaseDialog"
+import { logger } from "@/utils/logger"
 
 interface SearchResult {
   demanda_ids: number[]
@@ -190,7 +191,7 @@ export default function SearchModal({
 
       setSearchResults(result)
     } catch (err) {
-      console.error("Error searching:", err)
+      logger.error("Error searching:", err)
       setSearchError("Error al buscar. Por favor intente nuevamente.")
     } finally {
       setSearchLoading(false)

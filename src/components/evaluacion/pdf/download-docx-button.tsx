@@ -6,6 +6,7 @@ import { Description as DocIcon } from "@mui/icons-material"
 import { saveAs } from "file-saver"
 import { generateInformeDocx, generateDocxFileName } from "./informe-docx"
 import { track, AnalyticsEvent } from "@/utils/analytics"
+import { logger } from "@/utils/logger"
 
 interface DownloadDocxButtonProps {
   data: any
@@ -238,7 +239,7 @@ export default function DownloadDocxButton({
         onGenerate(blob, fileName)
       }
     } catch (error) {
-      console.error("Error generating Word document:", error)
+      logger.error("Error generating Word document:", error)
     } finally {
       setIsGenerating(false)
     }

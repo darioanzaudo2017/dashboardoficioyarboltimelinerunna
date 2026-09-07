@@ -29,6 +29,7 @@ import { create, get } from "@/app/api/apiService"
 import { useConditionalData, extractArray } from "@/hooks/useApiQuery"
 import { toast } from "react-toastify"
 import { useUser } from "@/utils/auth/userZustand"
+import { logger } from "@/utils/logger"
 
 interface AsignarModalProps {
   open: boolean
@@ -179,7 +180,7 @@ const AsignarModal: React.FC<AsignarModalProps> = ({ open, onClose, demandaId, o
           }))
         setUsersForSelectedZona(usersFromZona)
       } catch (error) {
-        console.error("Error fetching users for zona:", error)
+        logger.error("Error fetching users for zona:", error)
         setUsersForSelectedZona([])
       } finally {
         setIsLoadingUsersForZona(false)
@@ -248,7 +249,7 @@ const AsignarModal: React.FC<AsignarModalProps> = ({ open, onClose, demandaId, o
       // Notificar al componente padre para refrescar la bandeja
       onSuccess?.()
     } catch (error) {
-      console.error("Error assigning demanda:", error)
+      logger.error("Error assigning demanda:", error)
       toast.error("Error al asignar la demanda")
     } finally {
       setIsLoading(false)

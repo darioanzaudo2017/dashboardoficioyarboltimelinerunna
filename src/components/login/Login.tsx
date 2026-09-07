@@ -24,6 +24,7 @@ import Image from "next/image"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { logger } from "@/utils/logger"
 
 const loginFormSchema = z.object({
   username: z.string().nonempty("El nombre de usuario es requerido"),
@@ -86,7 +87,7 @@ export default function Login() {
         : "/mesadeentrada"
       router.push(destination);
     } catch (error: any) {
-      console.error("Error during login:", error);
+      logger.error("Error during login:", error);
       const statusCode = error?.response?.status || "Desconocido";
       const message = errorMessages[statusCode] || "Ocurrió un error";
       const errorCode = error?.response?.status || "Desconocido";
