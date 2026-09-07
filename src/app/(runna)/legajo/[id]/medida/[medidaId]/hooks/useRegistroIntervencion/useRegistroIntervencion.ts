@@ -134,6 +134,7 @@ export const useRegistroIntervencion = ({
     formData,
     workflowPhase,
     tipoMedida,
+    tiposDispositivo,
   })
 
   // ============================================================================

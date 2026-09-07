@@ -140,6 +140,16 @@ export const IntervencionModal: React.FC<IntervencionModalProps> = ({
         setSnackbar,
     })
 
+    // El catalogo /tipos-dispositivo/ devuelve las tres categorias (MPI/MPE/MPJ)
+    // juntas. Mostramos solo los de la medida en curso; si el catalogo no tiene
+    // ninguno de esa categoria (datos viejos sin categorizar) caemos al listado
+    // completo para no dejar el selector vacio.
+    const tiposDispositivoDeCategoria = tiposDispositivo.filter(
+        (tipo) => tipo.categoria === tipoMedida
+    )
+    const tiposDispositivoVisibles =
+        tiposDispositivoDeCategoria.length > 0 ? tiposDispositivoDeCategoria : tiposDispositivo
+
     const selectedTipoDispositivo = tiposDispositivo.find(
         (tipo) => tipo.id === formData.tipo_dispositivo_id
     )
@@ -259,7 +269,7 @@ export const IntervencionModal: React.FC<IntervencionModalProps> = ({
                         isLoadingCatalogs={isLoadingCatalogs}
                         motivos={motivos}
                         subMotivos={subMotivos}
-                        tiposDispositivo={tiposDispositivo}
+                        tiposDispositivo={tiposDispositivoVisibles}
                         subtiposDispositivo={subtiposDispositivo}
                         legajoData={legajoData}
                         tipoMedida={tipoMedida}
