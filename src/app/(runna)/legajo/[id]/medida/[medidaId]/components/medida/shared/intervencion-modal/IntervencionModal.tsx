@@ -140,6 +140,14 @@ export const IntervencionModal: React.FC<IntervencionModalProps> = ({
         setSnackbar,
     })
 
+    // El catalogo trae todos los submotivos juntos. El desplegable listaba los
+    // de todos los motivos, y el efecto que limpia la seleccion cuando no
+    // pertenece al motivo elegido la borraba apenas se elegia: parecia que no
+    // hubiera submotivos.
+    const subMotivosDelMotivo = subMotivos.filter(
+        (submotivo) => submotivo.motivo_id === formData.motivo_id
+    )
+
     // El catalogo /tipos-dispositivo/ devuelve las tres categorias (MPI/MPE/MPJ)
     // juntas. Mostramos solo los de la medida en curso; si el catalogo no tiene
     // ninguno de esa categoria (datos viejos sin categorizar) caemos al listado
@@ -268,7 +276,7 @@ export const IntervencionModal: React.FC<IntervencionModalProps> = ({
                         canEdit={canEdit}
                         isLoadingCatalogs={isLoadingCatalogs}
                         motivos={motivos}
-                        subMotivos={subMotivos}
+                        subMotivos={subMotivosDelMotivo}
                         tiposDispositivo={tiposDispositivoVisibles}
                         subtiposDispositivo={subtiposDispositivo}
                         legajoData={legajoData}
