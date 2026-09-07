@@ -32,6 +32,7 @@ import {
   type PersonaRelacionadaUpdate,
   type Ocupacion,
 } from "../../types/personas-relacionadas-api"
+import { logger } from "@/utils/logger"
 
 interface EditarPersonaRelacionadaModalProps {
   open: boolean
@@ -132,7 +133,7 @@ export default function EditarPersonaRelacionadaModal({
       await updateMutation.mutateAsync(data)
       onSuccess()
     } catch (err) {
-      console.error("Error updating:", err)
+      logger.error("Error updating:", err)
     }
   }
 

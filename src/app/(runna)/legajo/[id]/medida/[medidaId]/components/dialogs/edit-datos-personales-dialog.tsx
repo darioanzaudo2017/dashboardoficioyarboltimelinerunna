@@ -12,6 +12,7 @@ import {
 import EditIcon from "@mui/icons-material/Edit"
 import BaseDialog from "@/components/shared/BaseDialog"
 import type { PersonaDetailData } from "@/app/(runna)/legajo-mesa/types/legajo-api"
+import { logger } from "@/utils/logger"
 
 interface EditDatosPersonalesDialogProps {
   open: boolean
@@ -61,7 +62,7 @@ export const EditDatosPersonalesDialog: React.FC<EditDatosPersonalesDialogProps>
       await onSave(formData)
       onClose()
     } catch (err) {
-      console.error("Error saving datos personales:", err)
+      logger.error("Error saving datos personales:", err)
       setError(err instanceof Error ? err.message : "Error al guardar los datos")
     } finally {
       setIsSaving(false)

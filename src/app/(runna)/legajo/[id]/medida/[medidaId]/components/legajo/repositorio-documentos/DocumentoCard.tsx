@@ -22,6 +22,7 @@ import { usePdfViewer } from '@/hooks'
 import { isPdfFile, downloadFileAuthenticated } from '@/utils/pdfUtils'
 import type { Documento } from '../../../types/repositorio-documentos'
 import { getFileIcon, getTipoModeloLabel, CATEGORY_CONFIG } from './constants'
+import { logger } from '@/utils/logger'
 
 interface DocumentoCardProps {
   documento: Documento
@@ -63,7 +64,7 @@ export const DocumentoCard: React.FC<DocumentoCardProps> = ({ documento }) => {
     try {
       await downloadFileAuthenticated(documento.archivo_url, fileName)
     } catch (error) {
-      console.error('Error downloading file:', error)
+      logger.error('Error downloading file:', error)
       window.open(documento.archivo_url, '_blank')
     } finally {
       setLoading(false)

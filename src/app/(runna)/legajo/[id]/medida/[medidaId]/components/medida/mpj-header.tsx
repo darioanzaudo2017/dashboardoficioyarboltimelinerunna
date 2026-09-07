@@ -21,6 +21,7 @@ import { SeguimientoDispositivoMPJ } from "./mpj-tabs/seguimiento-dispositivo-ta
 import { ConfiguracionMPJSection } from "./configuracion-mpj-section"
 import { Divider, Stack } from "@mui/material"
 import type { ConfiguracionDispositivoMPE } from "@/app/(runna)/legajo-mesa/types/medida-api"
+import { logger } from "@/utils/logger"
 
 interface MPJHeaderProps {
   medidaData: {
@@ -75,20 +76,20 @@ export const MPJHeader: React.FC<MPJHeaderProps> = ({
   const [subtipoMedidaMPJ, setSubtipoMedidaMPJ] = useState(medidaData.subtipo_medida_mpj || '')
 
   const handleTipoMedidaMPJChange = (value: string) => {
-    console.log('MPJ Tipo changed to:', value)
+    logger.log('MPJ Tipo changed to:', value)
     setTipoMedidaMPJ(value)
     setSubtipoMedidaMPJ('') // Reset subtipo when tipo changes
     onFieldChange?.('tipo_medida_mpj', value)
   }
 
   const handleSubtipoMedidaMPJChange = (value: string) => {
-    console.log('MPJ Subtipo changed to:', value)
+    logger.log('MPJ Subtipo changed to:', value)
     setSubtipoMedidaMPJ(value)
     onFieldChange?.('subtipo_medida_mpj', value)
   }
 
   // Log current state for debugging
-  console.log('MPJHeader render - tipoMedidaMPJ:', tipoMedidaMPJ, 'subtipoMedidaMPJ:', subtipoMedidaMPJ)
+  logger.log('MPJHeader render - tipoMedidaMPJ:', tipoMedidaMPJ, 'subtipoMedidaMPJ:', subtipoMedidaMPJ)
 
   // Generate subtipo options based on tipo
   const getSubtipoOptions = () => {
@@ -109,7 +110,7 @@ export const MPJHeader: React.FC<MPJHeaderProps> = ({
       )
     }
 
-    console.log('getSubtipoOptions called - tipo:', tipoMedidaMPJ, 'options count:', options.length)
+    logger.log('getSubtipoOptions called - tipo:', tipoMedidaMPJ, 'options count:', options.length)
     return options
   }
 

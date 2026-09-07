@@ -8,6 +8,7 @@ import { seguimientoDispositivoService } from "../../../api/seguimiento-disposit
 import { toast } from "react-toastify"
 import { fetchDropdownData } from "@/components/forms/utils/fetchFormCase"
 import type { DropdownData } from "@/components/forms/types/formTypes"
+import { logger } from "@/utils/logger"
 
 interface InformacionEducativaSectionProps {
   medidaId?: number
@@ -41,7 +42,7 @@ export const InformacionEducativaSection: React.FC<InformacionEducativaSectionPr
         const dropdownData = await fetchDropdownData()
         setDropdowns(dropdownData)
       } catch (error) {
-        console.error('Error loading dropdown data:', error)
+        logger.error('Error loading dropdown data:', error)
       }
     }
     loadDropdowns()
@@ -74,7 +75,7 @@ export const InformacionEducativaSection: React.FC<InformacionEducativaSectionPr
         }
       }
     } catch (error) {
-      console.error('Error fetching información educativa:', error)
+      logger.error('Error fetching información educativa:', error)
       setDataExists(false)
       // Fallback to demanda data on error
       if (data) {
@@ -165,7 +166,7 @@ export const InformacionEducativaSection: React.FC<InformacionEducativaSectionPr
       initialFormData.current = updated
       onUpdate?.(updated)
     } catch (error) {
-      console.error('Error saving información educativa:', error)
+      logger.error('Error saving información educativa:', error)
     } finally {
       setSaving(false)
     }

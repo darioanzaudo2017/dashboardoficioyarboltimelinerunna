@@ -53,6 +53,7 @@ import type { InformeJuridicoBasicResponse } from "../../types/informe-juridico-
 import type { RatificacionJudicial } from "../../types/ratificacion-judicial-api"
 import type { TEstadoEtapaMedida } from "../../types/estado-etapa"
 import type { MedidaDetailResponse } from "../../types/medida-api"
+import { logger } from "@/utils/logger"
 
 // ============================================================================
 // TYPES
@@ -294,7 +295,7 @@ export const UnifiedWorkflowTab: React.FC<UnifiedWorkflowTabProps> = ({
   useEffect(() => {
     const fetchEtapaDetail = async () => {
       if (!workflowPhase) {
-        console.warn('[UnifiedWorkflowTab] No workflowPhase provided, skipping etapa detail fetch')
+        logger.warn('[UnifiedWorkflowTab] No workflowPhase provided, skipping etapa detail fetch')
         setIsLoadingWorkflowData(false)
         return
       }
@@ -304,7 +305,7 @@ export const UnifiedWorkflowTab: React.FC<UnifiedWorkflowTabProps> = ({
 
         const tipoEtapa = workflowPhaseToTipoEtapa(workflowPhase)
 
-        console.log(`[UnifiedWorkflowTab] Fetching etapa detail for ${tipoEtapa}`)
+        logger.log(`[UnifiedWorkflowTab] Fetching etapa detail for ${tipoEtapa}`)
 
         // Single API call gets ALL documents for this etapa.
         // GAP-08: pass selectedEtapaId when the user picked a specific one
@@ -320,7 +321,7 @@ export const UnifiedWorkflowTab: React.FC<UnifiedWorkflowTabProps> = ({
 
         if (!detail) {
           // Etapa doesn't exist yet (404) - normal for non-Apertura stages
-          console.log(`[UnifiedWorkflowTab] Etapa ${tipoEtapa} not found (not created yet)`)
+          logger.log(`[UnifiedWorkflowTab] Etapa ${tipoEtapa} not found (not created yet)`)
           setEtapaDetail(null)
           setNotaAval(null)
           setInformeJuridico(false)
@@ -329,7 +330,7 @@ export const UnifiedWorkflowTab: React.FC<UnifiedWorkflowTabProps> = ({
           // Extract documents from etapa detail
           const docs = detail.etapa.documentos
 
-          console.log(`[UnifiedWorkflowTab] Etapa detail loaded:`, {
+          logger.log(`[UnifiedWorkflowTab] Etapa detail loaded:`, {
             tipo_etapa: detail.etapa.tipo_etapa,
             estado_actual: detail.etapa.estado_actual?.nombre_display,
             intervenciones: docs.intervenciones.length,
@@ -346,7 +347,7 @@ export const UnifiedWorkflowTab: React.FC<UnifiedWorkflowTabProps> = ({
           setRatificacion(docs.ratificaciones.length > 0 ? docs.ratificaciones[0] : null)
         }
       } catch (error) {
-        console.error("[UnifiedWorkflowTab] Error fetching etapa detail:", error)
+        logger.error("[UnifiedWorkflowTab] Error fetching etapa detail:", error)
         setEtapaDetail(null)
         setNotaAval(null)
         setInformeJuridico(false)
@@ -672,7 +673,7 @@ export const UnifiedWorkflowTab: React.FC<UnifiedWorkflowTabProps> = ({
 
       const tipoEtapa = workflowPhaseToTipoEtapa(workflowPhase)
 
-      console.log(`[UnifiedWorkflowTab] Creating new etapa ${tipoEtapa} for medida ${medidaData.id}`)
+      logger.log(`[UnifiedWorkflowTab] Creating new etapa ${tipoEtapa} for medida ${medidaData.id}`)
 
       await createEtapa(medidaData.id, {
         tipo_etapa: tipoEtapa,
@@ -683,12 +684,12 @@ export const UnifiedWorkflowTab: React.FC<UnifiedWorkflowTabProps> = ({
         ...(legajosAlcance !== undefined ? { legajos_alcance: legajosAlcance } : {}),
       })
 
-      console.log('[UnifiedWorkflowTab] Etapa created successfully, reloading page...')
+      logger.log('[UnifiedWorkflowTab] Etapa created successfully, reloading page...')
 
       // Refresh page to load new etapa data
       window.location.reload()
     } catch (error: any) {
-      console.error('[UnifiedWorkflowTab] Error creating etapa:', error)
+      logger.error('[UnifiedWorkflowTab] Error creating etapa:', error)
       const errorMessage =
         error?.response?.data?.detail ||
         error?.response?.data?.error ||

@@ -28,6 +28,7 @@ import {
   type LegajosAlcanceLegajoPrimario,
 } from './shared/LegajosAlcanceSelector'
 import type { LegajoAdicionalMedida } from '@/app/(runna)/legajo-mesa/types/medida-api'
+import { logger } from '@/utils/logger'
 
 /**
  * PLTM V4.1: Hybrid System Schema Factory
@@ -213,7 +214,7 @@ export const ActorTabContent: React.FC<ActorTabContentProps> = ({
       onSuccess?.()
       onClose()
     } catch (err: any) {
-      console.error('Error creating activity:', err)
+      logger.error('Error creating activity:', err)
       setError(err.response?.data?.detail || 'Error al crear la actividad')
     } finally {
       setLoading(false)

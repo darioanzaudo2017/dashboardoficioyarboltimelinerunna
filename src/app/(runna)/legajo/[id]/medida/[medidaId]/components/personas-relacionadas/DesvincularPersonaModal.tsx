@@ -20,6 +20,7 @@ import {
   MIN_CARACTERES_JUSTIFICACION_DESVINCULAR,
   type PersonaVinculo,
 } from "../../types/personas-relacionadas-api"
+import { logger } from "@/utils/logger"
 
 interface DesvincularPersonaModalProps {
   open: boolean
@@ -63,7 +64,7 @@ export default function DesvincularPersonaModal({
       onSuccess()
     } catch (err) {
       // Error is handled by the mutation hook (toast)
-      console.error("Error desvincular:", err)
+      logger.error("Error desvincular:", err)
     }
   }
 

@@ -10,6 +10,7 @@ import { RegistroIntervencionModal } from "./registro-intervencion-modal"
 import { useState, useEffect } from "react"
 import { getAdjuntos } from "../../api/intervenciones-api-service"
 import type { IntervencionResponse, AdjuntoIntervencion } from "../../types/intervencion-api"
+import { logger } from "@/utils/logger"
 
 interface AperturaSectionProps {
   data: {
@@ -84,10 +85,10 @@ export const AperturaSection: React.FC<AperturaSectionProps> = ({
       // Get the most recent intervention (assuming they come sorted by date desc)
       const lastIntervencion = intervenciones[0]
       setLastIntervencionId(lastIntervencion.id)
-      console.log(`[AperturaSection] Loaded ${intervenciones.length} interventions for this etapa`)
+      logger.log(`[AperturaSection] Loaded ${intervenciones.length} interventions for this etapa`)
     } else {
       setLastIntervencionId(undefined)
-      console.log('[AperturaSection] No interventions found for this etapa')
+      logger.log('[AperturaSection] No interventions found for this etapa')
     }
   }, [intervenciones])
 
@@ -108,7 +109,7 @@ export const AperturaSection: React.FC<AperturaSectionProps> = ({
         const report = adjuntos.find((a) => a.tipo === 'INFORME')
         setInformeObligatorio(report || null)
       } catch (error) {
-        console.error("[AperturaSection] Error fetching adjuntos:", error)
+        logger.error("[AperturaSection] Error fetching adjuntos:", error)
         setInformeObligatorio(null)
       } finally {
         setIsLoadingInforme(false)

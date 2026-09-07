@@ -33,6 +33,7 @@ import { useParams } from "next/navigation"
 import { toast } from "react-toastify"
 import type { TipoSituacion, SituacionNNyA, CambioLugarResguardo, NotaSeguimiento, TLocalCentroVida } from "../../../types/seguimiento-dispositivo"
 import { formatDateLocaleAR, formatDateTimeLocaleAR } from "@/utils/dateUtils"
+import { logger } from "@/utils/logger"
 
 // Cambio de Lugar de Resguardo Section (shared between MPE and MPJ)
 const CambioLugarResguardoSection = ({ medidaId, legajoId }: { medidaId: number; legajoId?: number }) => {
@@ -59,7 +60,7 @@ const CambioLugarResguardoSection = ({ medidaId, legajoId }: { medidaId: number;
         const data = await seguimientoDispositivoService.listLocalesCentroVida()
         if (!cancelled) setLocales(Array.isArray(data) ? data : [])
       } catch (error) {
-        console.error('Error fetching locales:', error)
+        logger.error('Error fetching locales:', error)
         if (!cancelled) {
           setLocales([])
           setLocalesError(true)
@@ -85,7 +86,7 @@ const CambioLugarResguardoSection = ({ medidaId, legajoId }: { medidaId: number;
         const data = await seguimientoDispositivoService.listCambiosLugar(medidaId, legajoId)
         if (!cancelled) setCambios(Array.isArray(data) ? data : [])
       } catch (error) {
-        console.error('Error fetching cambios de lugar:', error)
+        logger.error('Error fetching cambios de lugar:', error)
         if (!cancelled) {
           setCambios([])
           setCambiosError(true)
@@ -131,7 +132,7 @@ const CambioLugarResguardoSection = ({ medidaId, legajoId }: { medidaId: number;
       // Add new cambio to local state
       setCambios(prev => [savedCambio, ...prev])
     } catch (error) {
-      console.error('Error saving cambio de lugar:', error)
+      logger.error('Error saving cambio de lugar:', error)
     }
   }
 
@@ -458,7 +459,7 @@ const SituacionResidenciaSection = ({ medidaId, legajoId }: { medidaId: number; 
                 const data = await seguimientoDispositivoService.listSituaciones(medidaId, legajoId)
                 if (!cancelled) setSituaciones(Array.isArray(data) ? data : [])
             } catch (error) {
-                console.error('Error fetching situaciones:', error)
+                logger.error('Error fetching situaciones:', error)
                 if (!cancelled) {
                     setSituaciones([])
                     setLoadError(true)
@@ -496,7 +497,7 @@ const SituacionResidenciaSection = ({ medidaId, legajoId }: { medidaId: number; 
             setSituaciones(prev => [savedSituacion, ...prev])
         } catch (error) {
             // Error handled by apiService
-            console.error('Error saving situación:', error)
+            logger.error('Error saving situación:', error)
         }
     }
 
@@ -655,7 +656,7 @@ const NotasSeguimientoSection = ({ medidaId, legajoId }: { medidaId: number; leg
         const data = await seguimientoDispositivoService.listNotasSeguimiento(medidaId, legajoId)
         if (!cancelled) setNotas(Array.isArray(data) ? data : [])
       } catch (error) {
-        console.error('Error fetching notas de seguimiento:', error)
+        logger.error('Error fetching notas de seguimiento:', error)
         if (!cancelled) {
           setNotas([])
           setLoadError(true)
@@ -692,7 +693,7 @@ const NotasSeguimientoSection = ({ medidaId, legajoId }: { medidaId: number; leg
       // Add new nota to local state
       setNotas(prev => [savedNota, ...prev])
     } catch (error) {
-      console.error('Error saving nota de seguimiento:', error)
+      logger.error('Error saving nota de seguimiento:', error)
     }
   }
 
@@ -708,7 +709,7 @@ const NotasSeguimientoSection = ({ medidaId, legajoId }: { medidaId: number; leg
       // Remove from local state
       setNotas(prev => prev.filter(n => n.id !== notaId))
     } catch (error) {
-      console.error('Error deleting nota:', error)
+      logger.error('Error deleting nota:', error)
     }
   }
 

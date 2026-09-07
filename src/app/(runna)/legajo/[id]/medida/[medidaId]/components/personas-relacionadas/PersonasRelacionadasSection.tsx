@@ -35,6 +35,7 @@ import type { PersonaVinculo } from "../../types/personas-relacionadas-api"
 import DesvincularPersonaModal from "./DesvincularPersonaModal"
 import AgregarPersonaRelacionadaModal from "./AgregarPersonaRelacionadaModal"
 import EditarPersonaRelacionadaModal from "./EditarPersonaRelacionadaModal"
+import { logger } from "@/utils/logger"
 
 interface PersonasRelacionadasSectionProps {
   legajoId: number
@@ -268,7 +269,7 @@ export default function PersonasRelacionadasSection({
   canEdit = true,
 }: PersonasRelacionadasSectionProps) {
   // Debug log
-  console.log(`[PersonasRelacionadasSection] legajoId: ${legajoId}, nnyaId: ${nnyaId}`)
+  logger.log(`[PersonasRelacionadasSection] legajoId: ${legajoId}, nnyaId: ${nnyaId}`)
 
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)

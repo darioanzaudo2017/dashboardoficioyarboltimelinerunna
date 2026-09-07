@@ -21,6 +21,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import CancelIcon from '@mui/icons-material/Cancel'
 import GavelIcon from '@mui/icons-material/Gavel'
 import { toast } from 'react-toastify'
+import { logger } from '@/utils/logger'
 
 interface VisarJzButtonProps {
   actividadId: number
@@ -93,7 +94,7 @@ export const VisarJzButton: React.FC<VisarJzButtonProps> = ({
         setError('Error al procesar el visado JZ')
       }
     } catch (error: any) {
-      console.error('Error al Aprobar JZ actividad:', error)
+      logger.error('Error al Aprobar JZ actividad:', error)
       setError(error?.message || 'Error al procesar el visado JZ')
       toast.error('Error al procesar el visado JZ', {
         position: 'top-center',

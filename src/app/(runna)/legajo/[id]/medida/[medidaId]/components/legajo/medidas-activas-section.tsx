@@ -27,6 +27,7 @@ import type { LegajoDetailResponse } from "@/app/(runna)/legajo-mesa/types/legaj
 import { getMedidasByLegajo } from "@/app/(runna)/legajo-mesa/api/medidas-api-service"
 import type { MedidaBasicResponse } from "@/app/(runna)/legajo-mesa/types/medida-api"
 import { SectionCard } from "../medida/shared/section-card"
+import { logger } from "@/utils/logger"
 
 interface MedidasActivasSectionProps {
   legajoData: LegajoDetailResponse
@@ -70,7 +71,7 @@ export const MedidasActivasSection: React.FC<MedidasActivasSectionProps> = ({
 
   const error = queryError ? String(queryError) : null
 
-  console.log("MedidasActivasSection render - State:", {
+  logger.log("MedidasActivasSection render - State:", {
     medidasCount: medidas.length,
     isLoading,
     error,

@@ -26,6 +26,7 @@ import { CeseMedidaModal } from "./cese-medida-modal"
 import { ConfiguracionMPESection } from "./configuracion-mpe-section"
 import { Divider, Stack } from "@mui/material"
 import type { ConfiguracionDispositivoMPE } from "@/app/(runna)/legajo-mesa/types/medida-api"
+import { logger } from "@/utils/logger"
 
 interface MPEHeaderProps {
     medidaData: {
@@ -137,7 +138,7 @@ export const MPEHeader: React.FC<MPEHeaderProps> = ({
         // Use raw ISO date if available, otherwise fall back to formatted dates
         const fechaCreacion = medidaData.fecha_creacion_raw || medidaData.fecha_apertura || medidaData.fecha;
 
-        console.log('MPE Progress Debug:', {
+        logger.log('MPE Progress Debug:', {
             fecha_creacion_raw: medidaData.fecha_creacion_raw,
             fecha_apertura: medidaData.fecha_apertura,
             fecha: medidaData.fecha,
@@ -145,7 +146,7 @@ export const MPEHeader: React.FC<MPEHeaderProps> = ({
         });
 
         if (!fechaCreacion) {
-            console.warn('No creation date available for MPE progress calculation');
+            logger.warn('No creation date available for MPE progress calculation');
             return { percentage: 0, daysElapsed: 0, daysRemaining: MAX_DAYS, status: 'pending' as const };
         }
 
@@ -153,7 +154,7 @@ export const MPEHeader: React.FC<MPEHeaderProps> = ({
 
         // Check if date is valid
         if (isNaN(creationDate.getTime())) {
-            console.error('Invalid date:', fechaCreacion);
+            logger.error('Invalid date:', fechaCreacion);
             return { percentage: 0, daysElapsed: 0, daysRemaining: MAX_DAYS, status: 'pending' as const };
         }
 
@@ -168,7 +169,7 @@ export const MPEHeader: React.FC<MPEHeaderProps> = ({
         const daysRemaining = Math.max(MAX_DAYS - daysElapsed, 0);
         const percentage = Math.min((daysElapsed / MAX_DAYS) * 100, 100);
 
-        console.log('MPE Progress Calculated:', {
+        logger.log('MPE Progress Calculated:', {
             daysElapsed,
             daysRemaining,
             percentage: Math.round(percentage)

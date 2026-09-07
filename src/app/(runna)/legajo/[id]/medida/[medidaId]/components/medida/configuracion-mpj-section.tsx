@@ -43,6 +43,7 @@ import { toast } from "react-toastify"
 import axiosInstance from "@/app/api/utils/axiosInstance"
 import type { ConfiguracionDispositivoMPE } from "@/app/(runna)/legajo-mesa/types/medida-api"
 import { formatDateLocaleAR } from "@/utils/dateUtils"
+import { logger } from "@/utils/logger"
 
 // ============================================================================
 // INTERFACES
@@ -85,10 +86,10 @@ const getTiposDispositivoMPJ = async (): Promise<TipoDispositivo[]> => {
     const response = await axiosInstance.get<TipoDispositivo[]>('/tipos-dispositivo/', {
       params: { categoria: 'MPJ' }
     })
-    console.log('[ConfiguracionMPJ] Tipos dispositivo MPJ loaded:', response.data)
+    logger.log('[ConfiguracionMPJ] Tipos dispositivo MPJ loaded:', response.data)
     return response.data
   } catch (error) {
-    console.error('[ConfiguracionMPJ] Error loading tipos dispositivo:', error)
+    logger.error('[ConfiguracionMPJ] Error loading tipos dispositivo:', error)
     throw error
   }
 }
@@ -184,14 +185,14 @@ export const ConfiguracionMPJSection: React.FC<ConfiguracionMPJSectionProps> = (
   // Log error for debugging
   useEffect(() => {
     if (tiposError) {
-      console.error('[ConfiguracionMPJ] Error fetching tipos:', tiposError)
+      logger.error('[ConfiguracionMPJ] Error fetching tipos:', tiposError)
     }
   }, [tiposError])
 
   // Refetch tipos when dialog opens if data is empty
   useEffect(() => {
     if (dialogOpen && tiposDispositivo.length === 0 && !isLoadingTipos && !tiposError) {
-      console.log('[ConfiguracionMPJ] Dialog opened with empty tipos, refetching...')
+      logger.log('[ConfiguracionMPJ] Dialog opened with empty tipos, refetching...')
       refetchTipos()
     }
   }, [dialogOpen, tiposDispositivo.length, isLoadingTipos, tiposError, refetchTipos])
@@ -216,7 +217,7 @@ export const ConfiguracionMPJSection: React.FC<ConfiguracionMPJSectionProps> = (
       onConfigUpdated?.()
     },
     onError: (error: any) => {
-      console.error('Error updating configuracion:', error)
+      logger.error('Error updating configuracion:', error)
       const errorCode = error?.response?.data?.error
       const errorDetail = error?.response?.data?.detail
       const errorSubtipo = error?.response?.data?.subtipo_dispositivo_id

@@ -22,6 +22,7 @@ import type {
   TipoMedida,
 } from "@/app/(runna)/legajo-mesa/types/medida-api"
 import { useConditionalData, extractArray } from "@/hooks/useApiQuery"
+import { logger } from "@/utils/logger"
 
 interface UrgenciaVulneracion {
   id: number
@@ -125,9 +126,9 @@ export const CrearMedidaDialog: React.FC<CrearMedidaDialogProps> = ({
       // Call API to create medida
       createdMedida = await createMedida(legajoId, formData)
 
-      console.log("Medida created successfully:", createdMedida)
+      logger.log("Medida created successfully:", createdMedida)
     } catch (err: any) {
-      console.error("Error creating medida:", err)
+      logger.error("Error creating medida:", err)
 
       // Extract error message from API response
       if (err?.response?.data) {
@@ -170,7 +171,7 @@ export const CrearMedidaDialog: React.FC<CrearMedidaDialogProps> = ({
     try {
       await onSuccess(createdMedida)
     } catch (refreshError) {
-      console.warn(
+      logger.warn(
         "La medida fue creada, pero no se pudo refrescar el detalle del legajo:",
         refreshError,
       )

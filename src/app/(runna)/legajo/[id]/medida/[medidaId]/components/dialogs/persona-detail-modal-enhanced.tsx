@@ -68,6 +68,7 @@ import { useQueryClient, useQuery } from "@tanstack/react-query"
 import { fetchDropdownData } from "@/components/forms/utils/fetchFormCase"
 import type { DropdownData } from "@/components/forms/types/formTypes"
 import { Autocomplete } from "@mui/material"
+import { logger } from "@/utils/logger"
 
 interface PersonaDetailModalProps {
   open: boolean
@@ -145,9 +146,9 @@ const getAvatarColor = (nombre: string = ""): string => {
 const copyToClipboard = async (text: string, label: string) => {
   try {
     await navigator.clipboard.writeText(text)
-    console.log(`${label} copiado al portapapeles`)
+    logger.log(`${label} copiado al portapapeles`)
   } catch (error) {
-    console.error("Error al copiar:", error)
+    logger.error("Error al copiar:", error)
   }
 }
 
@@ -530,7 +531,7 @@ export default function PersonaDetailModalEnhanced({
       // Get only the modified fields for PATCH semantics
       const updateData = getModifiedFields()
 
-      console.log("[PersonaDetailModal] Sending PATCH with modified fields only:", updateData)
+      logger.log("[PersonaDetailModal] Sending PATCH with modified fields only:", updateData)
 
       // Only send PATCH if there are actually modified fields
       if (Object.keys(updateData).length === 0) {
@@ -541,7 +542,7 @@ export default function PersonaDetailModalEnhanced({
       }
 
       const updatedNNyAData = await updateNNyAData(legajo.id, updateData)
-      console.log("[PersonaDetailModal] Received PATCH response:", updatedNNyAData)
+      logger.log("[PersonaDetailModal] Received PATCH response:", updatedNNyAData)
       toast.success("Datos actualizados correctamente")
 
       // Immediately update the nnya-data cache with the response for instant UI update
@@ -563,7 +564,7 @@ export default function PersonaDetailModalEnhanced({
       // Exit edit mode - component will re-render with updated data
       setIsEditing(false)
     } catch (error: any) {
-      console.error("[PersonaDetailModal] Error saving:", error)
+      logger.error("[PersonaDetailModal] Error saving:", error)
       const errorMessage = error?.response?.data?.detail || error?.response?.data?.message || "Error al guardar los cambios"
       toast.error(errorMessage)
     } finally {
