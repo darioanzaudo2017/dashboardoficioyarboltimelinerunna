@@ -233,8 +233,11 @@ colateral de esta migración.
 | Después de cada una de las 7 tandas | exit 0 | – |
 | Final | **exit 0** | **exit 0** |
 
-Nota: `next.config` tiene `ignoreBuildErrors: true`, así que `npm run build` **no** valida
-tipos. El gate de tipos real es `npm run typecheck`, que se corrió después de cada tanda.
+Corrección (verificada por el coordinador): `next.config.mjs` **no** tiene `ignoreBuildErrors`
+—no existe en ningún archivo del repo— y el log del build muestra la etapa
+`Linting and checking validity of types`. O sea que `npm run build` **sí** valida tipos, y el
+gate fue más fuerte de lo que se afirmó acá. `npm run typecheck` se corrió igual después de
+cada tanda, así que la verificación fue doble.
 
 Dos tandas se revirtieron y se rehicieron antes de commitear, por fallo de typecheck o de
 estilo:
