@@ -13,6 +13,7 @@ import SearchIcon from "@mui/icons-material/Search"
 import FolderIcon from "@mui/icons-material/Folder"
 import { debounce } from "lodash"
 import { get } from "@/app/api/apiService"
+import { logger } from "@/utils/logger"
 
 export interface MedidaActiva {
   id: number
@@ -105,7 +106,7 @@ export default function LegajoSearchAutocomplete({
 
       setOptions(legajoOptions)
     } catch (error) {
-      console.error("Error searching legajos:", error)
+      logger.error("Error searching legajos:", error)
       setOptions([])
     } finally {
       setLoading(false)

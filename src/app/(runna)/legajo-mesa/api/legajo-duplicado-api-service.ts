@@ -15,6 +15,7 @@ import type {
   CrearConDuplicadoResponse,
 } from "../types/legajo-duplicado-types"
 import { DUPLICATE_THRESHOLDS } from "@/components/forms/constants/duplicate-thresholds"
+import { logger } from "@/utils/logger"
 
 /**
  * Busca duplicados de legajo basándose en datos del NNyA
@@ -47,7 +48,7 @@ export const buscarDuplicados = async (
       throw new Error("Se requiere al menos nombre y apellido para buscar duplicados")
     }
 
-    console.log("Buscando duplicados con datos:", data)
+    logger.log("Buscando duplicados con datos:", data)
 
     // Preparar payload limpio (remover valores null/undefined)
     const payload: Record<string, any> = {
@@ -77,20 +78,20 @@ export const buscarDuplicados = async (
       payload
     )
 
-    console.log("Duplicados encontrados:", response)
+    logger.log("Duplicados encontrados:", response)
 
     return response
   } catch (error: any) {
-    console.error("Error buscando duplicados:", error)
+    logger.error("Error buscando duplicados:", error)
 
     // Handle specific error cases
     if (error?.response?.status === 400) {
-      console.error("Datos insuficientes para búsqueda")
+      logger.error("Datos insuficientes para búsqueda")
       throw new Error("Se requieren más datos para realizar la búsqueda de duplicados")
     }
 
     if (error?.response?.status === 500) {
-      console.error("Error del servidor")
+      logger.error("Error del servidor")
       throw new Error("Error en el servidor. Por favor, intente nuevamente más tarde.")
     }
 
@@ -124,7 +125,7 @@ export const vincularDemandaALegajo = async (
   data: VincularDemandaRequest
 ): Promise<VincularDemandaResponse> => {
   try {
-    console.log(`Vinculando demanda ${data.demanda_id} a legajo ${legajoId}`)
+    logger.log(`Vinculando demanda ${data.demanda_id} a legajo ${legajoId}`)
 
     // Make API call
     const response = await create<VincularDemandaResponse>(
@@ -132,11 +133,11 @@ export const vincularDemandaALegajo = async (
       data
     )
 
-    console.log("Vinculación exitosa:", response)
+    logger.log("Vinculación exitosa:", response)
 
     return response
   } catch (error: any) {
-    console.error("Error vinculando demanda:", error)
+    logger.error("Error vinculando demanda:", error)
 
     // Handle specific error cases
     if (error?.response?.status === 403) {
@@ -190,7 +191,7 @@ export const crearLegajoConDuplicado = async (
       throw new Error("La justificación debe tener al menos 20 caracteres")
     }
 
-    console.log("Creando legajo con confirmación de duplicado:", {
+    logger.log("Creando legajo con confirmación de duplicado:", {
       demanda_id: data.demanda_id,
       legajo_ignorado: data.legajo_duplicado_ignorado,
       score: data.score_duplicado_ignorado,
@@ -202,11 +203,11 @@ export const crearLegajoConDuplicado = async (
       data
     )
 
-    console.log("Legajo creado con auditoría:", response)
+    logger.log("Legajo creado con auditoría:", response)
 
     return response
   } catch (error: any) {
-    console.error("Error creando legajo con duplicado:", error)
+    logger.error("Error creando legajo con duplicado:", error)
 
     // Handle specific error cases
     if (error?.response?.status === 403) {

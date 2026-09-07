@@ -7,6 +7,7 @@ import { toast } from "react-toastify"
 import { update, create, put } from "@/app/api/apiService"
 import type { TDemanda, TCalificacionOperation, TDemandaZonaOperation } from "@/app/interfaces"
 import type { TDemandaPaginated } from "../types"
+import { logger } from "@/utils/logger"
 
 interface UseDemandaMutationsOptions {
   demandasData: TDemandaPaginated | null
@@ -61,12 +62,12 @@ export const useDemandaMutations = ({
       }
     },
     onSuccess: (data, variables) => {
-      console.log("Server response:", data)
+      logger.log("Server response:", data)
       queryClient.invalidateQueries({ queryKey: ["demandas"] })
       queryClient.refetchQueries({ queryKey: ["demandas", paginationModel.page, paginationModel.pageSize] })
     },
     onError: (error) => {
-      console.error("Error al actualizar la Calificación:", error)
+      logger.error("Error al actualizar la Calificación:", error)
       toast.error("Error al actualizar la Calificación", {
         position: "top-center",
         autoClose: 3000,
@@ -101,7 +102,7 @@ export const useDemandaMutations = ({
       } catch (error: any) {
         // Special handling for 208 status code (Already Reported)
         if (error.response && error.response.status === 208) {
-          console.log("La demanda ya estaba marcada como recibida (208). Continuando con visualización.")
+          logger.log("La demanda ya estaba marcada como recibida (208). Continuando con visualización.")
           return {
             id,
             demanda: demandaId,
@@ -113,7 +114,7 @@ export const useDemandaMutations = ({
 
         // Handle other error status codes
         if (error.response && (error.response.status === 404 || error.response.status === 403)) {
-          console.warn(`Endpoint demanda-zona-recibir retornó ${error.response.status}. Continuando con visualización.`)
+          logger.warn(`Endpoint demanda-zona-recibir retornó ${error.response.status}. Continuando con visualización.`)
 
           if (error.response.status === 403) {
             toast.warning("No tienes permisos para marcar como recibida esta demanda, pero puedes ver los detalles.", {
@@ -179,7 +180,7 @@ export const useDemandaMutations = ({
       handleOpenModal(variables.demandaId)
     },
     onError: (error) => {
-      console.error("Error al actualizar la Demanda Zona:", error)
+      logger.error("Error al actualizar la Demanda Zona:", error)
       toast.error("Error al marcar la demanda como recibida", {
         position: "top-center",
         autoClose: 3000,

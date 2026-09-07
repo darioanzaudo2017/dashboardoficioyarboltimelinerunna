@@ -12,6 +12,7 @@ import type {
   LegajoDetailResponse,
   LegajoDetailQueryParams,
 } from "../types/legajo-api"
+import { logger } from "@/utils/logger"
 
 /**
  * Helper function to safely parse JSON from serialized fields
@@ -26,7 +27,7 @@ const safeParse = <T>(value: any, defaultValue: T): T => {
   try {
     return JSON.parse(value) as T
   } catch (error) {
-    console.warn("Failed to parse JSON:", value, error)
+    logger.warn("Failed to parse JSON:", value, error)
     return defaultValue
   }
 }
@@ -196,12 +197,12 @@ export const fetchLegajos = async (
       queryParams.etapa_medida = params.etapa_medida
     }
 
-    console.log("Fetching legajos with params:", queryParams)
+    logger.log("Fetching legajos with params:", queryParams)
 
     // Make API call - Django requires trailing slash
     const response = await get<any>("legajos/", queryParams)
 
-    console.log("Legajos response (raw):", response)
+    logger.log("Legajos response (raw):", response)
 
     // Parse serialized fields in each legajo
     const parsedResponse: PaginatedLegajosResponse = {
@@ -209,12 +210,12 @@ export const fetchLegajos = async (
       results: response.results.map(parseLegajoResponse),
     }
 
-    console.log("Legajos response (parsed):", parsedResponse)
+    logger.log("Legajos response (parsed):", parsedResponse)
 
     return parsedResponse
   } catch (error: any) {
-    console.error("Error fetching legajos:", error)
-    console.error("Error details:", {
+    logger.error("Error fetching legajos:", error)
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -233,7 +234,7 @@ export const fetchLegajoById = async (id: number): Promise<LegajoApiResponse> =>
     const response = await get<LegajoApiResponse>(`legajos/${id}/`)
     return response
   } catch (error) {
-    console.error(`Error fetching legajo ${id}:`, error)
+    logger.error(`Error fetching legajo ${id}:`, error)
     throw error
   }
 }
@@ -256,17 +257,17 @@ export const fetchLegajoDetail = async (
       queryParams.include_history = String(params.include_history)
     }
 
-    console.log(`Fetching legajo detail for ID ${id} with params:`, queryParams)
+    logger.log(`Fetching legajo detail for ID ${id} with params:`, queryParams)
 
     // Make API call - Django requires trailing slash
     const response = await get<LegajoDetailResponse>(`legajos/${id}/`, queryParams)
 
-    console.log("Legajo detail response:", response)
+    logger.log("Legajo detail response:", response)
 
     return response
   } catch (error: any) {
-    console.error(`Error fetching legajo detail ${id}:`, error)
-    console.error("Error details:", {
+    logger.error(`Error fetching legajo detail ${id}:`, error)
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -301,7 +302,7 @@ export const updateLegajoPrioridad = async (
     const response = await patch<LegajoApiResponse>("/legajos", id, { urgencia })
     return response
   } catch (error) {
-    console.error(`Error updating legajo ${id} prioridad:`, error)
+    logger.error(`Error updating legajo ${id} prioridad:`, error)
     throw error
   }
 }
@@ -322,19 +323,19 @@ export const updateLegajoDatosPersonales = async (
       persona: datosPersonales,
     }
 
-    console.log(`Updating legajo ${id} datos personales:`, payload)
+    logger.log(`Updating legajo ${id} datos personales:`, payload)
 
     const { data: response } = await axiosInstance.patch<LegajoDetailResponse>(
       `/legajos/${id}/`,
       payload
     )
 
-    console.log("Update response:", response)
+    logger.log("Update response:", response)
 
     return response
   } catch (error: any) {
-    console.error(`Error updating legajo ${id} datos personales:`, error)
-    console.error("Error details:", {
+    logger.error(`Error updating legajo ${id} datos personales:`, error)
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,

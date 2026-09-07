@@ -39,6 +39,7 @@ import type {
   LegajoAsignacionesResponse,
   TipoResponsabilidad,
 } from "../types/asignacion-types"
+import { logger } from "@/utils/logger"
 
 interface AsignarLegajoModalProps {
   open: boolean
@@ -153,7 +154,7 @@ const AsignarLegajoModal: React.FC<AsignarLegajoModalProps> = ({
       await Promise.all([refetchLegajo(), refetchHistorial()])
       onAsignacionComplete?.()
     } catch (error) {
-      console.error("Error guardando asignaciones:", error)
+      logger.error("Error guardando asignaciones:", error)
       toast.error("Error al guardar las asignaciones")
     } finally {
       setIsSubmitting(false)

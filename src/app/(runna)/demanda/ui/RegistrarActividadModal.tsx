@@ -32,6 +32,7 @@ import { FileUploadSection, type FileItem } from "@/app/(runna)/legajo/[id]/medi
 import { useCatalogData, useApiQuery, extractArray } from "@/hooks/useApiQuery"
 import { usePdfViewer } from "@/hooks"
 import { isPdfFile } from "@/utils/pdfUtils"
+import { logger } from "@/utils/logger"
 // Types defined locally since @/types/actividad doesn't exist
 
 // Update the Actividad type to match the new API response structure
@@ -194,7 +195,7 @@ export function RegistrarActividadForm({ demandaId }: RegistrarActividadFormProp
       setSelectedFiles([])
       toast.success("Actividad registrada con éxito")
     } catch (err: any) {
-      console.error("Error creating activity:", err)
+      logger.error("Error creating activity:", err)
       if (err.response?.data) {
         const errorMessages = Object.entries(err.response.data)
           .map(([_, messages]) => `${messages}`)

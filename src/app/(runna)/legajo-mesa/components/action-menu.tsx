@@ -19,6 +19,7 @@ import {
   Description as DescriptionIcon,
   Gavel as GavelIcon,
 } from "@mui/icons-material"
+import { logger } from "@/utils/logger"
 
 interface ActionMenuProps {
   legajoId: number
@@ -98,7 +99,7 @@ const ActionMenu: React.FC<ActionMenuProps> = ({
         if (demandaId) {
           router.push(`/demanda/${demandaId}`)
         } else {
-          console.warn("No hay demanda PI asociada")
+          logger.warn("No hay demanda PI asociada")
         }
       },
       show: !!demandaId,

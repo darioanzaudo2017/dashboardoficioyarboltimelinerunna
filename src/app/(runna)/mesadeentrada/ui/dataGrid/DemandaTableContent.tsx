@@ -29,6 +29,7 @@ import { DemandaPresetBar } from "./components/DemandaPresetBar"
 import { GridScrollButtons } from "./components/GridScrollButtons"
 import { DemandaCardsList } from "./components/DemandaCardsList"
 import { DemandaDetailPane, DemandaDetailDrawer, DemandaDetailModal } from "./components/DemandaDetailViews"
+import { logger } from "@/utils/logger"
 
 
 const DemandaTableContent: React.FC = () => {
@@ -152,7 +153,7 @@ const DemandaTableContent: React.FC = () => {
       setDemandasData(updatedResponse)
       return updatedResponse
     } catch (error) {
-      console.error("Error al obtener las demandas:", error)
+      logger.error("Error al obtener las demandas:", error)
       throw error
     }
   }
@@ -194,7 +195,7 @@ const DemandaTableContent: React.FC = () => {
   }, [data])
 
   const handleNuevoRegistro = () => {
-    console.log("Nuevo registro clicked")
+    logger.log("Nuevo registro clicked")
   }
 
   const handleOpenModal = (demandaId: number) => {
@@ -213,7 +214,7 @@ const DemandaTableContent: React.FC = () => {
   })
 
   const handleCalificacionChange = (demandaId: number, newValue: string) => {
-    console.log(`Updating calificacion for demanda ${demandaId} to ${newValue}`)
+    logger.log(`Updating calificacion for demanda ${demandaId} to ${newValue}`)
     updateCalificacion.mutate({ demandaId, newValue })
   }
 

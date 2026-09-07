@@ -4,6 +4,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import type { GridPaginationModel } from "@mui/x-data-grid"
 import type { LegajoFiltersState } from "../../legajos-filters"
+import { logger } from "@/utils/logger"
 
 /**
  * Filtros de la bandeja de legajos: estado persistido en sessionStorage y los
@@ -20,7 +21,7 @@ export const useLegajoFilters = (
         try {
           return JSON.parse(savedFilters)
         } catch (error) {
-          console.error("Error parsing saved filters:", error)
+          logger.error("Error parsing saved filters:", error)
         }
       }
     }

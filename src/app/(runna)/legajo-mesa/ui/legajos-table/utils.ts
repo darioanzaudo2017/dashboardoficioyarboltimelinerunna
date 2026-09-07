@@ -209,10 +209,6 @@ export const mapLegajoToRow = (legajo: LegajoApiResponse) => {
         })
       }
 
-      if (process.env.NODE_ENV === "development") {
-        // console.log(`[Legajo ${legajo.id}] allStates:`, Array.from(states))
-      }
-
       return Array.from(states)
     })()
   }
