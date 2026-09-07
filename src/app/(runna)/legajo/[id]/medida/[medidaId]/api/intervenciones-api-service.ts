@@ -288,7 +288,7 @@ export interface CrearYEnviarRequest {
   fecha_intervencion: string
   motivo_id: number
   sub_motivo_id?: number | null
-  categoria_intervencion_id: number
+  categoria_intervencion_id?: number | null
   intervencion_especifica: string
   descripcion_detallada?: string | null
   motivo_vulneraciones?: string | null

@@ -48,11 +48,7 @@ export function StepDocumentos(props: StepDocumentosProps) {
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <InformeObligatorioSection
                 formData={props.formData}
-                updateField={props.updateField}
-                validationErrors={props.validationErrors}
                 canEdit={props.canEdit}
-                categorias={props.categorias}
-                isLoadingCatalogs={props.isLoadingCatalogs}
                 informeObligatorio={props.informeObligatorio}
                 informeObligatorioError={props.informeObligatorioError}
                 setInformeObligatorioError={props.setInformeObligatorioError}

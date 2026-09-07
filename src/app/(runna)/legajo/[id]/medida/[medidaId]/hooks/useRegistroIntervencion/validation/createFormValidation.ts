@@ -63,10 +63,6 @@ export function createFormValidation({
       }
     }
 
-    if (!formData.categoria_intervencion_id) {
-      errors.categoria_intervencion_id = "La categoría es obligatoria"
-    }
-
     if (!formData.intervencion_especifica || formData.intervencion_especifica.trim() === "") {
       errors.intervencion_especifica = "La intervención específica es obligatoria"
     }

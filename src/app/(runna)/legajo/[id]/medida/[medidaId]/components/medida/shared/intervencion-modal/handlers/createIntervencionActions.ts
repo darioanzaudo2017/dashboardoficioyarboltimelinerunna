@@ -72,9 +72,7 @@ export function createIntervencionActions({
             if (Object.keys(formErrors).length > 0) {
                 const firstError = Object.values(formErrors)[0]
                 setSnackbar({ open: true, message: firstError, severity: 'error' })
-                if (!formErrors.categoria_intervencion_id) {
-                    setActiveStep(1)
-                }
+                setActiveStep(1)
                 return
             }
 

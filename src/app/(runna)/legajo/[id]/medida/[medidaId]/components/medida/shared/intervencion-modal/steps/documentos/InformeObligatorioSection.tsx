@@ -7,13 +7,8 @@ import {
     CardContent,
     CardHeader,
     Chip,
-    FormControl,
-    FormHelperText,
     IconButton,
-    InputLabel,
-    MenuItem,
     Paper,
-    Select,
     Typography,
 } from "@mui/material"
 import CheckCircleIcon from "@mui/icons-material/CheckCircle"
@@ -29,11 +24,7 @@ import type { InformeObligatorioHandlers } from "../../hooks/useInformeObligator
 
 interface InformeObligatorioSectionProps {
     formData: RegistroIntervencion["formData"]
-    updateField: RegistroIntervencion["updateField"]
-    validationErrors: RegistroIntervencion["validationErrors"]
     canEdit: RegistroIntervencion["canEdit"]
-    categorias: RegistroIntervencion["categorias"]
-    isLoadingCatalogs: RegistroIntervencion["isLoadingCatalogs"]
     informeObligatorio: File | null
     informeObligatorioError: string | null
     setInformeObligatorioError: IntervencionModalState["setInformeObligatorioError"]
@@ -53,11 +44,7 @@ interface InformeObligatorioSectionProps {
 
 export function InformeObligatorioSection({
     formData,
-    updateField,
-    validationErrors,
     canEdit,
-    categorias,
-    isLoadingCatalogs,
     informeObligatorio,
     informeObligatorioError,
     setInformeObligatorioError,
@@ -123,32 +110,10 @@ export function InformeObligatorioSection({
                     }
                 />
                 <CardContent sx={{ pt: 1 }}>
-                    <FormControl
-                        fullWidth
-                        required
-                        error={!!validationErrors.categoria_intervencion_id}
-                        sx={{ mb: 2 }}
-                    >
-                        <InputLabel>Categoría del informe</InputLabel>
-                        <Select
-                            value={formData.categoria_intervencion_id || ''}
-                            onChange={(e) => updateField('categoria_intervencion_id', Number(e.target.value))}
-                            label="Categoría del informe"
-                            disabled={!canEdit || isLoadingCatalogs}
-                        >
-                            <MenuItem value="">Seleccionar</MenuItem>
-                            {categorias.map((categoria) => (
-                                <MenuItem key={categoria.id} value={categoria.id}>
-                                    {categoria.nombre}
-                                </MenuItem>
-                            ))}
-                        </Select>
-                        <FormHelperText>
-                            {validationErrors.categoria_intervencion_id
-                                || 'Clasifica el documento para el repositorio y los reportes.'}
-                        </FormHelperText>
-                    </FormControl>
-
+                    {/* "Categoría del informe" (TCategoriaIntervencion) quedo fuera del
+                        formulario: es un catalogo en desuso, su contenido en produccion
+                        es ruido de seed y no aporta nada al informe. El backend acepta
+                        la intervencion sin categoria. */}
                     {informeObligatorio ? (
                         // NEWLY Uploaded file
                         <Paper
