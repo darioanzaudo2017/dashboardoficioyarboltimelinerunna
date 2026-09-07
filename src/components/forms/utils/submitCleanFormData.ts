@@ -1,4 +1,5 @@
 import type { FormData, NnyaData, AdultoData } from "../types/formTypes"
+import { logger } from "@/utils/logger"
 
 /**
  * Utility to create clean form data for API submission following the nested-fields-prompt.md guidelines
@@ -168,7 +169,7 @@ function createCoberturaMedicaData(cobertura: any, existingCoberturaId?: number)
   if (cobertura.observaciones) cleanCobertura.observaciones = cobertura.observaciones
 
   if (cobertura.institucion_sanitaria) {
-    console.log('🏥 Processing institucion_sanitaria:', cobertura.institucion_sanitaria)
+    logger.log('🏥 Processing institucion_sanitaria:', cobertura.institucion_sanitaria)
 
     if (typeof cobertura.institucion_sanitaria === 'object' && cobertura.institucion_sanitaria.nombre) {
       const sanitariaData: any = {
@@ -178,9 +179,9 @@ function createCoberturaMedicaData(cobertura: any, existingCoberturaId?: number)
       // Include ID if it exists
       if (cobertura.institucion_sanitaria.id) {
         sanitariaData.id = cobertura.institucion_sanitaria.id
-        console.log('🏥 Using institucion_sanitaria ID:', cobertura.institucion_sanitaria.id)
+        logger.log('🏥 Using institucion_sanitaria ID:', cobertura.institucion_sanitaria.id)
       } else {
-        console.log('⚠️ No ID found for institucion_sanitaria, only using name')
+        logger.log('⚠️ No ID found for institucion_sanitaria, only using name')
       }
 
       cleanCobertura.institucion_sanitaria = sanitariaData
@@ -322,7 +323,7 @@ function createCleanNnyaData(nnya: NnyaData, index: number, existingIds?: any): 
   // Pass existing education ID from multiple possible sources
   const existingEducacionId = existingIds?.educacion?.id || nnya.educacion?.id
   if (nnya.educacion && existingEducacionId) {
-    console.log(`🎓 Using existing education ID ${existingEducacionId} for persona ${nnya.personaId}`)
+    logger.log(`🎓 Using existing education ID ${existingEducacionId} for persona ${nnya.personaId}`)
   }
   const educacionData = createEducacionData(nnya.educacion, existingEducacionId)
   if (educacionData !== null) {

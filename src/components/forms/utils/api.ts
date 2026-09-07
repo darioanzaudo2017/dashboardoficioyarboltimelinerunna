@@ -6,6 +6,7 @@ import { logPatchData } from "./debug-patch"
 import { submitCleanFormData } from "./submitCleanFormData"
 import { debugFormDataStructure, debugPatchData, logApiSubmission, validateFormDataStructure } from "./debugFormData"
 import type { DemandaCreatedResponse } from "@/app/(runna)/nuevoingreso/types/demanda-response"
+import { logger } from "@/utils/logger"
 
 // Track if a submission is in progress to prevent duplicates
 let isSubmissionInProgress = false
@@ -25,7 +26,7 @@ const isDemandaCreatedResponse = (value: unknown): value is DemandaCreatedRespon
 }
 
 export const submitFormData = async (formData: DemandaFormData, id?: string): Promise<DemandaCreatedResponse> => {
-  console.log("Original form data:", JSON.stringify(formData, null, 2))
+  logger.log("Original form data:", JSON.stringify(formData, null, 2))
 
   // Debug the incoming form data structure
   debugFormDataStructure(formData, "Incoming Form Data")
@@ -33,12 +34,12 @@ export const submitFormData = async (formData: DemandaFormData, id?: string): Pr
   // Validate form data structure
   const validation = validateFormDataStructure(formData)
   if (!validation.isValid) {
-    console.error("⚠️ Form data structure issues detected:", validation.errors)
+    logger.error("⚠️ Form data structure issues detected:", validation.errors)
   }
 
   // Prevent duplicate submissions
   if (isSubmissionInProgress) {
-    console.log("Submission already in progress, preventing duplicate")
+    logger.log("Submission already in progress, preventing duplicate")
     return Promise.reject(new Error("Submission already in progress"))
   }
 
@@ -71,7 +72,7 @@ export const submitFormData = async (formData: DemandaFormData, id?: string): Pr
         dataToSend = new FormData()
         dataToSend.append("data", JSON.stringify(patchData))
       } catch (error) {
-        console.error("Error creating patch data:", error)
+        logger.error("Error creating patch data:", error)
         // Fallback to clean full update if patch creation fails
         const cleanData = submitCleanFormData(formData)
         dataToSend = new FormData()
@@ -91,9 +92,9 @@ export const submitFormData = async (formData: DemandaFormData, id?: string): Pr
     logApiSubmission(dataToSend, !!id)
 
     // Log the data being sent
-    console.log("Data being sent to API:")
+    logger.log("Data being sent to API:")
     const dataJson = JSON.parse(dataToSend.get("data") as string)
-    console.log(JSON.stringify(dataJson, null, 2))
+    logger.log(JSON.stringify(dataJson, null, 2))
 
     let response: unknown
     if (id) {
@@ -104,19 +105,19 @@ export const submitFormData = async (formData: DemandaFormData, id?: string): Pr
       response = await create("registro-demanda-form", dataToSend, true, "Demanda creada con éxito")
     }
 
-    console.log("Server response:", response)
+    logger.log("Server response:", response)
     if (!isDemandaCreatedResponse(response)) {
       throw new Error("El servidor devolvió una respuesta de demanda incompleta")
     }
     isSubmissionInProgress = false
     return response
   } catch (error: any) {
-    console.error("Error al enviar los datos del formulario:", error)
+    logger.error("Error al enviar los datos del formulario:", error)
     if (error.response) {
-      console.error("Server error response:", error.response.data)
+      logger.error("Server error response:", error.response.data)
     }
     if (error.response && error.response.status === 201) {
-      console.log("Form submitted successfully with status 201")
+      logger.log("Form submitted successfully with status 201")
       isSubmissionInProgress = false
       if (isDemandaCreatedResponse(error.response.data)) {
         return error.response.data

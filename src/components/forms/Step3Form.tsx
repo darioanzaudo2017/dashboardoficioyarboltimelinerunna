@@ -29,6 +29,7 @@ import type {
   CrearConDuplicadoRequest,
 } from "@/app/(runna)/legajo-mesa/types/legajo-duplicado-types"
 import { parseDateSafely, formatDateSafely } from "./utils/dateUtils"
+import { logger } from "@/utils/logger"
 
 interface Step3FormProps {
   dropdownData: DropdownData
@@ -77,7 +78,7 @@ const Step3Form: React.FC<Step3FormProps> = ({ dropdownData, readOnly = false, a
     const hasLegajos = results.legajos && results.legajos.length > 0
 
     if (hasDemandas || hasLegajos) {
-      console.log('Vinculación detectada:', results)
+      logger.log('Vinculación detectada:', results)
       setVinculacionResults(results)
       setOpenSnackbar(true)
     }
@@ -90,7 +91,7 @@ const Step3Form: React.FC<Step3FormProps> = ({ dropdownData, readOnly = false, a
     // Check duplicates
     const alreadyAdded = currentVinculos.some((v) => v.legajo === legajoId)
     if (alreadyAdded) {
-      console.log("Legajo already added to vinculos")
+      logger.log("Legajo already added to vinculos")
       return
     }
 
@@ -121,7 +122,7 @@ const Step3Form: React.FC<Step3FormProps> = ({ dropdownData, readOnly = false, a
         }
       }, 100)
     } catch (error) {
-      console.error("Error fetching legajo details:", error)
+      logger.error("Error fetching legajo details:", error)
       // Fallback with minimal info
       const newVinculo = {
         legajo: legajoId,
@@ -156,14 +157,14 @@ const Step3Form: React.FC<Step3FormProps> = ({ dropdownData, readOnly = false, a
     autoSearch: false, // Manual search triggered by user input
     debounceMs: 500,
     onError: (error) => {
-      console.error("[LEG-01] Error en detección de duplicados:", error)
+      logger.error("[LEG-01] Error en detección de duplicados:", error)
     },
   })
 
   // Debug: Log cuando cambia el estado de duplicados
   useEffect(() => {
     if (hasDuplicates) {
-      console.log('[LEG-01] Duplicados detectados:', {
+      logger.log('[LEG-01] Duplicados detectados:', {
         cantidad: duplicatesFound.length,
         nivel: maxAlertLevel,
         nnyaIndex: currentNnyaIndex,
@@ -231,7 +232,7 @@ const Step3Form: React.FC<Step3FormProps> = ({ dropdownData, readOnly = false, a
           nombre_autopercibido: null,
         }
 
-        console.log(`[LEG-01] Buscando duplicados para NNyA ${index}:`, searchData)
+        logger.log(`[LEG-01] Buscando duplicados para NNyA ${index}:`, searchData)
         searchDuplicates(searchData)
       }
     })
@@ -277,7 +278,7 @@ const Step3Form: React.FC<Step3FormProps> = ({ dropdownData, readOnly = false, a
       // Show success notification
       alert(`Demanda vinculada exitosamente al legajo ${legajoNumero}`)
     } catch (error: any) {
-      console.error("Error al vincular demanda:", error)
+      logger.error("Error al vincular demanda:", error)
 
       if (error.response?.status === 403) {
         alert("No tienes permisos para vincular a este legajo. Solicita acceso al responsable.")
@@ -309,7 +310,7 @@ const Step3Form: React.FC<Step3FormProps> = ({ dropdownData, readOnly = false, a
       // Show success notification
       alert(`Nuevo legajo creado. Justificación registrada en auditoría.`)
     } catch (error: any) {
-      console.error("Error al crear legajo con duplicado:", error)
+      logger.error("Error al crear legajo con duplicado:", error)
       alert(`Error al crear legajo: ${error.message}`)
     } finally {
       setIsProcessingDuplicate(false)
@@ -327,14 +328,14 @@ const Step3Form: React.FC<Step3FormProps> = ({ dropdownData, readOnly = false, a
       setIsProcessingDuplicate(true)
 
       // TODO: Implement API call to request permissions
-      console.log("Solicitar permisos:", { legajoId, requestData })
+      logger.log("Solicitar permisos:", { legajoId, requestData })
 
       alert(`Solicitud de ${requestData.tipo} enviada. Recibirás una notificación cuando sea procesada.`)
 
       setDuplicateModalOpen(false)
       clearResults()
     } catch (error: any) {
-      console.error("Error al solicitar permisos:", error)
+      logger.error("Error al solicitar permisos:", error)
       alert(`Error al solicitar permisos: ${error.message}`)
     } finally {
       setIsProcessingDuplicate(false)

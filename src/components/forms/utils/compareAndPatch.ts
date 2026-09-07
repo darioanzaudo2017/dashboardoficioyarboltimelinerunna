@@ -1,5 +1,7 @@
 // Keeping this module untyped for flexibility with transient shapes
 
+import { logger } from "@/utils/logger"
+
 /**
  * Deep compares two objects and returns an object containing only the changed values
  * @param original The original object
@@ -109,7 +111,7 @@ export function getChangedValues(original: any, updated: any, path = ""): any {
  */
 export function createPatchFromChanges(originalData: any, updatedData: any): any {
   const changes = getChangedValues(originalData, updatedData)
-  console.log("Detected changes:", JSON.stringify(changes, null, 2))
+  logger.log("Detected changes:", JSON.stringify(changes, null, 2))
 
   // HOTFIX: Check if there's education data that should be preserved
   const hasEducationInUpdatedData = updatedData.personas?.some((persona: any) =>
@@ -124,12 +126,12 @@ export function createPatchFromChanges(originalData: any, updatedData: any): any
   )
 
   if (hasEducationInUpdatedData) {
-    console.log("🎓 Education data detected in updated data, ensuring personas are preserved")
+    logger.log("🎓 Education data detected in updated data, ensuring personas are preserved")
     if (!changes.personas) {
-      console.log("🚨 HOTFIX: Force including personas because education data detected but not in changes")
+      logger.log("🚨 HOTFIX: Force including personas because education data detected but not in changes")
       changes.personas = updatedData.personas
     } else {
-      console.log("✅ Personas already in changes, preserving education data")
+      logger.log("✅ Personas already in changes, preserving education data")
     }
   }
 
@@ -200,7 +202,7 @@ export function createPatchFromChanges(originalData: any, updatedData: any): any
         } else if (typeof changes.institucion.nombre === 'object' && changes.institucion.nombre?.nombre) {
           // Handle double nesting case
           institucionNombre = changes.institucion.nombre.nombre
-          console.warn('⚠️ Double nesting detected in institucion, fixing automatically')
+          logger.warn('⚠️ Double nesting detected in institucion, fixing automatically')
         }
       }
 
@@ -330,17 +332,17 @@ export function createPatchFromChanges(originalData: any, updatedData: any): any
         const originalHadEducation = originalNnya?.educacion && originalNnya.educacion !== null
         const shouldIncludeEducation = hasEducationData && !originalHadEducation
 
-        console.log(`🔍 NNYA ${index} Education Debug:`)
-        console.log(`   hasEducationData: ${hasEducationData}`)
-        console.log(`   originalHadEducation: ${originalHadEducation}`)
-        console.log(`   originalNnya.educacion: ${JSON.stringify(originalNnya?.educacion)}`)
-        console.log(`   shouldIncludeEducation: ${shouldIncludeEducation}`)
+        logger.log(`🔍 NNYA ${index} Education Debug:`)
+        logger.log(`   hasEducationData: ${hasEducationData}`)
+        logger.log(`   originalHadEducation: ${originalHadEducation}`)
+        logger.log(`   originalNnya.educacion: ${JSON.stringify(originalNnya?.educacion)}`)
+        logger.log(`   shouldIncludeEducation: ${shouldIncludeEducation}`)
 
         if (isNew || hasChanges || detectedChanges || shouldIncludeEducation) {
           if (shouldIncludeEducation) {
-            console.log(`🎓 Including NNYA ${index} due to new education data`)
+            logger.log(`🎓 Including NNYA ${index} due to new education data`)
           }
-          console.log(
+          logger.log(
             `Processing nnya ${index}: isNew=${isNew}, hasChanges=${hasChanges}, detectedChanges=${!!detectedChanges}, shouldIncludeEducation=${shouldIncludeEducation}`,
           )
 
@@ -383,7 +385,7 @@ export function createPatchFromChanges(originalData: any, updatedData: any): any
         const detectedChanges = changes?.adultosConvivientes?.[index]
 
         if (isNew || hasChanges || detectedChanges) {
-          console.log(
+          logger.log(
             `Processing adulto ${index}: isNew=${isNew}, hasChanges=${hasChanges}, detectedChanges=${!!detectedChanges}`,
           )
 
@@ -410,11 +412,11 @@ export function createPatchFromChanges(originalData: any, updatedData: any): any
 
   // CRITICAL FIX: If changes.personas exists but transformedChanges.personas doesn't, copy it over
   if (changes.personas && !transformedChanges.personas) {
-    console.log("🚨 CRITICAL FIX: Copying personas from changes to transformedChanges")
+    logger.log("🚨 CRITICAL FIX: Copying personas from changes to transformedChanges")
     transformedChanges.personas = changes.personas
   }
 
-  console.log("🔥 FINAL TRANSFORMED CHANGES:", JSON.stringify(transformedChanges, null, 2))
+  logger.log("🔥 FINAL TRANSFORMED CHANGES:", JSON.stringify(transformedChanges, null, 2))
   return transformedChanges
 }
 
@@ -481,7 +483,7 @@ function hasPersonaFieldChanges(originalPersona: any, updatedPersona: any): bool
 
   for (const field of basicFields) {
     if (originalPersona[field] !== updatedPersona[field]) {
-      console.log(`Field ${field} changed: ${originalPersona[field]} -> ${updatedPersona[field]}`)
+      logger.log(`Field ${field} changed: ${originalPersona[field]} -> ${updatedPersona[field]}`)
       return true
     }
   }
@@ -504,9 +506,9 @@ function hasPersonaFieldChanges(originalPersona: any, updatedPersona: any): bool
     const updatedEducacion = JSON.stringify(updatedPersona.educacion)
 
     if (originalEducacion !== updatedEducacion) {
-      console.log(`🎓 Education changed:`)
-      console.log(`   Original: ${originalEducacion}`)
-      console.log(`   Updated: ${updatedEducacion}`)
+      logger.log(`🎓 Education changed:`)
+      logger.log(`   Original: ${originalEducacion}`)
+      logger.log(`   Updated: ${updatedEducacion}`)
       return true
     }
 
