@@ -316,7 +316,7 @@ export const useRegistroIntervencion = ({
         subtipo_dispositivo_id: formData.subtipo_dispositivo_id || null,
         motivo_id: formData.motivo_id!,
         sub_motivo_id: formData.sub_motivo_id || null,
-        categoria_intervencion_id: formData.categoria_intervencion_id!,
+        categoria_intervencion_id: formData.categoria_intervencion_id || null,
         intervencion_especifica: formData.intervencion_especifica,
         descripcion_detallada: formData.descripcion_detallada || null,
         motivo_vulneraciones: formData.motivo_vulneraciones || null,
@@ -405,7 +405,7 @@ export const useRegistroIntervencion = ({
         subtipo_dispositivo_id: formData.subtipo_dispositivo_id || null,
         motivo_id: formData.motivo_id,
         sub_motivo_id: formData.sub_motivo_id || null,
-        categoria_intervencion_id: formData.categoria_intervencion_id,
+        categoria_intervencion_id: formData.categoria_intervencion_id || null,
         intervencion_especifica: formData.intervencion_especifica,
         descripcion_detallada: formData.descripcion_detallada || null,
         motivo_vulneraciones: formData.motivo_vulneraciones || null,
@@ -502,7 +502,7 @@ export const useRegistroIntervencion = ({
         fecha_intervencion: formData.fecha_intervencion,
         motivo_id: formData.motivo_id!,
         sub_motivo_id: formData.sub_motivo_id || null,
-        categoria_intervencion_id: formData.categoria_intervencion_id!,
+        categoria_intervencion_id: formData.categoria_intervencion_id || null,
         intervencion_especifica: formData.intervencion_especifica,
         descripcion_detallada: formData.descripcion_detallada || null,
         motivo_vulneraciones: formData.motivo_vulneraciones || null,
@@ -987,10 +987,6 @@ export const useRegistroIntervencion = ({
       if (tieneSubtipos && !formData.subtipo_dispositivo_id) {
         errors.subtipo_dispositivo_id = "El dispositivo de resguardo es obligatorio"
       }
-    }
-
-    if (!formData.categoria_intervencion_id) {
-      errors.categoria_intervencion_id = "La categoría es obligatoria"
     }
 
     if (!formData.intervencion_especifica || formData.intervencion_especifica.trim() === "") {

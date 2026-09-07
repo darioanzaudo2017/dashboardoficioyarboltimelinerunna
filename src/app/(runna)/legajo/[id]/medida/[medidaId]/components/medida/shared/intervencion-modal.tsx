@@ -120,7 +120,6 @@ export const IntervencionModal: React.FC<IntervencionModalProps> = ({
         guardarYEnviar,
         motivos,
         subMotivos,
-        categorias,
         tiposDispositivo,
         isLoadingCatalogs,
         adjuntos,
@@ -323,9 +322,7 @@ export const IntervencionModal: React.FC<IntervencionModalProps> = ({
             if (Object.keys(formErrors).length > 0) {
                 const firstError = Object.values(formErrors)[0]
                 setSnackbar({ open: true, message: firstError, severity: 'error' })
-                if (!formErrors.categoria_intervencion_id) {
-                    setActiveStep(1)
-                }
+                setActiveStep(1)
                 return
             }
 
@@ -1094,32 +1091,10 @@ export const IntervencionModal: React.FC<IntervencionModalProps> = ({
                                 }
                             />
                             <CardContent sx={{ pt: 1 }}>
-                                <FormControl
-                                    fullWidth
-                                    required
-                                    error={!!validationErrors.categoria_intervencion_id}
-                                    sx={{ mb: 2 }}
-                                >
-                                    <InputLabel>Categoría del informe</InputLabel>
-                                    <Select
-                                        value={formData.categoria_intervencion_id || ''}
-                                        onChange={(e) => updateField('categoria_intervencion_id', Number(e.target.value))}
-                                        label="Categoría del informe"
-                                        disabled={!canEdit || isLoadingCatalogs}
-                                    >
-                                        <MenuItem value="">Seleccionar</MenuItem>
-                                        {categorias.map((categoria) => (
-                                            <MenuItem key={categoria.id} value={categoria.id}>
-                                                {categoria.nombre}
-                                            </MenuItem>
-                                        ))}
-                                    </Select>
-                                    <FormHelperText>
-                                        {validationErrors.categoria_intervencion_id
-                                            || 'Clasifica el documento para el repositorio y los reportes.'}
-                                    </FormHelperText>
-                                </FormControl>
-
+                                {/* "Categoría del informe" (TCategoriaIntervencion) quedo fuera del
+                                    formulario: es un catalogo en desuso, su contenido en produccion
+                                    es ruido de seed y no aporta nada al informe. El backend acepta
+                                    la intervencion sin categoria. */}
                                 {informeObligatorio ? (
                                     // NEWLY Uploaded file
                                     <Paper

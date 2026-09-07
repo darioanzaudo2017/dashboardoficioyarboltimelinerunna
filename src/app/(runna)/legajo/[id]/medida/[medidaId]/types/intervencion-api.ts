@@ -168,7 +168,7 @@ export interface CreateIntervencionRequest {
   sub_motivo_id?: number | null
 
   // Categoría e intervención específica
-  categoria_intervencion_id: number
+  categoria_intervencion_id?: number | null
   intervencion_especifica: string
 
   // Descripciones adicionales
@@ -232,7 +232,7 @@ export interface IntervencionResponse {
   sub_motivo_detalle: { id: number; nombre: string } | null // readOnly - lo que retorna
 
   // Categoría (write + read)
-  categoria_intervencion_id: number // writeOnly - para enviar
+  categoria_intervencion_id?: number | null // writeOnly - opcional, catalogo en desuso
   categoria_intervencion_detalle: { id: number; nombre: string } // readOnly - lo que retorna
 
   // Intervención específica
