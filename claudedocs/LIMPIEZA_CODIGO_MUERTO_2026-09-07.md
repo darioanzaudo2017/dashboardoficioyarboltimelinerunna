@@ -430,3 +430,19 @@ Igual que en la primera ola, cada commit incluye **sólo** las rutas borradas de
 (`git rm` con rutas explícitas, nunca `git add -A` ni `git add .`). El cambio ajeno
 pendiente en el working tree (`" .env.local.template"` → `.env.local.template`) quedó
 **intacto y sin commitear**.
+
+---
+
+## Anexo — Conocimiento de API preservado
+
+El tipo `DemandaAllItem` de `src/app/(runna)/oficios/types.ts` se eliminó por estar muerto, pero su
+comentario documentaba comportamiento no obvio del backend, descubierto investigando. Se preserva acá:
+
+> `GET /registro-demanda-form/` es OTRO endpoint "bulk": ignora los query params (probados
+> `numero_expediente`, `search` — ninguno filtra) y siempre devuelve el array completo sin paginar
+> (287 demandas en la muestra usada para investigar). Es la única fuente donde viven el
+> SAC/expediente/oficio web REALES de un oficio — `oficio_origen.numero` (embebido en la actividad
+> dentro de `medidas-all`) siempre viene null, no sirve para buscar.
+
+Forma del tipo, por si hace falta reconstruirlo:
+`DemandaAllItem { id: number; numero_expediente, nro_oficio_web, nro_sac, objetivo_de_demanda }`
