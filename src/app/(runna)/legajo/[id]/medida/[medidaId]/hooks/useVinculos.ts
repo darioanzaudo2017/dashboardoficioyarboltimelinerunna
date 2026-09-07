@@ -33,6 +33,7 @@ import type {
   VinculosLegajoQueryParams,
   TipoVinculoCodigo,
 } from '../../../../../legajo-mesa/types/vinculo-types'
+import { logger } from '@/utils/logger'
 
 /**
  * Hook for vinculo operations with loading/error states
@@ -81,14 +82,14 @@ export const useVinculos = () => {
     try {
       const result = await action()
       if (successMessage) {
-        console.log(successMessage)
+        logger.log(successMessage)
         // TODO: Integrate with toast notifications
       }
       return result
     } catch (err: any) {
       const errorMessage = err.response?.data?.detail || err.message || 'Error desconocido'
       setError(errorMessage)
-      console.error('Vinculo action error:', err)
+      logger.error('Vinculo action error:', err)
       return null
     } finally {
       setLoading(false)

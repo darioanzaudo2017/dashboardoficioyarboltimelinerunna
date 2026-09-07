@@ -5,6 +5,7 @@
 
 import { get } from "@/app/api/apiService"
 import type { LocalizacionPersona } from "../types/persona-data"
+import { logger } from "@/utils/logger"
 
 /**
  * Fetch localizacion by ID
@@ -15,11 +16,11 @@ export const fetchLocalizacionById = async (
   localizacionId: number
 ): Promise<LocalizacionPersona> => {
   try {
-    console.log(`Fetching localizacion ${localizacionId}`)
+    logger.log(`Fetching localizacion ${localizacionId}`)
     const response = await get<LocalizacionPersona>(`localizacion/${localizacionId}/`)
     return response
   } catch (error: any) {
-    console.error(`Error fetching localizacion ${localizacionId}:`, error)
+    logger.error(`Error fetching localizacion ${localizacionId}:`, error)
     throw error
   }
 }
@@ -33,7 +34,7 @@ export const fetchPersonaLocalizacion = async (
   personaId: number
 ): Promise<{ localizacion: LocalizacionPersona; principal: boolean } | null> => {
   try {
-    console.log(`Fetching primary localizacion for persona ${personaId}`)
+    logger.log(`Fetching primary localizacion for persona ${personaId}`)
     const response = await get<any>(`localizacion-persona/${personaId}/`)
 
     if (!response?.localizacion) {
@@ -45,7 +46,7 @@ export const fetchPersonaLocalizacion = async (
       principal: response.principal ?? true,
     }
   } catch (error: any) {
-    console.error(`Error fetching persona localizacion ${personaId}:`, error)
+    logger.error(`Error fetching persona localizacion ${personaId}:`, error)
     if (error?.response?.status === 404) {
       return null // No localization data available
     }
@@ -62,11 +63,11 @@ export const fetchPersonaLocalizaciones = async (
   personaId: number
 ): Promise<Array<{ localizacion: LocalizacionPersona; principal: boolean }>> => {
   try {
-    console.log(`Fetching all localizations for persona ${personaId}`)
+    logger.log(`Fetching all localizations for persona ${personaId}`)
     const response = await get<any[]>(`persona/${personaId}/localizaciones/`)
     return response || []
   } catch (error: any) {
-    console.error(`Error fetching persona localizaciones ${personaId}:`, error)
+    logger.error(`Error fetching persona localizaciones ${personaId}:`, error)
     if (error?.response?.status === 404) {
       return [] // No localization data available
     }

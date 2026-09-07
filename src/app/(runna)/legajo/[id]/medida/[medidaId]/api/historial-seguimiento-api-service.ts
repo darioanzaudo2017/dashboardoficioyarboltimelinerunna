@@ -22,6 +22,7 @@ import type {
   TrazabilidadCompactaResponse,
   TrazabilidadQueryParams,
 } from "../types/historial-seguimiento-api"
+import { logger } from "@/utils/logger"
 
 // ============================================================================
 // HISTORIAL DE SEGUIMIENTO - CRUD OPERATIONS
@@ -86,19 +87,19 @@ export const getHistorialSeguimiento = async (
       queryParams.page_size = String(params.page_size)
     }
 
-    console.log(`Fetching historial de seguimiento for medida ${medidaId} with params:`, queryParams)
+    logger.log(`Fetching historial de seguimiento for medida ${medidaId} with params:`, queryParams)
 
     const response = await get<HistorialSeguimientoResponse>(
       `medidas/${medidaId}/historial-seguimiento/`,
       queryParams
     )
 
-    console.log("Historial de seguimiento retrieved:", response)
+    logger.log("Historial de seguimiento retrieved:", response)
 
     return response
   } catch (error: any) {
-    console.error(`Error fetching historial de seguimiento for medida ${medidaId}:`, error)
-    console.error("Error details:", {
+    logger.error(`Error fetching historial de seguimiento for medida ${medidaId}:`, error)
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -120,17 +121,17 @@ export const getHistorialEventoDetail = async (
   eventoId: number
 ): Promise<HistorialEventoItem> => {
   try {
-    console.log(`Fetching historial evento detail: medida ${medidaId}, evento ${eventoId}`)
+    logger.log(`Fetching historial evento detail: medida ${medidaId}, evento ${eventoId}`)
 
     const response = await get<HistorialEventoItem>(
       `medidas/${medidaId}/historial-seguimiento/${eventoId}/`
     )
 
-    console.log("Historial evento detail retrieved:", response)
+    logger.log("Historial evento detail retrieved:", response)
 
     return response
   } catch (error: any) {
-    console.error(
+    logger.error(
       `Error fetching historial evento detail: medida ${medidaId}, evento ${eventoId}`,
       error
     )
@@ -153,17 +154,17 @@ export const getHistorialTipos = async (
   medidaId: number
 ): Promise<HistorialTiposResponse> => {
   try {
-    console.log(`Fetching historial tipos for medida ${medidaId}`)
+    logger.log(`Fetching historial tipos for medida ${medidaId}`)
 
     const response = await get<HistorialTiposResponse>(
       `medidas/${medidaId}/historial-seguimiento/tipos/`
     )
 
-    console.log("Historial tipos retrieved:", response)
+    logger.log("Historial tipos retrieved:", response)
 
     return response
   } catch (error: any) {
-    console.error(`Error fetching historial tipos for medida ${medidaId}:`, error)
+    logger.error(`Error fetching historial tipos for medida ${medidaId}:`, error)
     throw error
   }
 }
@@ -179,17 +180,17 @@ export const getHistorialResumen = async (
   medidaId: number
 ): Promise<HistorialResumenResponse> => {
   try {
-    console.log(`Fetching historial resumen for medida ${medidaId}`)
+    logger.log(`Fetching historial resumen for medida ${medidaId}`)
 
     const response = await get<HistorialResumenResponse>(
       `medidas/${medidaId}/historial-seguimiento/resumen/`
     )
 
-    console.log("Historial resumen retrieved:", response)
+    logger.log("Historial resumen retrieved:", response)
 
     return response
   } catch (error: any) {
-    console.error(`Error fetching historial resumen for medida ${medidaId}:`, error)
+    logger.error(`Error fetching historial resumen for medida ${medidaId}:`, error)
     throw error
   }
 }
@@ -211,7 +212,7 @@ export const exportarHistorialSeguimiento = async (
   params: HistorialSeguimientoQueryParams = {}
 ): Promise<Blob> => {
   try {
-    console.log(`Exporting historial de seguimiento for medida ${medidaId}`)
+    logger.log(`Exporting historial de seguimiento for medida ${medidaId}`)
 
     const queryParams: Record<string, string> = {}
 
@@ -239,11 +240,11 @@ export const exportarHistorialSeguimiento = async (
       }
     )
 
-    console.log("Historial de seguimiento exported")
+    logger.log("Historial de seguimiento exported")
 
     return response.data
   } catch (error: any) {
-    console.error(`Error exporting historial de seguimiento for medida ${medidaId}:`, error)
+    logger.error(`Error exporting historial de seguimiento for medida ${medidaId}:`, error)
     throw error
   }
 }
@@ -279,18 +280,18 @@ export const getTrazabilidadEtapas = async (
       queryParams.tipo = params.tipo
     }
 
-    console.log(`Fetching trazabilidad etapas for medida ${medidaId}`)
+    logger.log(`Fetching trazabilidad etapas for medida ${medidaId}`)
 
     const response = await get<TrazabilidadEtapasResponse>(
       `medidas/${medidaId}/trazabilidad-etapas/`,
       queryParams
     )
 
-    console.log("Trazabilidad etapas retrieved:", response)
+    logger.log("Trazabilidad etapas retrieved:", response)
 
     return response
   } catch (error: any) {
-    console.error(`Error fetching trazabilidad etapas for medida ${medidaId}:`, error)
+    logger.error(`Error fetching trazabilidad etapas for medida ${medidaId}:`, error)
     throw error
   }
 }
@@ -306,17 +307,17 @@ export const getTrazabilidadCompacta = async (
   medidaId: number
 ): Promise<TrazabilidadCompactaResponse> => {
   try {
-    console.log(`Fetching trazabilidad compacta for medida ${medidaId}`)
+    logger.log(`Fetching trazabilidad compacta for medida ${medidaId}`)
 
     const response = await get<TrazabilidadCompactaResponse>(
       `medidas/${medidaId}/trazabilidad-etapas/compacta/`
     )
 
-    console.log("Trazabilidad compacta retrieved:", response)
+    logger.log("Trazabilidad compacta retrieved:", response)
 
     return response
   } catch (error: any) {
-    console.error(`Error fetching trazabilidad compacta for medida ${medidaId}:`, error)
+    logger.error(`Error fetching trazabilidad compacta for medida ${medidaId}:`, error)
     throw error
   }
 }
@@ -332,7 +333,7 @@ export const exportarTrazabilidad = async (
   medidaId: number
 ): Promise<Blob> => {
   try {
-    console.log(`Exporting trazabilidad for medida ${medidaId}`)
+    logger.log(`Exporting trazabilidad for medida ${medidaId}`)
 
     const response = await axiosInstance.get(
       `medidas/${medidaId}/trazabilidad-etapas/exportar/`,
@@ -341,11 +342,11 @@ export const exportarTrazabilidad = async (
       }
     )
 
-    console.log("Trazabilidad exported")
+    logger.log("Trazabilidad exported")
 
     return response.data
   } catch (error: any) {
-    console.error(`Error exporting trazabilidad for medida ${medidaId}:`, error)
+    logger.error(`Error exporting trazabilidad for medida ${medidaId}:`, error)
     throw error
   }
 }
@@ -395,18 +396,18 @@ export const getHistorialGlobal = async (
       queryParams.page_size = String(params.page_size)
     }
 
-    console.log('Fetching historial global with params:', queryParams)
+    logger.log('Fetching historial global with params:', queryParams)
 
     const response = await get<HistorialSeguimientoResponse>(
       'historial-seguimiento-global/',
       queryParams
     )
 
-    console.log("Historial global retrieved:", response)
+    logger.log("Historial global retrieved:", response)
 
     return response
   } catch (error: any) {
-    console.error('Error fetching historial global:', error)
+    logger.error('Error fetching historial global:', error)
     throw error
   }
 }

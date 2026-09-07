@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from 'react'
 import type { UnifiedTimelineItem, TComentarioActividad, TAdjuntoActividad, THistorialActividad } from '../types/actividades'
 import { actividadService } from '../services/actividadService'
 import { extractArray } from '@/hooks/useApiQuery'
+import { logger } from '@/utils/logger'
 
 interface UseUnifiedActivityReturn {
   items: UnifiedTimelineItem[]
@@ -107,7 +108,7 @@ export const useUnifiedActivity = (actividadId: number): UseUnifiedActivityRetur
       const mergedItems = mergeItems(comentarios, adjuntos)
       setItems(mergedItems)
     } catch (err: any) {
-      console.error('Error loading unified activity items:', err)
+      logger.error('Error loading unified activity items:', err)
       setError(err.message || 'Error al cargar los datos')
       setItems([])
     } finally {

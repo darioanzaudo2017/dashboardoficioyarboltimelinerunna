@@ -32,12 +32,12 @@ export const usePersonaLocalizacion = (
   options?: Omit<UseQueryOptions<LocalizacionPersona | null>, "queryKey" | "queryFn">
 ) => {
   // DEBUG: Log hook invocation
-  console.log("🔍 usePersonaLocalizacion called with personaId:", personaId, "enabled:", !!personaId && (options?.enabled ?? true))
+  logger.log("🔍 usePersonaLocalizacion called with personaId:", personaId, "enabled:", !!personaId && (options?.enabled ?? true))
 
   return useQuery({
     queryKey: ["persona", personaId, "localizacion"],
     queryFn: () => {
-      console.log("🔍 usePersonaLocalizacion queryFn executing for personaId:", personaId)
+      logger.log("🔍 usePersonaLocalizacion queryFn executing for personaId:", personaId)
       if (!personaId) throw new Error("Persona ID is required")
       return fetchPersonaLocalizacion(personaId)
     },
@@ -197,3 +197,4 @@ export const usePrefetchPersonaData = (personaId: number | null | undefined, dem
 // Re-export React for the callback
 import React from "react"
 import { useQueryClient } from "@tanstack/react-query"
+import { logger } from "@/utils/logger"

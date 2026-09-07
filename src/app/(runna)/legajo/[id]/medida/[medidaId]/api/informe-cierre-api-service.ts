@@ -23,6 +23,7 @@ import type {
   RechazarCierreResponse,
   InformeCierreQueryParams,
 } from "../types/informe-cierre-api"
+import { logger } from "@/utils/logger"
 
 // ============================================================================
 // INFORME DE CIERRE CRUD
@@ -39,17 +40,17 @@ export const getInformesCierre = async (
   medidaId: number
 ): Promise<InformeCierre[]> => {
   try {
-    console.log(`Fetching informes cierre for medida ${medidaId}`)
+    logger.log(`Fetching informes cierre for medida ${medidaId}`)
 
     const response = await get<InformeCierre[]>(
       `medidas/${medidaId}/informe-cierre/`
     )
 
-    console.log("Informes cierre retrieved:", response)
+    logger.log("Informes cierre retrieved:", response)
     return response
   } catch (error: any) {
-    console.error(`Error fetching informes cierre for medida ${medidaId}:`, error)
-    console.error("Error details:", {
+    logger.error(`Error fetching informes cierre for medida ${medidaId}:`, error)
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -73,7 +74,7 @@ export const getInformeCierreActivo = async (
     const informeActivo = informes.find((i) => i.activo)
     return informeActivo || null
   } catch (error) {
-    console.error("Error getting active informe cierre:", error)
+    logger.error("Error getting active informe cierre:", error)
     throw error
   }
 }
@@ -100,7 +101,7 @@ export const createInformeCierre = async (
   data: CreateInformeCierreRequest
 ): Promise<InformeCierre> => {
   try {
-    console.log(`Creating informe cierre for medida ${medidaId}:`, data)
+    logger.log(`Creating informe cierre for medida ${medidaId}:`, data)
 
     // Validate tipo_cese client-side
     if (!data.tipo_cese) {
@@ -117,11 +118,11 @@ export const createInformeCierre = async (
       data as any
     )
 
-    console.log("Informe cierre created successfully:", response)
+    logger.log("Informe cierre created successfully:", response)
     return response
   } catch (error: any) {
-    console.error(`Error creating informe cierre for medida ${medidaId}:`, error)
-    console.error("Error details:", {
+    logger.error(`Error creating informe cierre for medida ${medidaId}:`, error)
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -147,7 +148,7 @@ export const createInformeCierre = async (
 export const aprobarCierre = async (
   medidaId: number
 ): Promise<AprobarCierreResponse> => {
-  console.warn('aprobarCierre is deprecated for MPI. Estado 4 is terminal state.')
+  logger.warn('aprobarCierre is deprecated for MPI. Estado 4 is terminal state.')
   throw new Error('This function is deprecated for MPI Cese workflow V2')
 }
 
@@ -161,7 +162,7 @@ export const rechazarCierre = async (
   medidaId: number,
   data: RechazarCierreRequest
 ): Promise<RechazarCierreResponse> => {
-  console.warn('rechazarCierre is deprecated for MPI. Estado 4 is terminal state.')
+  logger.warn('rechazarCierre is deprecated for MPI. Estado 4 is terminal state.')
   throw new Error('This function is deprecated for MPI Cese workflow V2')
 }
 
@@ -192,7 +193,7 @@ export const uploadAdjuntoInformeCierre = async (
   descripcion?: string,
 ): Promise<InformeCierreAdjunto> => {
   try {
-    console.log(`Uploading adjunto for informe ${informeCierreId}:`, {
+    logger.log(`Uploading adjunto for informe ${informeCierreId}:`, {
       fileName: file.name,
       fileSize: file.size,
       tipo,
@@ -215,11 +216,11 @@ export const uploadAdjuntoInformeCierre = async (
       'Adjunto subido exitosamente'
     )
 
-    console.log("Adjunto uploaded successfully:", response)
+    logger.log("Adjunto uploaded successfully:", response)
     return response
   } catch (error: any) {
-    console.error("Error uploading adjunto:", error)
-    console.error("Error details:", {
+    logger.error("Error uploading adjunto:", error)
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -251,17 +252,17 @@ export const getAdjuntosInformeCierre = async (
       queryParams.tipo_adjunto = params.tipo_adjunto
     }
 
-    console.log(`Fetching adjuntos for medida ${medidaId}:`, queryParams)
+    logger.log(`Fetching adjuntos for medida ${medidaId}:`, queryParams)
 
     const response = await get<InformeCierreAdjunto[]>(
       `medidas/${medidaId}/informe-cierre/adjuntos/`,
       queryParams
     )
 
-    console.log("Adjuntos retrieved:", response)
+    logger.log("Adjuntos retrieved:", response)
     return response
   } catch (error: any) {
-    console.error("Error fetching adjuntos:", error)
+    logger.error("Error fetching adjuntos:", error)
     throw error
   }
 }
@@ -280,7 +281,7 @@ export const deleteAdjuntoInformeCierre = async (
   adjuntoId: number
 ): Promise<void> => {
   try {
-    console.log(`Deleting adjunto ${adjuntoId} from medida ${medidaId}`)
+    logger.log(`Deleting adjunto ${adjuntoId} from medida ${medidaId}`)
 
     // Use remove for DELETE request (endpoint format: base/id)
     // Need to construct the path without the adjunto ID at the end
@@ -289,9 +290,9 @@ export const deleteAdjuntoInformeCierre = async (
       adjuntoId
     )
 
-    console.log("Adjunto deleted successfully")
+    logger.log("Adjunto deleted successfully")
   } catch (error: any) {
-    console.error("Error deleting adjunto:", error)
+    logger.error("Error deleting adjunto:", error)
     throw error
   }
 }

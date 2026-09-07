@@ -27,6 +27,7 @@ import {
   getMostRecentNotaAval,
 } from '../api/nota-aval-api-service'
 import { medidaKeys } from './useMedidaDetail'
+import { logger } from '@/utils/logger'
 
 // ============================================================================
 // QUERY KEYS
@@ -89,7 +90,7 @@ export const useNotaAval = (medidaId: number, options: UseNotaAvalOptions = {}) 
   const hasInitialData = options.initialData !== undefined
 
   // Debug logging for data isolation
-  console.log('[useNotaAval] Init:', {
+  logger.log('[useNotaAval] Init:', {
     medidaId,
     etapaId: options.etapaId,
     hasInitialData,
@@ -110,10 +111,10 @@ export const useNotaAval = (medidaId: number, options: UseNotaAvalOptions = {}) 
     queryFn: () => {
       // Extra safeguard: Don't fetch if initialData was provided
       if (hasInitialData) {
-        console.warn('[useNotaAval] queryFn called but initialData was provided - returning initialData')
+        logger.warn('[useNotaAval] queryFn called but initialData was provided - returning initialData')
         return Promise.resolve(options.initialData ?? [])
       }
-      console.log('[useNotaAval] Fetching notas from API (no initialData provided)')
+      logger.log('[useNotaAval] Fetching notas from API (no initialData provided)')
       return getNotasAvalByMedida(medidaId, { ordering: '-fecha_emision' })
     },
     // Disable query if initialData provided - we already have the data
@@ -141,7 +142,7 @@ export const useNotaAval = (medidaId: number, options: UseNotaAvalOptions = {}) 
     queryFn: () => {
       // Extra safeguard: Don't fetch if initialData was provided
       if (hasInitialData) {
-        console.warn('[useNotaAval] mostRecent queryFn called but initialData was provided')
+        logger.warn('[useNotaAval] mostRecent queryFn called but initialData was provided')
         return Promise.resolve(mostRecentFromInitial)
       }
       return getMostRecentNotaAval(medidaId)
@@ -205,7 +206,7 @@ export const useNotaAval = (medidaId: number, options: UseNotaAvalOptions = {}) 
         autoClose: 7000,
       })
 
-      console.error('Error creating nota de aval:', error)
+      logger.error('Error creating nota de aval:', error)
     },
   })
 
@@ -411,7 +412,7 @@ export const useCreateNotaAval = (
         autoClose: 7000,
       })
 
-      console.error('Error creating nota de aval:', error)
+      logger.error('Error creating nota de aval:', error)
     },
   })
 

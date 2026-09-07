@@ -35,6 +35,7 @@ import { fetchLegajoDetail } from "../../../legajo-mesa/api/legajos-api-service"
 import { useDemandaFullDetail } from "@/hooks/useDemandaFullDetail"
 import type { LegajoDetailResponse } from "../../../legajo-mesa/types/legajo-api"
 import type { MedidaDetailResponse } from "../../../legajo-mesa/types/medida-api"
+import { logger } from "@/utils/logger"
 
 interface MedidaDetailProps {
   params: {
@@ -280,7 +281,7 @@ export default function MedidaDetail({ params, onClose, isFullPage = false }: Me
         const legajo = await fetchLegajoDetail(legajoIdNum)
         setLegajoData(legajo)
       } catch (err: any) {
-        console.error("Error loading legajo:", err)
+        logger.error("Error loading legajo:", err)
         setLegajoError(err?.message || "Error al cargar el legajo")
       } finally {
         setIsLegajoLoading(false)

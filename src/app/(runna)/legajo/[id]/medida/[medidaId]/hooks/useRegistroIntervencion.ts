@@ -44,6 +44,7 @@ import type {
   CategoriaIntervencion,
   EstadoIntervencion,
 } from "../types/intervencion-api"
+import { logger } from "@/utils/logger"
 
 // ============================================================================
 // TYPES
@@ -251,7 +252,7 @@ export const useRegistroIntervencion = ({
       })
 
     } catch (err: any) {
-      console.error("Error loading intervención:", err)
+      logger.error("Error loading intervención:", err)
       setError(err?.response?.data?.detail || "Error al cargar la intervención")
     } finally {
       setIsLoading(false)
@@ -277,7 +278,7 @@ export const useRegistroIntervencion = ({
           || intervenciones[0]
 
         if (apertura) {
-          console.log("Pre-filling from apertura:", apertura)
+          logger.log("Pre-filling from apertura:", apertura)
           setFormData(prev => ({
             ...prev,
             motivo_id: apertura.motivo_id ?? apertura.motivo_detalle?.id,
@@ -287,7 +288,7 @@ export const useRegistroIntervencion = ({
         }
       }
     } catch (err) {
-      console.error("Error loading aperture data for pre-fill:", err)
+      logger.error("Error loading aperture data for pre-fill:", err)
     } finally {
       setIsLoading(false)
     }
@@ -346,13 +347,13 @@ export const useRegistroIntervencion = ({
           queryClient.refetchQueries({ queryKey: intervencionesListKey(medidaId), type: 'all' }),
         ])
       } catch (refetchErr) {
-        console.warn('[useRegistroIntervencion] Cache refetch failed (create):', refetchErr)
+        logger.warn('[useRegistroIntervencion] Cache refetch failed (create):', refetchErr)
         await queryClient.invalidateQueries({ queryKey: medidaKeys.detail(medidaId) })
       }
 
       return data
     } catch (err: any) {
-      console.error("Error creating intervención:", err)
+      logger.error("Error creating intervención:", err)
       const errorMessage =
         err?.response?.data?.detail || "Error al crear la intervención"
       setError(errorMessage)
@@ -429,13 +430,13 @@ export const useRegistroIntervencion = ({
           queryClient.refetchQueries({ queryKey: intervencionesListKey(medidaId), type: 'all' }),
         ])
       } catch (refetchErr) {
-        console.warn('[useRegistroIntervencion] Cache refetch failed (update):', refetchErr)
+        logger.warn('[useRegistroIntervencion] Cache refetch failed (update):', refetchErr)
         await queryClient.invalidateQueries({ queryKey: medidaKeys.detail(medidaId) })
       }
 
       return data
     } catch (err: any) {
-      console.error("Error updating intervención:", err)
+      logger.error("Error updating intervención:", err)
       const errorMessage =
         err?.response?.data?.detail || "Error al actualizar la intervención"
       setError(errorMessage)
@@ -539,7 +540,7 @@ export const useRegistroIntervencion = ({
             medidaKeys.detail(medidaId),
             (oldData: any) => {
               if (!oldData) return oldData
-              console.log('[guardarYEnviar] Updating cache with new etapa_actual:', responseAny.medida.etapa_actual)
+              logger.log('[guardarYEnviar] Updating cache with new etapa_actual:', responseAny.medida.etapa_actual)
               return {
                 ...oldData,
                 etapa_actual: responseAny.medida.etapa_actual,
@@ -555,14 +556,14 @@ export const useRegistroIntervencion = ({
           queryClient.refetchQueries({ queryKey: intervencionesListKey(medidaId), type: 'all' }),
         ])
       } catch (refetchErr) {
-        console.warn('[useRegistroIntervencion] Cache update failed (guardarYEnviar):', refetchErr)
+        logger.warn('[useRegistroIntervencion] Cache update failed (guardarYEnviar):', refetchErr)
         // Fallback to invalidation if refetch fails
         await queryClient.invalidateQueries({ queryKey: medidaKeys.detail(medidaId) })
       }
 
       return response
     } catch (err: any) {
-      console.error("Error creating and sending intervención:", err)
+      logger.error("Error creating and sending intervención:", err)
       const errorMessage =
         err?.response?.data?.detail || "Error al crear y enviar la intervención"
       setError(errorMessage)
@@ -629,14 +630,14 @@ export const useRegistroIntervencion = ({
           queryClient.refetchQueries({ queryKey: intervencionesListKey(medidaId), type: 'all' }),
         ])
       } catch (refetchErr) {
-        console.warn('[useRegistroIntervencion] Cache refetch failed (enviar):', refetchErr)
+        logger.warn('[useRegistroIntervencion] Cache refetch failed (enviar):', refetchErr)
         // Fallback to invalidation
         await queryClient.invalidateQueries({ queryKey: medidaKeys.detail(medidaId) })
       }
 
       return true
     } catch (err: any) {
-      console.error("Error enviando intervención:", err)
+      logger.error("Error enviando intervención:", err)
       const errorMsg = err?.response?.data?.detail || "Error al enviar la intervención"
       setError(errorMsg)
       toast.error(errorMsg, {
@@ -687,7 +688,7 @@ export const useRegistroIntervencion = ({
       try {
         // Response contains medida.etapa_actual with the new workflow state
         if (response.medida?.etapa_actual) {
-          console.log('[aprobar] Updating cache with new etapa_actual:', response.medida.etapa_actual)
+          logger.log('[aprobar] Updating cache with new etapa_actual:', response.medida.etapa_actual)
           queryClient.setQueryData(
             medidaKeys.detail(medidaId),
             (oldData: any) => {
@@ -707,14 +708,14 @@ export const useRegistroIntervencion = ({
           queryClient.refetchQueries({ queryKey: intervencionesListKey(medidaId), type: 'all' }),
         ])
       } catch (refetchErr) {
-        console.warn('[useRegistroIntervencion] Cache update failed (aprobar):', refetchErr)
+        logger.warn('[useRegistroIntervencion] Cache update failed (aprobar):', refetchErr)
         // Fallback to invalidation
         await queryClient.invalidateQueries({ queryKey: medidaKeys.detail(medidaId) })
       }
 
       return true
     } catch (err: any) {
-      console.error("Error aprobando intervención:", err)
+      logger.error("Error aprobando intervención:", err)
       const errorMsg = err?.response?.data?.detail || "Error al aprobar la intervención"
       setError(errorMsg)
       toast.error(errorMsg, {
@@ -772,7 +773,7 @@ export const useRegistroIntervencion = ({
       try {
         // Response contains medida.etapa_actual with the new workflow state
         if (response.medida?.etapa_actual) {
-          console.log('[rechazar] Updating cache with new etapa_actual:', response.medida.etapa_actual)
+          logger.log('[rechazar] Updating cache with new etapa_actual:', response.medida.etapa_actual)
           queryClient.setQueryData(
             medidaKeys.detail(medidaId),
             (oldData: any) => {
@@ -792,14 +793,14 @@ export const useRegistroIntervencion = ({
           queryClient.refetchQueries({ queryKey: intervencionesListKey(medidaId), type: 'all' }),
         ])
       } catch (refetchErr) {
-        console.warn('[useRegistroIntervencion] Cache refetch failed (rechazar):', refetchErr)
+        logger.warn('[useRegistroIntervencion] Cache refetch failed (rechazar):', refetchErr)
         // Fallback to invalidation
         await queryClient.invalidateQueries({ queryKey: medidaKeys.detail(medidaId) })
       }
 
       return true
     } catch (err: any) {
-      console.error("Error rechazando intervención:", err)
+      logger.error("Error rechazando intervención:", err)
       const errorMsg = err?.response?.data?.detail || "Error al rechazar la intervención"
       setError(errorMsg)
       toast.error(errorMsg, {
@@ -830,10 +831,10 @@ export const useRegistroIntervencion = ({
       const data = await getAdjuntos(medidaId, effectiveId)
       setAdjuntos(data)
     } catch (err: any) {
-      console.error("Error loading adjuntos:", err)
+      logger.error("Error loading adjuntos:", err)
       // Check for permission errors (Legal users might be blocked from this specific endpoint)
       if (err?.response?.status === 404 || err?.response?.status === 403) {
-        console.warn("[useRegistroIntervencion] Specific adjuntos-list endpoint blocked, falling back to nested data")
+        logger.warn("[useRegistroIntervencion] Specific adjuntos-list endpoint blocked, falling back to nested data")
       }
     } finally {
       setIsLoadingAdjuntos(false)
@@ -862,7 +863,7 @@ export const useRegistroIntervencion = ({
       await loadAdjuntos()
       return adjunto
     } catch (err: any) {
-      console.error("Error uploading adjunto:", err)
+      logger.error("Error uploading adjunto:", err)
       setError(err?.response?.data?.detail || "Error al subir el archivo")
       return null
     } finally {
@@ -883,7 +884,7 @@ export const useRegistroIntervencion = ({
       await loadAdjuntos()
       return true
     } catch (err: any) {
-      console.error("Error deleting adjunto:", err)
+      logger.error("Error deleting adjunto:", err)
       setError(err?.response?.data?.detail || "Error al eliminar el archivo")
       return false
     }
@@ -929,14 +930,14 @@ export const useRegistroIntervencion = ({
       setSubMotivos(subMotivosData)
       setCategorias(categoriasIntervencionData)
 
-      console.log("Catalogs loaded successfully:", {
+      logger.log("Catalogs loaded successfully:", {
         motivos: motivosData.length,
         subMotivos: subMotivosData.length,
         tiposDispositivo: tiposDispositivoData.length,
         categorias: categoriasIntervencionData.length,
       })
     } catch (err: any) {
-      console.error("Error loading catalogs:", err)
+      logger.error("Error loading catalogs:", err)
       // Don't set global error for catalog loading failure
       // Keep empty arrays so the UI can still render
     } finally {

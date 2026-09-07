@@ -13,6 +13,7 @@ import type {
   VisarJzRequest,
   HistorialFilters
 } from '../types/actividades'
+import { logger } from '@/utils/logger'
 
 /**
  * Hook for activity actions with loading/error states
@@ -33,7 +34,7 @@ export const useActividadActions = () => {
       const result = await action()
       if (successMessage) {
         // You can integrate with toast notifications here
-        console.log(successMessage)
+        logger.log(successMessage)
       }
       if (analytics) {
         track(AnalyticsEvent.ACTIVIDAD_ACCION, {
@@ -45,7 +46,7 @@ export const useActividadActions = () => {
     } catch (err: any) {
       const errorMessage = err.response?.data?.error || err.message || 'Error desconocido'
       setError(errorMessage)
-      console.error('Action error:', err)
+      logger.error('Action error:', err)
       return null
     } finally {
       setLoading(false)

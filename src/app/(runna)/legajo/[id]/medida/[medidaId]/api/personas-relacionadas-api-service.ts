@@ -18,6 +18,7 @@ import type {
   PersonaRelacionadaDesvincular,
   TipoVinculoPersona,
 } from "../types/personas-relacionadas-api"
+import { logger } from "@/utils/logger"
 
 // ============================================================================
 // FETCH OPERATIONS
@@ -59,12 +60,12 @@ export interface NNyADataResponse {
  */
 export const fetchNNyAData = async (legajoId: number): Promise<NNyADataResponse> => {
   try {
-    console.log(`[PersonasRelacionadas] Fetching NNyA data for legajo ${legajoId}`)
+    logger.log(`[PersonasRelacionadas] Fetching NNyA data for legajo ${legajoId}`)
     const response = await get<NNyADataResponse>(`legajos/${legajoId}/nnya/`)
-    console.log(`[PersonasRelacionadas] Fetched NNyA data:`, response)
+    logger.log(`[PersonasRelacionadas] Fetched NNyA data:`, response)
     return response
   } catch (error: any) {
-    console.error(`[PersonasRelacionadas] Error fetching NNyA data for legajo ${legajoId}:`, error)
+    logger.error(`[PersonasRelacionadas] Error fetching NNyA data for legajo ${legajoId}:`, error)
     throw error
   }
 }
@@ -79,7 +80,7 @@ export const fetchPersonasRelacionadas = async (legajoId: number): Promise<Perso
     const nnyaData = await fetchNNyAData(legajoId)
     return nnyaData.personas_relacionadas || []
   } catch (error: any) {
-    console.error(`[PersonasRelacionadas] Error fetching personas relacionadas for legajo ${legajoId}:`, error)
+    logger.error(`[PersonasRelacionadas] Error fetching personas relacionadas for legajo ${legajoId}:`, error)
     if (error?.response?.status === 404) {
       return []
     }
@@ -93,14 +94,14 @@ export const fetchPersonasRelacionadas = async (legajoId: number): Promise<Perso
  */
 export const fetchTiposVinculoPersona = async (): Promise<TipoVinculoPersona[]> => {
   try {
-    console.log(`[PersonasRelacionadas] Fetching tipos vinculo persona`)
+    logger.log(`[PersonasRelacionadas] Fetching tipos vinculo persona`)
     const response = await get<any>(`vinculo-de-personas/`)
     // Handle paginated response
     const results = response?.results || response || []
-    console.log(`[PersonasRelacionadas] Fetched tipos vinculo:`, results)
+    logger.log(`[PersonasRelacionadas] Fetched tipos vinculo:`, results)
     return results
   } catch (error: any) {
-    console.error(`[PersonasRelacionadas] Error fetching tipos vinculo:`, error)
+    logger.error(`[PersonasRelacionadas] Error fetching tipos vinculo:`, error)
     throw error
   }
 }
@@ -174,12 +175,12 @@ export const updateNNyAData = async (
   data: NNyAUpdateRequest
 ): Promise<NNyADataResponse> => {
   try {
-    console.log(`[NNyA] Updating NNyA data for legajo ${legajoId}:`, data)
+    logger.log(`[NNyA] Updating NNyA data for legajo ${legajoId}:`, data)
     const response = await axiosInstance.patch<NNyADataResponse>(`legajos/${legajoId}/nnya/`, data)
-    console.log(`[NNyA] Updated NNyA data:`, response.data)
+    logger.log(`[NNyA] Updated NNyA data:`, response.data)
     return response.data
   } catch (error: any) {
-    console.error(`[NNyA] Error updating NNyA data:`, error)
+    logger.error(`[NNyA] Error updating NNyA data:`, error)
     throw error
   }
 }
@@ -197,14 +198,14 @@ export const updatePersonasRelacionadas = async (
   personasRelacionadas: PersonaRelacionadaRequest[]
 ): Promise<NNyADataResponse> => {
   try {
-    console.log(`[PersonasRelacionadas] Updating personas relacionadas for legajo ${legajoId}:`, personasRelacionadas)
+    logger.log(`[PersonasRelacionadas] Updating personas relacionadas for legajo ${legajoId}:`, personasRelacionadas)
     const response = await axiosInstance.patch<NNyADataResponse>(`legajos/${legajoId}/nnya/`, {
       personas_relacionadas: personasRelacionadas,
     })
-    console.log(`[PersonasRelacionadas] Updated NNyA data:`, response.data)
+    logger.log(`[PersonasRelacionadas] Updated NNyA data:`, response.data)
     return response.data
   } catch (error: any) {
-    console.error(`[PersonasRelacionadas] Error updating personas relacionadas:`, error)
+    logger.error(`[PersonasRelacionadas] Error updating personas relacionadas:`, error)
     throw error
   }
 }
@@ -312,7 +313,7 @@ export const searchPersonasForRelacionada = async (searchTerm: string): Promise<
       return []
     }
 
-    console.log(`[PersonasRelacionadas] Searching personas with term: ${searchTerm}`)
+    logger.log(`[PersonasRelacionadas] Searching personas with term: ${searchTerm}`)
 
     // Try searching by DNI first if it looks like a number
     const isNumeric = /^\d+$/.test(searchTerm.trim())
@@ -326,10 +327,10 @@ export const searchPersonasForRelacionada = async (searchTerm: string): Promise<
     }
 
     const results = response?.results || response || []
-    console.log(`[PersonasRelacionadas] Search results:`, results)
+    logger.log(`[PersonasRelacionadas] Search results:`, results)
     return results
   } catch (error: any) {
-    console.error(`[PersonasRelacionadas] Error searching personas:`, error)
+    logger.error(`[PersonasRelacionadas] Error searching personas:`, error)
     return []
   }
 }

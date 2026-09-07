@@ -25,6 +25,7 @@ import type {
   UpdateSeguimientoRequest,
   SeguimientoResponse
 } from '../types/seguimiento-dispositivo'
+import { logger } from '@/utils/logger'
 
 /**
  * Build query string ?legajo_id=N (or "" if undefined).
@@ -149,7 +150,7 @@ class SeguimientoDispositivoApiService {
 
       return dataArray
     } catch (error) {
-      console.error('Error fetching situaciones:', error)
+      logger.error('Error fetching situaciones:', error)
       return []
     }
   }
@@ -163,7 +164,7 @@ class SeguimientoDispositivoApiService {
    * @deprecated Use addSituacionDispositivo() instead (API v2.0)
    */
   async addSituacionResidencia(medidaId: number, data: SituacionResidenciaMPE): Promise<SituacionResidenciaMPE> {
-    console.warn('addSituacionResidencia is deprecated, use addSituacionDispositivo instead')
+    logger.warn('addSituacionResidencia is deprecated, use addSituacionDispositivo instead')
     const newData = {
       tipo_situacion: data.tipo_situacion,
       fecha: data.fecha,
@@ -177,7 +178,7 @@ class SeguimientoDispositivoApiService {
    * @deprecated Use addSituacionDispositivo() instead (API v2.0)
    */
   async addSituacionInstituto(medidaId: number, data: SituacionInstitutoMPJ): Promise<SituacionInstitutoMPJ> {
-    console.warn('addSituacionInstituto is deprecated, use addSituacionDispositivo instead')
+    logger.warn('addSituacionInstituto is deprecated, use addSituacionDispositivo instead')
     // Map old MPJ structure to new unified structure
     const newData = {
       tipo_situacion: data.tipo_situacion,
@@ -461,7 +462,7 @@ class SeguimientoDispositivoApiService {
         observaciones: taller.observaciones
       }))
     } catch (error) {
-      console.error('Error fetching talleres:', error)
+      logger.error('Error fetching talleres:', error)
       return []
     }
   }
@@ -569,7 +570,7 @@ class SeguimientoDispositivoApiService {
       const backendData = response.results || response
       return Array.isArray(backendData) ? backendData : []
     } catch (error) {
-      console.error('Error fetching cambios de lugar:', error)
+      logger.error('Error fetching cambios de lugar:', error)
       return []
     }
   }
@@ -586,7 +587,7 @@ class SeguimientoDispositivoApiService {
       const backendData = response.results || response
       return Array.isArray(backendData) ? backendData : []
     } catch (error) {
-      console.error('Error fetching cambio lugar historial:', error)
+      logger.error('Error fetching cambio lugar historial:', error)
       return []
     }
   }
@@ -619,7 +620,7 @@ class SeguimientoDispositivoApiService {
       const backendData = response.results || response
       return Array.isArray(backendData) ? backendData : []
     } catch (error) {
-      console.error('Error fetching notas de seguimiento:', error)
+      logger.error('Error fetching notas de seguimiento:', error)
       return []
     }
   }
@@ -652,7 +653,7 @@ class SeguimientoDispositivoApiService {
    * @deprecated Check with backend if this is still used or replaced by situacion-dispositivo
    */
   async addSituacionCritica(medidaId: number, data: Omit<SituacionCritica, 'id'>): Promise<SituacionCritica> {
-    console.warn('addSituacionCritica may be deprecated - verify with backend team')
+    logger.warn('addSituacionCritica may be deprecated - verify with backend team')
     return create<SituacionCritica>(
       `medidas/${medidaId}/situaciones-criticas/`,
       data,

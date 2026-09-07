@@ -15,6 +15,7 @@ import type {
   SolicitarCeseMPERequest,
   SolicitarCeseMPEResponse,
 } from "../types/cese-medida-api"
+import { logger } from "@/utils/logger"
 
 // ============================================================================
 // MPI CESE
@@ -39,7 +40,7 @@ export const cesarMedidaMPI = async (
   data: CesarMedidaMPIRequest
 ): Promise<CesarMedidaMPIResponse> => {
   try {
-    console.log(`[cese-medida-api] Cesando medida MPI ${medidaId}:`, data)
+    logger.log(`[cese-medida-api] Cesando medida MPI ${medidaId}:`, data)
 
     const response = await create<CesarMedidaMPIResponse>(
       `medidas/${medidaId}/cesar-medida`,
@@ -47,11 +48,11 @@ export const cesarMedidaMPI = async (
       false // No toast here, handled by hook
     )
 
-    console.log("[cese-medida-api] MPI cese successful:", response)
+    logger.log("[cese-medida-api] MPI cese successful:", response)
     return response
   } catch (error: any) {
-    console.error(`[cese-medida-api] Error cesando medida MPI ${medidaId}:`, error)
-    console.error("Error details:", {
+    logger.error(`[cese-medida-api] Error cesando medida MPI ${medidaId}:`, error)
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -87,7 +88,7 @@ export const solicitarCeseMPE = async (
   data: SolicitarCeseMPERequest
 ): Promise<SolicitarCeseMPEResponse> => {
   try {
-    console.log(`[cese-medida-api] Solicitando cese MPE ${medidaId}:`, data)
+    logger.log(`[cese-medida-api] Solicitando cese MPE ${medidaId}:`, data)
 
     const response = await create<SolicitarCeseMPEResponse>(
       `medidas/${medidaId}/solicitar-cese`,
@@ -95,11 +96,11 @@ export const solicitarCeseMPE = async (
       false // No toast here, handled by hook
     )
 
-    console.log("[cese-medida-api] MPE cese response:", response)
+    logger.log("[cese-medida-api] MPE cese response:", response)
     return response
   } catch (error: any) {
-    console.error(`[cese-medida-api] Error solicitando cese MPE ${medidaId}:`, error)
-    console.error("Error details:", {
+    logger.error(`[cese-medida-api] Error solicitando cese MPE ${medidaId}:`, error)
+    logger.error("Error details:", {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,

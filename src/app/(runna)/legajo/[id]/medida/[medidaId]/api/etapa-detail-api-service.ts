@@ -17,6 +17,7 @@ import type { IntervencionResponse } from '../types/intervencion-api'
 import type { NotaAvalBasicResponse } from '../types/nota-aval-api'
 import type { InformeJuridicoBasicResponse } from '../types/informe-juridico-api'
 import type { RatificacionJudicial } from '../types/ratificacion-judicial-api'
+import { logger } from '@/utils/logger'
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -165,7 +166,7 @@ export const getEtapaDetail = async (
     if (etapaId) qsParams.set("etapa_id", String(etapaId))
     if (typeof legajoId === "number") qsParams.set("legajo_id", String(legajoId))
     const qs = qsParams.toString() ? `?${qsParams.toString()}` : ""
-    console.log(
+    logger.log(
       `[EtapaDetailService] Fetching etapa ${tipoEtapa} for medida ${medidaId}${qs}`,
     )
 
@@ -173,7 +174,7 @@ export const getEtapaDetail = async (
       `medidas/${medidaId}/etapa/${tipoEtapa}/${qs}`,
     )
 
-    console.log('[EtapaDetailService] Etapa detail retrieved:', {
+    logger.log('[EtapaDetailService] Etapa detail retrieved:', {
       medida: response.medida.numero_medida,
       tipo_etapa: response.etapa.tipo_etapa,
       estado_actual: response.etapa.estado_actual?.nombre_display,
@@ -190,15 +191,15 @@ export const getEtapaDetail = async (
   } catch (error: any) {
     // Handle 404 gracefully - etapa doesn't exist yet (normal for non-Apertura stages)
     if (error?.response?.status === 404) {
-      console.log(
+      logger.log(
         `[EtapaDetailService] Etapa ${tipoEtapa} not found for medida ${medidaId} (not created yet)`
       )
       return null
     }
 
     // Log and re-throw other errors
-    console.error(`[EtapaDetailService] Error fetching etapa ${tipoEtapa}:`, error)
-    console.error('[EtapaDetailService] Error details:', {
+    logger.error(`[EtapaDetailService] Error fetching etapa ${tipoEtapa}:`, error)
+    logger.error('[EtapaDetailService] Error details:', {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,

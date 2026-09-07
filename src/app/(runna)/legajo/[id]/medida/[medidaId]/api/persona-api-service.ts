@@ -13,6 +13,7 @@ import type {
   PersonaCondicionVulnerabilidad,
   PersonaVulneracion,
 } from "../types/persona-data"
+import { logger } from "@/utils/logger"
 
 /**
  * Fetch persona localization data directly
@@ -23,14 +24,14 @@ export const fetchPersonaLocalizacion = async (
   personaId: number
 ): Promise<LocalizacionPersona | null> => {
   try {
-    console.log(`🚀 API CALL: Fetching localizacion for persona ${personaId} from /api/localizacion-persona/${personaId}/`)
+    logger.log(`🚀 API CALL: Fetching localizacion for persona ${personaId} from /api/localizacion-persona/${personaId}/`)
     const response = await get<any>(`localizacion-persona/${personaId}/`)
-    console.log(`✅ API RESPONSE: Localizacion data received:`, response)
+    logger.log(`✅ API RESPONSE: Localizacion data received:`, response)
     return response?.localizacion || null
   } catch (error: any) {
-    console.error(`❌ API ERROR: Failed to fetch persona localizacion ${personaId}:`, error)
+    logger.error(`❌ API ERROR: Failed to fetch persona localizacion ${personaId}:`, error)
     if (error?.response?.status === 404) {
-      console.log(`ℹ️ 404 Not Found - Localizacion endpoint not available for persona ${personaId}`)
+      logger.log(`ℹ️ 404 Not Found - Localizacion endpoint not available for persona ${personaId}`)
       return null // No localization data available
     }
     throw error
@@ -46,11 +47,11 @@ export const fetchPersonaEducacion = async (
   personaId: number
 ): Promise<EducacionPersona | null> => {
   try {
-    console.log(`Fetching educacion for persona ${personaId}`)
+    logger.log(`Fetching educacion for persona ${personaId}`)
     const response = await get<any>(`persona/${personaId}/educacion/`)
     return response?.educacion || null
   } catch (error: any) {
-    console.error(`Error fetching persona educacion ${personaId}:`, error)
+    logger.error(`Error fetching persona educacion ${personaId}:`, error)
     if (error?.response?.status === 404) {
       return null // No education data available
     }
@@ -67,14 +68,14 @@ export const fetchPersonaCoberturaMedica = async (
   personaId: number
 ): Promise<{ cobertura_medica: CoberturaMedica | null; persona_enfermedades: PersonaEnfermedad[] }> => {
   try {
-    console.log(`Fetching cobertura medica for persona ${personaId}`)
+    logger.log(`Fetching cobertura medica for persona ${personaId}`)
     const response = await get<any>(`persona/${personaId}/cobertura-medica/`)
     return {
       cobertura_medica: response?.cobertura_medica || null,
       persona_enfermedades: response?.persona_enfermedades || [],
     }
   } catch (error: any) {
-    console.error(`Error fetching persona cobertura medica ${personaId}:`, error)
+    logger.error(`Error fetching persona cobertura medica ${personaId}:`, error)
     if (error?.response?.status === 404) {
       return { cobertura_medica: null, persona_enfermedades: [] }
     }
@@ -91,14 +92,14 @@ export const fetchPersonaCondicionesVulnerabilidad = async (
   personaId: number
 ): Promise<{ condiciones_vulnerabilidad: PersonaCondicionVulnerabilidad[]; vulneraciones: PersonaVulneracion[] }> => {
   try {
-    console.log(`Fetching condiciones vulnerabilidad for persona ${personaId}`)
+    logger.log(`Fetching condiciones vulnerabilidad for persona ${personaId}`)
     const response = await get<any>(`persona/${personaId}/vulnerabilidad/`)
     return {
       condiciones_vulnerabilidad: response?.condiciones_vulnerabilidad || [],
       vulneraciones: response?.vulneraciones || [],
     }
   } catch (error: any) {
-    console.error(`Error fetching persona vulnerabilidad ${personaId}:`, error)
+    logger.error(`Error fetching persona vulnerabilidad ${personaId}:`, error)
     if (error?.response?.status === 404) {
       return { condiciones_vulnerabilidad: [], vulneraciones: [] }
     }
@@ -118,7 +119,7 @@ export const fetchPersonaFromDemanda = async (
   personaId: number
 ): Promise<PersonaCompleta | null> => {
   try {
-    console.log(`Fetching persona ${personaId} from demanda ${demandaId}`)
+    logger.log(`Fetching persona ${personaId} from demanda ${demandaId}`)
     const response = await get<any>(`registro-demanda-form/${demandaId}/full-detail/`)
 
     // Find the persona in the personas array
@@ -126,13 +127,13 @@ export const fetchPersonaFromDemanda = async (
     const personaData = personas.find((p: any) => p.persona?.id === personaId)
 
     if (!personaData) {
-      console.warn(`Persona ${personaId} not found in demanda ${demandaId}`)
+      logger.warn(`Persona ${personaId} not found in demanda ${demandaId}`)
       return null
     }
 
     return personaData as PersonaCompleta
   } catch (error: any) {
-    console.error(`Error fetching persona from demanda:`, error)
+    logger.error(`Error fetching persona from demanda:`, error)
     throw error
   }
 }
@@ -163,7 +164,7 @@ export const fetchPersonaCompleta = async (
     )
 
     if (allFailed && demandaId) {
-      console.log("All direct endpoints failed, using demanda fallback")
+      logger.log("All direct endpoints failed, using demanda fallback")
       return await fetchPersonaFromDemanda(demandaId, personaId)
     }
 
@@ -192,13 +193,13 @@ export const fetchPersonaCompleta = async (
           }
         }
       } catch (error) {
-        console.warn("Failed to fetch fallback data from demanda:", error)
+        logger.warn("Failed to fetch fallback data from demanda:", error)
       }
     }
 
     return personaCompleta as PersonaCompleta
   } catch (error: any) {
-    console.error(`Error fetching persona completa ${personaId}:`, error)
+    logger.error(`Error fetching persona completa ${personaId}:`, error)
     throw error
   }
 }

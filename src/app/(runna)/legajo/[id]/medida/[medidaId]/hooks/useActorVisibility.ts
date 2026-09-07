@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useUser } from '@/utils/auth/userZustand'
 import type { ActorEnum } from '../types/actividades'
+import { logger } from '@/utils/logger'
 
 /**
  * User group to actor mapping
@@ -164,7 +165,7 @@ export const useActorVisibility = (): ActorVisibilityResult => {
     // If user has no mapped groups, default to empty (they'll see nothing)
     // This is a safety measure - in practice, users should always have a group
     if (allowedActors.length === 0) {
-      console.warn(
+      logger.warn(
         `[useActorVisibility] User ${user.username} has no actor-mapped groups:`,
         groupNames
       )
