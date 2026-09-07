@@ -16,6 +16,7 @@ import {
   buscarNnya,
 } from '../api/legajo-search.service'
 import type { BusquedaNnyaResult, GrupoConvivienteMiembro } from '../types/legajo-creation.types'
+import { logger } from '@/utils/logger'
 
 /**
  * Hook for searching NNyA by DNI or name
@@ -44,7 +45,7 @@ export const useSearchNnya = () => {
       setResults(data)
       return data
     } catch (error) {
-      console.error('Error in searchByDni:', error)
+      logger.error('Error in searchByDni:', error)
       setResults([])
       return []
     } finally {
@@ -69,7 +70,7 @@ export const useSearchNnya = () => {
       setResults(data)
       return data
     } catch (error) {
-      console.error('Error in searchByNombre:', error)
+      logger.error('Error in searchByNombre:', error)
       setResults([])
       return []
     } finally {
@@ -94,7 +95,7 @@ export const useSearchNnya = () => {
       setResults(data)
       return data
     } catch (error) {
-      console.error('Error in search:', error)
+      logger.error('Error in search:', error)
       setResults([])
       return []
     } finally {

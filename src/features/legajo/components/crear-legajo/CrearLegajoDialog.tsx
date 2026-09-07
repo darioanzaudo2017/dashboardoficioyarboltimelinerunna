@@ -18,6 +18,7 @@ import type {
   BusquedaNnyaResult,
   NnyaCreateData,
 } from '../../types/legajo-creation.types'
+import { logger } from '@/utils/logger'
 
 interface Props {
   open: boolean
@@ -80,7 +81,7 @@ export default function CrearLegajoDialog({ open, onClose }: Props) {
       // Close dialog and reset
       handleDialogClose()
     } catch (error) {
-      console.error('Error al crear legajo:', error)
+      logger.error('Error al crear legajo:', error)
       // Error handling done in mutation hook
     }
   }

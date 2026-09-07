@@ -13,6 +13,7 @@ import type {
   BusquedaVinculacionResponse,
   PersonaEncontrada,
 } from '../types/legajo-creation.types'
+import { logger } from '@/utils/logger'
 
 /**
  * Transform PersonaEncontrada to BusquedaNnyaResult
@@ -51,28 +52,28 @@ const mapPersonaToResult = (persona: PersonaEncontrada): BusquedaNnyaResult => (
  */
 export const buscarNnyaPorDni = async (dni: string): Promise<BusquedaNnyaResult[]> => {
   try {
-    console.log(`[LEG-01] Searching NNyA by DNI: ${dni}`)
+    logger.log(`[LEG-01] Searching NNyA by DNI: ${dni}`)
 
     const { data: response } = await axiosInstance.post<BusquedaVinculacionResponse>('demanda-busqueda-vinculacion/', {
       dni: dni,
     })
 
-    console.log('[LEG-01] Search response:', response)
+    logger.log('[LEG-01] Search response:', response)
 
     // Use personas_encontradas as the primary data source (LEG-01 enhancement)
     const personasEncontradas = response.personas_encontradas || []
 
     if (personasEncontradas.length === 0) {
-      console.log('[LEG-01] No personas found for this DNI')
+      logger.log('[LEG-01] No personas found for this DNI')
       return []
     }
 
     // Map personas_encontradas to our internal type
     const results = personasEncontradas.map(mapPersonaToResult)
 
-    console.log(`[LEG-01] Found ${results.length} matching NNyA(s)`)
+    logger.log(`[LEG-01] Found ${results.length} matching NNyA(s)`)
     results.forEach((r) => {
-      console.log(
+      logger.log(
         `  - ${r.nombre} ${r.apellido}: ` +
           `legajo=${r.legajo_existente?.numero || 'ninguno'}, ` +
           `demandas=${r.demandas_ids.length}, ` +
@@ -83,8 +84,8 @@ export const buscarNnyaPorDni = async (dni: string): Promise<BusquedaNnyaResult[
 
     return results
   } catch (error: any) {
-    console.error('[LEG-01] Error searching NNyA by DNI:', error)
-    console.error('[LEG-01] Error details:', {
+    logger.error('[LEG-01] Error searching NNyA by DNI:', error)
+    logger.error('[LEG-01] Error details:', {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -117,32 +118,32 @@ export const buscarNnyaPorNombre = async (
   }
 
   try {
-    console.log(`[LEG-01] Searching NNyA by name: ${nombreCompleto}`)
+    logger.log(`[LEG-01] Searching NNyA by name: ${nombreCompleto}`)
 
     // Use nombre_y_apellido for flexible matching (LEG-01 backend format)
     const { data: response } = await axiosInstance.post<BusquedaVinculacionResponse>('demanda-busqueda-vinculacion/', {
       nombre_y_apellido: nombreCompleto,
     })
 
-    console.log('[LEG-01] Search response:', response)
+    logger.log('[LEG-01] Search response:', response)
 
     // Use personas_encontradas as the primary data source
     const personasEncontradas = response.personas_encontradas || []
 
     if (personasEncontradas.length === 0) {
-      console.log('[LEG-01] No personas found for this name')
+      logger.log('[LEG-01] No personas found for this name')
       return []
     }
 
     // Map personas_encontradas to our internal type
     const results = personasEncontradas.map(mapPersonaToResult)
 
-    console.log(`[LEG-01] Found ${results.length} matching NNyA(s)`)
+    logger.log(`[LEG-01] Found ${results.length} matching NNyA(s)`)
 
     return results
   } catch (error: any) {
-    console.error('[LEG-01] Error searching NNyA by name:', error)
-    console.error('[LEG-01] Error details:', {
+    logger.error('[LEG-01] Error searching NNyA by name:', error)
+    logger.error('[LEG-01] Error details:', {
       message: error?.message,
       response: error?.response?.data,
       status: error?.response?.status,
@@ -165,24 +166,24 @@ export const buscarNnyaPorNombreCompleto = async (
   nombreCompleto: string
 ): Promise<BusquedaNnyaResult[]> => {
   try {
-    console.log(`[LEG-01] Searching NNyA by full name: ${nombreCompleto}`)
+    logger.log(`[LEG-01] Searching NNyA by full name: ${nombreCompleto}`)
 
     const { data: response } = await axiosInstance.post<BusquedaVinculacionResponse>('demanda-busqueda-vinculacion/', {
       nombre_y_apellido: nombreCompleto,
     })
 
-    console.log('[LEG-01] Search response:', response)
+    logger.log('[LEG-01] Search response:', response)
 
     const personasEncontradas = response.personas_encontradas || []
 
     if (personasEncontradas.length === 0) {
-      console.log('[LEG-01] No personas found for this full name')
+      logger.log('[LEG-01] No personas found for this full name')
       return []
     }
 
     return personasEncontradas.map(mapPersonaToResult)
   } catch (error: any) {
-    console.error('[LEG-01] Error searching NNyA by full name:', error)
+    logger.error('[LEG-01] Error searching NNyA by full name:', error)
     return []
   }
 }

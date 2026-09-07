@@ -11,6 +11,7 @@ import type {
   UserInfo,
   LocalCentroVida,
 } from '../types/legajo-creation.types'
+import { logger } from '@/utils/logger'
 
 /**
  * Get all urgencias vulneracion for dropdown
@@ -23,7 +24,7 @@ export const getUrgencias = async (): Promise<UrgenciaVulneracion[]> => {
     >('urgencia-vulneracion/')
     return extractArray(response)
   } catch (error) {
-    console.error('Error fetching urgencias:', error)
+    logger.error('Error fetching urgencias:', error)
     return []
   }
 }
@@ -40,10 +41,10 @@ export const getZonasDisponibles = async (): Promise<ZonaInfo[]> => {
     const response = await get<ZonaInfo[] | { results: ZonaInfo[] }>('zonas/')
     const zonas = extractArray(response)
 
-    console.log('Zonas fetched:', zonas)
+    logger.log('Zonas fetched:', zonas)
     return zonas
   } catch (error) {
-    console.error('Error fetching zonas:', error)
+    logger.error('Error fetching zonas:', error)
     return []
   }
 }
@@ -106,7 +107,7 @@ export const getUsuariosPorZona = async (zonaId: number): Promise<UserInfo[]> =>
 
     return users
   } catch (error) {
-    console.error(`Error fetching users for zona ${zonaId}:`, error)
+    logger.error(`Error fetching users for zona ${zonaId}:`, error)
     return []
   }
 }
@@ -123,10 +124,10 @@ export const getLocalesCentroVida = async (zonaId: number): Promise<LocalCentroV
     const response = await get<LocalCentroVida[] | { results: LocalCentroVida[] }>('locales-centro-vida/', { zona: zonaId })
     const locales = extractArray(response)
 
-    console.log(`Locales for zona ${zonaId} fetched:`, locales)
+    logger.log(`Locales for zona ${zonaId} fetched:`, locales)
     return locales
   } catch (error) {
-    console.error(`Error fetching locales for zona ${zonaId}:`, error)
+    logger.error(`Error fetching locales for zona ${zonaId}:`, error)
     return []
   }
 }
@@ -149,7 +150,7 @@ export const getAllCatalogos = async () => {
       zonas,
     }
   } catch (error) {
-    console.error('Error fetching all catalogos:', error)
+    logger.error('Error fetching all catalogos:', error)
     return {
       urgencias: [],
       zonas: [],

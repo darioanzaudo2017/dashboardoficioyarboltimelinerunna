@@ -12,6 +12,7 @@ import type {
   AutorizarAdmisionRequest,
   AutorizarAdmisionResponse,
 } from '../types/legajo-creation.types'
+import { logger } from '@/utils/logger'
 
 interface ApiErrorPayload {
   detail?: string | Record<string, unknown>
@@ -48,8 +49,8 @@ export const createLegajo = async (
     return response
   } catch (error: unknown) {
     const apiError = axios.isAxiosError<ApiErrorPayload>(error) ? error : null
-    console.error('Error creating legajo:', error)
-    console.error('Error details:', {
+    logger.error('Error creating legajo:', error)
+    logger.error('Error details:', {
       message: error instanceof Error ? error.message : String(error),
       response: apiError?.response?.data,
       status: apiError?.response?.status,
@@ -194,8 +195,8 @@ export const autorizarAdmisionYCrearLegajos = async (
     return response
   } catch (error: unknown) {
     const apiError = axios.isAxiosError<ApiErrorPayload>(error) ? error : null
-    console.error(`Error authorizing admision for demanda ${demandaId}:`, error)
-    console.error('Error details:', {
+    logger.error(`Error authorizing admision for demanda ${demandaId}:`, error)
+    logger.error('Error details:', {
       message: error instanceof Error ? error.message : String(error),
       response: apiError?.response?.data,
       status: apiError?.response?.status,
