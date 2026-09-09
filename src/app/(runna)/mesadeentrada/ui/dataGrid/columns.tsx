@@ -426,21 +426,27 @@ export const buildDemandaColumns = ({
     ),
   })
 
-  // Default column order: identification → estado → acciones → seguimiento → resto
+  // Orden de columnas del mockup de UX: identificacion → contexto → estado.
+  // Su lista literal era: ID, Apellido, Nombre, Zona/Equipo, Acciones, Localidad,
+  // Remitente, Estado, Calificacion, Actualizacion, Adjuntos, Objetivo. Adaptado
+  // al codigo actual: "dni" va detras de "nombre" y donde ella decia "Adjuntos"
+  // ahora va "detalles" (legajo + vinculacion + adjuntos).
+  // "envioRespuesta" no figura en su mockup; se ubica junto a "estado_demanda"
+  // porque es la otra columna de estado del tramite.
   const DEFAULT_COLUMN_ORDER = [
     "id",
     "apellido",
     "nombre",
     "dni",
-    "estado_demanda",
+    "zonaEquipo",
     "actions",
+    "localidad",
+    "origen",
+    "estado_demanda",
     "envioRespuesta",
     "calificacion",
     "ultimaActualizacion",
     "detalles",
-    "origen",
-    "localidad",
-    "zonaEquipo",
     "objetivoDemanda",
   ]
   return baseColumns.sort((a, b) => {

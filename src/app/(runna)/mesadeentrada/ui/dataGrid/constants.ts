@@ -46,4 +46,12 @@ export const PRESETS: Record<PresetKey, { label: string; visibility: GridColumnV
   },
 }
 
+/**
+ * Vista estandar de la bandeja: el preset con el que arranca todo el mundo.
+ * Los usuarios sin permiso de personalizacion se quedan siempre en este modelo
+ * (ver useColumnVisibility), sin importar lo que tengan guardado en localStorage.
+ * Cambiar esta constante cambia la vista por defecto de todo el organismo.
+ */
+export const DEFAULT_PRESET: PresetKey = "pendientes"
+
 export const VIEW_MODE_STORAGE_KEY = "mesadeentrada:viewMode:v1"

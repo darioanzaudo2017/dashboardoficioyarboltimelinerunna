@@ -9,10 +9,18 @@ import type { ViewMode } from "../types"
 interface DemandaHeaderBarProps {
   viewMode: ViewMode
   onViewModeChange: (event: React.MouseEvent<HTMLElement>, next: ViewMode | null) => void
+  /** Solo jefes zonales, directores y admins ven el conmutador Lista/Tabla. */
+  canCustomizeView: boolean
 }
 
-/** Barra 1: título de la sección + conmutador Lista/Tabla. */
-export const DemandaHeaderBar = ({ viewMode, onViewModeChange }: DemandaHeaderBarProps) => (
+/**
+ * Barra 1: título de la sección + conmutador Lista/Tabla.
+ *
+ * El conmutador quedó reservado para los roles que pueden personalizar la vista
+ * (UX lo tachó del mockup para el resto). Sacarlo no afecta al responsive: la
+ * vista estándar es "list", que ya elige tabla o tarjetas según el ancho.
+ */
+export const DemandaHeaderBar = ({ viewMode, onViewModeChange, canCustomizeView }: DemandaHeaderBarProps) => (
   <Box
     sx={{
       px: { xs: 2, md: 3 },
@@ -40,22 +48,24 @@ export const DemandaHeaderBar = ({ viewMode, onViewModeChange }: DemandaHeaderBa
       Mesa de Entradas
     </Typography>
 
-    <ToggleButtonGroup
-      size="small"
-      exclusive
-      value={viewMode}
-      onChange={onViewModeChange}
-      aria-label="Modo de vista"
-      sx={{ alignSelf: { xs: "flex-start", sm: "auto" } }}
-    >
-      <ToggleButton value="list" aria-label="Vista lista" sx={{ textTransform: "none", px: 1.25 }}>
-        <ViewListRounded fontSize="small" sx={{ mr: 0.5 }} />
-        Lista
-      </ToggleButton>
-      <ToggleButton value="tabla" aria-label="Vista tabla" sx={{ textTransform: "none", px: 1.25 }}>
-        <TableRowsRounded fontSize="small" sx={{ mr: 0.5 }} />
-        Tabla
-      </ToggleButton>
-    </ToggleButtonGroup>
+    {canCustomizeView && (
+      <ToggleButtonGroup
+        size="small"
+        exclusive
+        value={viewMode}
+        onChange={onViewModeChange}
+        aria-label="Modo de vista"
+        sx={{ alignSelf: { xs: "flex-start", sm: "auto" } }}
+      >
+        <ToggleButton value="list" aria-label="Vista lista" sx={{ textTransform: "none", px: 1.25 }}>
+          <ViewListRounded fontSize="small" sx={{ mr: 0.5 }} />
+          Lista
+        </ToggleButton>
+        <ToggleButton value="tabla" aria-label="Vista tabla" sx={{ textTransform: "none", px: 1.25 }}>
+          <TableRowsRounded fontSize="small" sx={{ mr: 0.5 }} />
+          Tabla
+        </ToggleButton>
+      </ToggleButtonGroup>
+    )}
   </Box>
 )

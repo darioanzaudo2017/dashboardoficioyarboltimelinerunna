@@ -9,7 +9,13 @@ interface DemandaPresetBarProps {
   onPresetClick: (key: PresetKey) => void
 }
 
-/** Vistas predefinidas: cada botón aplica un columnVisibilityModel preconfigurado. */
+/**
+ * Vistas predefinidas: cada botón aplica un columnVisibilityModel preconfigurado.
+ *
+ * Ya no lleva el texto "Usa el menú de columnas para personalizar": UX lo tachó
+ * del mockup porque el menú de columnas dejó de estar disponible para la mayoría
+ * de los usuarios, y el espacio libre ayuda a descansar la vista.
+ */
 export const DemandaPresetBar = ({ activePreset, onPresetClick }: DemandaPresetBarProps) => (
   <Box
     sx={{
@@ -48,8 +54,5 @@ export const DemandaPresetBar = ({ activePreset, onPresetClick }: DemandaPresetB
         </Button>
       )
     })}
-    <Typography variant="caption" sx={{ ml: "auto", color: "text.disabled" }}>
-      Usa el menú de columnas para personalizar
-    </Typography>
   </Box>
 )

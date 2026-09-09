@@ -21,6 +21,7 @@ import { mapDemandaToRow } from "./utils"
 import type { TDemandaPaginated } from "./types"
 import { useColumnVisibility } from "./hooks/useColumnVisibility"
 import { useViewMode } from "./hooks/useViewMode"
+import { useCanCustomizeView } from "./hooks/useCanCustomizeView"
 import { useGridScrollAffordance } from "./hooks/useGridScrollAffordance"
 import { useDemandaMutations } from "./hooks/useDemandaMutations"
 import { DemandaHeaderBar } from "./components/DemandaHeaderBar"
@@ -73,9 +74,14 @@ const DemandaTableContent: React.FC = () => {
     search: null,
   })
 
-  const { columnVisibilityModel, activePreset, handleVisibilityChange, handlePresetClick } = useColumnVisibility()
+  // Vista estandar para todos; solo jefes zonales, directores y admins conservan
+  // la personalizacion (columnas + modo de vista). Ver useCanCustomizeView.
+  const canCustomizeView = useCanCustomizeView()
 
-  const { viewMode, handleViewModeChange } = useViewMode()
+  const { columnVisibilityModel, activePreset, handleVisibilityChange, handlePresetClick } =
+    useColumnVisibility(canCustomizeView)
+
+  const { viewMode, handleViewModeChange } = useViewMode(canCustomizeView)
 
   // Sync ?demanda=ID URL param -> selectedDemandaId on first mount and when URL changes externally.
   useEffect(() => {
@@ -249,8 +255,8 @@ const DemandaTableContent: React.FC = () => {
   }
 
   const columns = useMemo(
-    () =>
-      buildDemandaColumns({
+    () => {
+      const built = buildDemandaColumns({
         isMobile,
         userId: user?.id || 0,
         hasCalificarPermission,
@@ -260,9 +266,15 @@ const DemandaTableContent: React.FC = () => {
         onOpenModal: handleOpenModal,
         onOpenAsignarModal: handleOpenAsignarModal,
         onRecibirDemanda: updateDemandaZona.mutate,
-      }),
+      })
+      if (canCustomizeView) return built
+      // Sin permiso no hay menu de columnas: `hideable: false` saca el item
+      // "Ocultar" y `disableColumnSelector` (en el DataGrid) saca "Mostrar
+      // columnas". Se conservan ordenar y filtrar, que no personalizan la vista.
+      return built.map((column) => ({ ...column, hideable: false }))
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isMobile],
+    [isMobile, canCustomizeView],
   )
 
   const rows = demandasData?.results.map(mapDemandaToRow) || []
@@ -296,7 +308,11 @@ const DemandaTableContent: React.FC = () => {
         }}
       >
         {/* Barra 1: Título */}
-        <DemandaHeaderBar viewMode={viewMode} onViewModeChange={handleViewModeChange} />
+        <DemandaHeaderBar
+          viewMode={viewMode}
+          onViewModeChange={handleViewModeChange}
+          canCustomizeView={canCustomizeView}
+        />
 
         {/* Barra 2: Acciones (Nuevo Registro, Búsqueda, Filtros, Exportar, Refrescar) */}
         <DemandaActionsBar
@@ -341,6 +357,10 @@ const DemandaTableContent: React.FC = () => {
                 columns={columns}
                 columnVisibilityModel={columnVisibilityModel}
                 onColumnVisibilityModelChange={handleVisibilityChange}
+                // Saca "Mostrar columnas" del menu de columna para quienes no
+                // pueden personalizar; junto con `hideable: false` deja la vista
+                // estandar sin ningun control de columnas.
+                disableColumnSelector={!canCustomizeView}
                 paginationModel={paginationModel}
                 onPaginationModelChange={setPaginationModel}
                 pageSizeOptions={[5, 10, 25, 50]}
