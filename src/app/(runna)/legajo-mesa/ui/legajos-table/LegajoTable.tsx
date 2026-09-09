@@ -103,11 +103,10 @@ const LegajoTable: React.FC = () => {
   }
 
   /**
-   * Determina si un legajo debe resaltarse basándose en el rol del usuario y el estado de la medida activa.
+   * Determina si un legajo debe resaltarse basándose en el rol del usuario y el
+   * estado actual de la etapa actual de sus medidas vigentes.
    */
   const shouldHighlightLegajo = (row: any): boolean => {
-    const allStates = row.allStates || []
-
     const userPerms: UserPermissions = {
       isDirector: permissions.isDirector,
       isLegales: permissions.isLegales,
@@ -117,7 +116,7 @@ const LegajoTable: React.FC = () => {
       userId: permissions.user?.id,
     }
 
-    return shouldHighlightLegajoUtil(allStates, userPerms)
+    return shouldHighlightLegajoUtil(row, userPerms)
   }
 
   const handlePrioridadChange = async (legajoId: number, newValue: string) => {

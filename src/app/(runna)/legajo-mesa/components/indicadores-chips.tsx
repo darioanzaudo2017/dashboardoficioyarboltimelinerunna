@@ -19,6 +19,7 @@ import type {
   MedidaActivaBasica,
   Alerta,
 } from "../types/legajo-api"
+import { buildAlertasVirtuales } from "@/utils/notification-utils"
 import {
   SEMAFORO_COLORS,
   ANDARIVEL_COLORS,
@@ -398,30 +399,11 @@ export const IndicadoresColumn: React.FC<{
   userPermissions?: any
 }> = ({ indicadores, medidas_activas = [], userPermissions }) => {
 
-  // Generar alertas "virtuales" basadas en el rol y estado de las medidas
-  const virtualAlerts: Alerta[] = []
-
-  if (userPermissions) {
-    const allStates = new Set<string>()
-    if (indicadores.medida_andarivel && typeof indicadores.medida_andarivel === 'object') {
-      if (indicadores.medida_andarivel.etapa_estado) allStates.add(indicadores.medida_andarivel.etapa_estado.toUpperCase())
-    }
-
-    medidas_activas.forEach(m => {
-      if (m.estado) allStates.add(m.estado.toUpperCase())
-      if (m.etapa_estado) allStates.add(m.etapa_estado.toUpperCase())
-    })
-
-    const has = (keyword: string) => Array.from(allStates).some(s => s.includes(keyword.toUpperCase()))
-
-    if (userPermissions.isDirector && (has("NOTA_AVAL") || has("PENDIENTE_NOTA_AVAL"))) {
-      virtualAlerts.push({ tipo: 'URGENTE', severidad: 'alta', mensaje: 'Pendiente Nota de Aval' })
-    }
-
-    if (userPermissions.isLegales && (has("JURIDICO") || has("PENDIENTE_INFORME_JURIDICO"))) {
-      virtualAlerts.push({ tipo: 'URGENTE', severidad: 'alta', mensaje: 'Pendiente Informe Jurídico' })
-    }
-  }
+  // Alertas "virtuales" segun rol: se derivan del estado actual de la etapa
+  // actual de las medidas vigentes, con la misma logica que usa la bandeja.
+  const virtualAlerts: Alerta[] = userPermissions
+    ? buildAlertasVirtuales({ medidas_activas, indicadores }, userPermissions)
+    : []
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 1, py: 0.5 }}>

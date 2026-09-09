@@ -1,5 +1,4 @@
 import type { GridPaginationModel, GridSortModel } from "@mui/x-data-grid"
-import { normalizeState } from "@/utils/notification-utils"
 import type { LegajoApiResponse } from "../../types/legajo-api"
 import type { LegajoFiltersState } from "../legajos-filters"
 
@@ -164,53 +163,10 @@ export const mapLegajoToRow = (legajo: LegajoApiResponse) => {
     indicadores: legajo.indicadores,
     alertas: legajo.alertas || legajo.indicadores?.alertas || [],
     oficios: legajo.oficios,
-    allStates: (() => {
-      const states = new Set<string>()
-
-      const ESTADO_FIELDS = [
-        "estado",
-        "etapa",
-        "etapa_estado",
-        "estado_etapa",
-        "etapa_nombre",
-        "etapa_actual__estado",
-        "etapa_actual__nombre",
-        "etapa_actual_nombre",
-        "etapa_actual_estado",
-      ] as const
-
-      const andarivel = legajo.indicadores?.medida_andarivel as any
-      if (andarivel?.etapa_estado) {
-        states.add(normalizeState(andarivel.etapa_estado))
-      }
-
-      if (Array.isArray(legajo.medidas_activas)) {
-        legajo.medidas_activas.forEach((m: any) => {
-          // Campos simples de la medida
-          ESTADO_FIELDS.forEach((field) => {
-            if (m[field]) states.add(normalizeState(m[field]))
-          })
-
-          // etapa_actual (objeto único)
-          if (m.etapa_actual?.estado) states.add(normalizeState(m.etapa_actual.estado))
-          if (m.etapa_actual?.nombre) states.add(normalizeState(m.etapa_actual.nombre))
-
-          // ✅ FIX: iterar TODOS los arrays de etapas posibles
-          const arraysDeEtapas = ["etapas", "etapas_activas", "pasos", "historial_etapas"]
-          arraysDeEtapas.forEach((arrayField) => {
-            if (Array.isArray(m[arrayField])) {
-              m[arrayField].forEach((etapa: any) => {
-                if (etapa.estado) states.add(normalizeState(etapa.estado))
-                if (etapa.etapa_estado) states.add(normalizeState(etapa.etapa_estado))
-                if (etapa.nombre) states.add(normalizeState(etapa.nombre))
-              })
-            }
-          })
-        })
-      }
-
-      return Array.from(states)
-    })()
+    // Nota: se elimino el campo `allStates` (bolsa con estados, nombres de etapa
+    // e historicos). Las alertas virtuales y el resaltado de filas ahora leen el
+    // estado actual de la etapa actual desde `medidas_activas` / `indicadores`
+    // (ver getEstadosEtapaActual en @/utils/notification-utils).
   }
 }
 
