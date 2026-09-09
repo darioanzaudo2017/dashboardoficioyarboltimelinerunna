@@ -25,6 +25,7 @@ import { useMemo, useState } from "react"
 import {
   Alert,
   Box,
+  Button,
   Grid,
   Paper,
   Skeleton,
@@ -33,11 +34,15 @@ import {
   Typography,
 } from "@mui/material"
 import BarChartIcon from "@mui/icons-material/BarChart"
+import { DownloadRounded } from "@mui/icons-material"
+import { institutionalColors, rgba } from "@/theme/colors"
 import { useIndicadoresData } from "./hooks/useIndicadoresData"
 import { contarPor, contarUnicos, porNnyaUnico } from "./lib/agrupar"
 import { grupoDuracion, ORDEN_GRUPOS_DURACION, ORDEN_GRUPOS_ETARIOS } from "./lib/edad"
-import { ORDEN_GENERO, ORDEN_TIPO_MEDIDA } from "./lib/constantes"
+import { etiquetaDisponibilidadDni, ORDEN_GENERO, ORDEN_TIPO_MEDIDA } from "./lib/constantes"
 import { calcularSerieVigentes } from "./lib/serie-vigentes"
+import { derivarPoblaciones } from "./lib/poblaciones"
+import { exportarIndicadoresToXlsx } from "./lib/exportar-indicadores"
 import { IndicadorCard, IndicadorNoDisponible } from "./components/IndicadorCard"
 import { IndicadorParCard } from "./components/IndicadorParCard"
 import { DesgloseBarras } from "./components/DesgloseBarras"
@@ -56,16 +61,22 @@ export default function IndicadoresPage() {
 
   const serieVigentes = useMemo(() => calcularSerieVigentes(todas), [todas])
 
-  const mpi = useMemo(() => medidas.filter((m) => m.tipoMedida === "MPI"), [medidas])
-  const mpe = useMemo(() => medidas.filter((m) => m.tipoMedida === "MPE"), [medidas])
-  const mpj = useMemo(() => medidas.filter((m) => m.tipoMedida === "MPJ"), [medidas])
+  // Los mismos subconjuntos que usa la exportación a Excel, para que el
+  // reporte y la pantalla no puedan mostrar números distintos.
+  const { mpi, mpe, mpj, mpeCesadas, mpeAbiertas, mpjAbiertas, mpjCerradas, nnyaTotales } = useMemo(
+    () => derivarPoblaciones(medidas),
+    [medidas]
+  )
 
-  const mpeCesadas = useMemo(() => mpe.filter((m) => m.estaCerrada), [mpe])
-  const mpeAbiertas = useMemo(() => mpe.filter((m) => m.estadoVigencia === "VIGENTE"), [mpe])
-  const mpjAbiertas = useMemo(() => mpj.filter((m) => m.estadoVigencia === "VIGENTE"), [mpj])
-  const mpjCerradas = useMemo(() => mpj.filter((m) => m.estaCerrada), [mpj])
+  const puedeExportar = !isLoading && !error && !periodoInvalido && medidas.length > 0
 
-  const nnyaTotales = useMemo(() => porNnyaUnico(medidas), [medidas])
+  const handleExportarXlsx = () =>
+    exportarIndicadoresToXlsx({
+      medidas,
+      serieVigentes,
+      desde: desde || undefined,
+      hasta: hasta || undefined,
+    })
 
   // Cantidad de NNyA únicos por cada valor de una dimensión, para mostrar
   // como dato secundario junto al conteo de medidas.
@@ -118,6 +129,35 @@ export default function IndicadoresPage() {
               ? "Cargando medidas…"
               : `${medidas.length} de ${totalSinFiltro} medidas en el período seleccionado`}
           </Typography>
+
+          <Box sx={{ flexGrow: 1 }} />
+
+          {/* Mismo botón de exportar que Mesa de Entradas (ver DemandaActionsBar). */}
+          <Button
+            size="small"
+            startIcon={<DownloadRounded />}
+            onClick={handleExportarXlsx}
+            disabled={!puedeExportar}
+            aria-label="Exportar los indicadores del período a Excel"
+            sx={{
+              px: 2,
+              py: 0.75,
+              borderRadius: 1.5,
+              color: institutionalColors.azulPrincipal,
+              border: `1px solid ${rgba.primary(0.15)}`,
+              textTransform: "none",
+              fontWeight: 500,
+              "&:hover": {
+                backgroundColor: rgba.primaryLight(0.04),
+                borderColor: institutionalColors.azulClaro,
+              },
+              // El `color` del sx pisa el estado deshabilitado de MUI, así que
+              // se declara explícito para que se vea que no se puede exportar.
+              "&.Mui-disabled": { color: "text.disabled", borderColor: "divider" },
+            }}
+          >
+            Exportar Excel
+          </Button>
         </Stack>
       </Paper>
 
@@ -182,9 +222,7 @@ export default function IndicadoresPage() {
               <Grid item xs={12} sm={6}>
                 <DesglosePie
                   titulo="Disponibilidad de DNI"
-                  data={contarPor(nnyaTotales, (m) =>
-                    m.tieneDni === null ? "Sin dato" : m.tieneDni ? "Con DNI" : "Sin DNI"
-                  )}
+                  data={contarPor(nnyaTotales, (m) => etiquetaDisponibilidadDni(m.tieneDni))}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>

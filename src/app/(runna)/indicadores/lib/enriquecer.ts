@@ -3,6 +3,10 @@ import { calcularEdadEn, grupoEtario } from "./edad"
 
 export interface MedidaEnriquecida {
   id: number
+  /** Identificadores legibles: no se usan en los gráficos, sí en la hoja "Datos" del Excel. */
+  numeroMedida: string
+  numeroLegajo: string | null
+  zona: string | null
   tipoMedida: TipoMedidaCodigo
   estadoVigencia: MedidaAllItem["estado_vigencia"]
   fechaApertura: string
@@ -41,6 +45,9 @@ export function enriquecerMedidas(medidas: MedidaAllItem[]): MedidaEnriquecida[]
 
     return {
       id: m.id,
+      numeroMedida: m.numero_medida,
+      numeroLegajo: m.legajo?.numero ?? null,
+      zona: m.legajo?.zona_actual?.nombre ?? null,
       tipoMedida: m.tipo_medida,
       estadoVigencia: m.estado_vigencia,
       fechaApertura: m.fecha_apertura,
