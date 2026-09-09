@@ -2,7 +2,7 @@
 
 import { Box, Button, Chip, IconButton, Tooltip, Typography } from "@mui/material"
 import type { GridColDef } from "@mui/x-data-grid"
-import { TouchApp, Edit, Warning, Visibility } from "@mui/icons-material"
+import { TouchApp, Edit, Warning, Visibility, Assignment, Link as LinkIcon } from "@mui/icons-material"
 import { AdjuntosCell } from "./AdjuntosCell"
 import { StatusChip } from "./StatusChip"
 import { DNI_VER_LEGAJO, formatCalificacionValue, formatUnderscoreText } from "./utils"
@@ -77,34 +77,11 @@ export const buildDemandaColumns = ({
               {params.value}
             </Typography>
           </Tooltip>
-          {params.row.hasLegajo && (
-            <Tooltip title={`Legajo: ${params.row.legajoNumero}`}>
-              <Chip
-                label="📋"
-                size="small"
-                color="success"
-                sx={{ height: "20px", fontSize: "12px", "& .MuiChip-label": { px: 0.5 } }}
-              />
-            </Tooltip>
-          )}
+          {/* Legajo y vinculacion se muestran en la columna "Detalles". Aca queda solo
+              la urgencia, que es una alerta y no un dato del legajo. */}
           {params.row.calificacion === "URGENTE" && (
             <Tooltip title="Urgente">
               <Warning color="error" fontSize="small" />
-            </Tooltip>
-          )}
-          {params.row.isFromLinkedLegajo && (
-            <Tooltip title={`Datos desde legajo #${params.row.linkedLegajoNumero}`}>
-              <Chip
-                label="Vinculado"
-                size="small"
-                color="info"
-                variant="outlined"
-                sx={{
-                  height: '20px',
-                  fontSize: '0.65rem',
-                  '& .MuiChip-label': { px: 0.75 }
-                }}
-              />
             </Tooltip>
           )}
         </div>
@@ -241,10 +218,34 @@ export const buildDemandaColumns = ({
       ),
     },
     {
-      field: "adjuntos",
-      headerName: "Adjuntos",
-      width: 100,
-      renderCell: (params) => <AdjuntosCell adjuntos={params.value} />,
+      field: "detalles",
+      headerName: "Detalles",
+      width: 140,
+      // No mapea a un campo de la fila: agrupa hasLegajo, isFromLinkedLegajo y adjuntos.
+      sortable: false,
+      filterable: false,
+      renderCell: (params) => (
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0.5, width: "100%" }}>
+          <Tooltip title={params.row.hasLegajo ? `Legajo: ${params.row.legajoNumero}` : "Sin legajo"}>
+            <Assignment
+              fontSize="small"
+              sx={{ color: params.row.hasLegajo ? "success.main" : "action.disabled" }}
+            />
+          </Tooltip>
+          <Tooltip
+            title={params.row.isFromLinkedLegajo
+              ? `Datos desde legajo #${params.row.linkedLegajoNumero}`
+              : "Sin legajo vinculado"
+            }
+          >
+            <LinkIcon
+              fontSize="small"
+              sx={{ color: params.row.isFromLinkedLegajo ? "info.main" : "action.disabled" }}
+            />
+          </Tooltip>
+          <AdjuntosCell adjuntos={params.row.adjuntos} />
+        </Box>
+      ),
     },
   ]
 
@@ -436,7 +437,7 @@ export const buildDemandaColumns = ({
     "envioRespuesta",
     "calificacion",
     "ultimaActualizacion",
-    "adjuntos",
+    "detalles",
     "origen",
     "localidad",
     "zonaEquipo",

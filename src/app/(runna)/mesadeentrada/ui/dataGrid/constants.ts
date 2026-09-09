@@ -4,7 +4,9 @@ import type { PresetKey } from "./types"
 // Visibility presets for the demandas grid. Keys must match column `field` names.
 // `undefined`/missing keys default to visible; explicit `false` hides the column.
 // Las columnas de identificacion (apellido, nombre, dni) no se listan a proposito:
-// tienen que quedar visibles en todos los presets.
+// tienen que quedar visibles en todos los presets. Lo mismo vale para "detalles":
+// absorbio los indicadores de legajo y vinculacion que antes vivian siempre visibles
+// en la columna de apellido, asi que ya no se puede ocultar como se ocultaba "adjuntos".
 export const VISIBILITY_STORAGE_KEY = "mesadeentrada:columnVisibility:v1"
 export const PRESET_STORAGE_KEY = "mesadeentrada:activePreset:v1"
 
@@ -18,7 +20,6 @@ export const PRESETS: Record<PresetKey, { label: string; visibility: GridColumnV
       localidad: false,
       zonaEquipo: false,
       objetivoDemanda: false,
-      adjuntos: false,
     },
   },
   sin_asignar: {
@@ -28,7 +29,6 @@ export const PRESETS: Record<PresetKey, { label: string; visibility: GridColumnV
       origen: false,
       envioRespuesta: false,
       objetivoDemanda: false,
-      adjuntos: false,
     },
   },
   con_alertas: {

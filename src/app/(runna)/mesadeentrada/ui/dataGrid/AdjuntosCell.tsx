@@ -12,11 +12,13 @@ export const AdjuntosCell = (props: { adjuntos: Adjunto[] }) => {
   const { adjuntos } = props
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
 
+  // Vive dentro de la columna "Detalles", al lado de los indicadores de legajo y
+  // vinculacion: sin adjuntos se muestra el mismo icono apagado, no un texto.
   if (!adjuntos || !Array.isArray(adjuntos) || adjuntos.length === 0) {
     return (
-      <Typography variant="body2" color="text.secondary">
-        Sin adjuntos
-      </Typography>
+      <Tooltip title="Sin adjuntos">
+        <AttachFile fontSize="small" sx={{ color: "action.disabled" }} />
+      </Tooltip>
     )
   }
 
@@ -36,7 +38,7 @@ export const AdjuntosCell = (props: { adjuntos: Adjunto[] }) => {
 
   // Show a summary in the cell
   return (
-    <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
       <Tooltip title={`Ver ${adjuntos.length} ${adjuntos.length === 1 ? "adjunto" : "adjuntos"}`}>
         <Badge badgeContent={adjuntos.length} color="primary" sx={{ "& .MuiBadge-badge": { fontSize: "0.65rem" } }}>
           <IconButton
