@@ -7,6 +7,13 @@ export const getFileNameFromUrl = (url: string): string => {
   return parts[parts.length - 1]
 }
 
+/**
+ * Placeholder del campo `dni` cuando el NNyA no tiene DNI propio y los datos
+ * salen de un legajo vinculado. Se exporta para que la grilla pueda distinguir
+ * ese caso del de un DNI real sin repetir el literal.
+ */
+export const DNI_VER_LEGAJO = "Ver legajo"
+
 export const formatCalificacionValue = (value: string | undefined | null) => {
   return value || "Seleccionar"
 }
@@ -98,7 +105,7 @@ export const mapDemandaToRow = (demanda: TDemanda) => {
     dni:
       demanda.nnya_principal?.dni ||
       (demanda as any).dni_oficio ||
-      (demanda.nnya_nombre_legajo ? "Ver legajo" : "N/A"),
+      (demanda.nnya_nombre_legajo ? DNI_VER_LEGAJO : "N/A"),
     hasLegajo: !!(demanda.nnya_principal?.legajo) || !!(demanda.nnya_nombre_legajo),
     legajoNumero: demanda.nnya_principal?.legajo?.numero || demanda.nnya_nombre_legajo?.legajo_numero || "N/A",
     calificacion: demanda.calificacion?.estado_calificacion || null,

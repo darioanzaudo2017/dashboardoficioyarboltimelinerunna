@@ -5,7 +5,7 @@ import type { GridColDef } from "@mui/x-data-grid"
 import { TouchApp, Edit, Warning, Visibility } from "@mui/icons-material"
 import { AdjuntosCell } from "./AdjuntosCell"
 import { StatusChip } from "./StatusChip"
-import { formatCalificacionValue, formatUnderscoreText } from "./utils"
+import { DNI_VER_LEGAJO, formatCalificacionValue, formatUnderscoreText } from "./utils"
 
 export interface BuildDemandaColumnsOptions {
   isMobile: boolean
@@ -128,6 +128,29 @@ export const buildDemandaColumns = ({
           </Tooltip>
         </div>
       ),
+    },
+    {
+      field: "dni",
+      headerName: "DNI",
+      width: 110,
+      renderCell: (params) => {
+        // Sin DNI propio: el valor es el placeholder y el dato util es el nro de legajo.
+        const sinDniPropio = params.value === DNI_VER_LEGAJO
+        return (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%" }}>
+            <Tooltip
+              title={sinDniPropio
+                ? `Sin DNI propio · Legajo #${params.row.linkedLegajoNumero ?? params.row.legajoNumero}`
+                : `DNI: ${params.value}`
+              }
+            >
+              <Typography variant="body2" color="text.secondary" noWrap>
+                {params.value}
+              </Typography>
+            </Tooltip>
+          </div>
+        )
+      },
     },
     {
       field: "calificacion",
@@ -407,6 +430,7 @@ export const buildDemandaColumns = ({
     "id",
     "apellido",
     "nombre",
+    "dni",
     "estado_demanda",
     "actions",
     "envioRespuesta",
