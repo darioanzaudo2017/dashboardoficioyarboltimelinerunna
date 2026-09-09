@@ -120,6 +120,18 @@ export const buildLegajoColumns = ({
       ),
     },
     {
+      field: "dni",
+      headerName: "DNI",
+      width: 110,
+      align: "left",
+      headerAlign: "left",
+      renderCell: (params) => (
+        <Typography variant="body2" sx={{ fontWeight: 500, color: "#1e293b", fontSize: "0.8125rem" }}>
+          {params.value}
+        </Typography>
+      ),
+    },
+    {
       field: "prioridad",
       headerName: "Prioridad",
       width: 130,
