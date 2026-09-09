@@ -5,20 +5,32 @@ import { Refresh, DownloadRounded } from "@mui/icons-material"
 import Buttons from "@/components/Buttons"
 import { institutionalColors, rgba } from "@/theme/colors"
 import type { DemandaFilterState } from "../types"
+import { DemandaResponsableFilter } from "./DemandaResponsableFilter"
 
 interface DemandaActionsBarProps {
   isLoading: boolean
   onNuevoRegistro: () => void
   onFilterChange: (filters: DemandaFilterState) => void
+  /** `mis_demandas=true` activo. */
+  misDemandas: boolean
+  /** `responsable=<user_id>` activo, o null. */
+  responsable: number | null
+  /** Solo jefes zonales, directores y admins eligen a otra persona. */
+  canFilterByResponsable: boolean
+  onResponsableFilterChange: (next: { mis_demandas: boolean; responsable: number | null }) => void
   onExportXlsx: () => void
   onRefetch: () => void
 }
 
-/** Barra 2: nuevo registro + filtros + exportar a Excel + refrescar. */
+/** Barra 2: nuevo registro + filtros + responsable + exportar a Excel + refrescar. */
 export const DemandaActionsBar = ({
   isLoading,
   onNuevoRegistro,
   onFilterChange,
+  misDemandas,
+  responsable,
+  canFilterByResponsable,
+  onResponsableFilterChange,
   onExportXlsx,
   onRefetch,
 }: DemandaActionsBarProps) => (
@@ -38,6 +50,16 @@ export const DemandaActionsBar = ({
       isLoading={isLoading}
       handleNuevoRegistro={onNuevoRegistro}
       onFilterChange={onFilterChange}
+    />
+
+    {/* Queda fuera de `Buttons` a propósito: ese componente se reemplaza por
+        skeletons en cada refetch, y el filtro tiene que seguir visible -y
+        apagable- mientras la bandeja recarga. */}
+    <DemandaResponsableFilter
+      misDemandas={misDemandas}
+      responsable={responsable}
+      canFilterByResponsable={canFilterByResponsable}
+      onChange={onResponsableFilterChange}
     />
 
     <Button

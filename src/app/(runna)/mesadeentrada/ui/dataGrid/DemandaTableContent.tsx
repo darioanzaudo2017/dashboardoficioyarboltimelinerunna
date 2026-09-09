@@ -18,10 +18,11 @@ import { buildDemandaColumns } from "./columns"
 import { demandaGridLocaleText, demandaGridSx } from "./gridConfig"
 import { exportDemandasToXlsx } from "./exportDemandas"
 import { mapDemandaToRow } from "./utils"
-import type { TDemandaPaginated } from "./types"
+import type { DemandaApiFilters, TDemandaPaginated } from "./types"
 import { useColumnVisibility } from "./hooks/useColumnVisibility"
 import { useViewMode } from "./hooks/useViewMode"
 import { useCanCustomizeView } from "./hooks/useCanCustomizeView"
+import { useCanFilterByResponsable } from "./hooks/useCanFilterByResponsable"
 import { useGridScrollAffordance } from "./hooks/useGridScrollAffordance"
 import { useDemandaMutations } from "./hooks/useDemandaMutations"
 import { DemandaHeaderBar } from "./components/DemandaHeaderBar"
@@ -62,21 +63,22 @@ const DemandaTableContent: React.FC = () => {
   const [selectedDemandaIdForAssignment, setSelectedDemandaIdForAssignment] = useState<number | null>(null)
   const [demandasData, setDemandasData] = useState<TDemandaPaginated | null>(null)
 
-  const [apiFilters, setApiFilters] = useState<{
-    envio_de_respuesta: "NO_NECESARIO" | "PENDIENTE" | "ENVIADO" | null;
-    estado_demanda: "SIN_ASIGNAR" | "CONSTATACION" | "EVALUACION" | "PENDIENTE_AUTORIZACION" | "ARCHIVADA" | "ADMITIDA" | null;
-    objetivo_de_demanda: "CONSTATACION" | "PETICION_DE_INFORME" | null;
-    search: string | null;
-  }>({
+  const [apiFilters, setApiFilters] = useState<DemandaApiFilters>({
     envio_de_respuesta: null,
     estado_demanda: null,
     objetivo_de_demanda: null,
     search: null,
+    mis_demandas: false,
+    responsable: null,
   })
 
   // Vista estandar para todos; solo jefes zonales, directores y admins conservan
   // la personalizacion (columnas + modo de vista). Ver useCanCustomizeView.
   const canCustomizeView = useCanCustomizeView()
+
+  // Elegir a otra persona como responsable es cosa de quien conduce un equipo;
+  // "Mis demandas" en cambio lo ve todo el mundo. Ver useCanFilterByResponsable.
+  const canFilterByResponsable = useCanFilterByResponsable()
 
   const { columnVisibilityModel, activePreset, handleVisibilityChange, handlePresetClick } =
     useColumnVisibility(canCustomizeView)
@@ -146,6 +148,16 @@ const DemandaTableContent: React.FC = () => {
       if (apiFilters.search) {
         params.append("search", apiFilters.search)
       }
+      // Filtro por responsable. Estos dos params no figuran en el schema OpenAPI
+      // -drf-spectacular no introspecta el filterset de mesa-de-entrada-, asi que
+      // se cablean a mano igual que el resto de los filtros de esta pantalla.
+      // Se mandan solo cuando estan activos: el backend ignora el param ausente.
+      if (apiFilters.mis_demandas) {
+        params.append("mis_demandas", "true")
+      }
+      if (apiFilters.responsable != null) {
+        params.append("responsable", String(apiFilters.responsable))
+      }
 
       const response = await get<TDemandaPaginated>(`mesa-de-entrada/?${params.toString()}`)
       setTotalCount(response.count)
@@ -184,6 +196,25 @@ const DemandaTableContent: React.FC = () => {
     setApiFilters((prev) => {
       if (prev.search === normalized) return prev
       return { ...prev, search: normalized }
+    })
+    setPaginationModel((prev) => (prev.page === 0 ? prev : { ...prev, page: 0 }))
+  }
+
+  /**
+   * Filtro por responsable ("Mis demandas" y, si esta disponible, un usuario
+   * puntual). `mis_demandas` y `responsable` se tratan como excluyentes: el
+   * backend los aceptaria juntos, pero la combinacion no tiene lectura clara
+   * para el usuario, asi que activar uno limpia el otro.
+   *
+   * Vuelve a la primera pagina igual que `handleFilterChange` y
+   * `handleSearchChange`: la paginacion es server-side, y la pagina 3 del
+   * listado sin filtrar normalmente no existe en el listado filtrado, con lo
+   * que el grid quedaria vacio.
+   */
+  const handleResponsableFilterChange = (next: { mis_demandas: boolean; responsable: number | null }) => {
+    setApiFilters((prev) => {
+      if (prev.mis_demandas === next.mis_demandas && prev.responsable === next.responsable) return prev
+      return { ...prev, mis_demandas: next.mis_demandas, responsable: next.responsable }
     })
     setPaginationModel((prev) => (prev.page === 0 ? prev : { ...prev, page: 0 }))
   }
@@ -319,6 +350,10 @@ const DemandaTableContent: React.FC = () => {
           isLoading={isLoading}
           onNuevoRegistro={handleNuevoRegistro}
           onFilterChange={handleFilterChange}
+          misDemandas={apiFilters.mis_demandas}
+          responsable={apiFilters.responsable}
+          canFilterByResponsable={canFilterByResponsable}
+          onResponsableFilterChange={handleResponsableFilterChange}
           onExportXlsx={handleExportXlsx}
           onRefetch={refetch}
         />
