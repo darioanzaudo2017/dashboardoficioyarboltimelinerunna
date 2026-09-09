@@ -41,6 +41,63 @@ interface NotificationSummary {
   has_more: boolean
 }
 
+interface SectionColors {
+  /** Fondo de la barra. */
+  base: string
+  /** Tono oscuro, para el panel desplegable de mobile. */
+  dark: string
+  /** Fondo del item activo. */
+  accent: string
+  /** Fondo del hover. */
+  accentSoft: string
+}
+
+// El acento cyan se comparte entre secciones: sobre el azul queda en 6.1:1 y
+// sobre el verde en 4.7:1 contra el texto blanco, asi que en ambas cumple AA.
+const ACCENT = 'rgba(0, 188, 212, 0.3)'
+const ACCENT_SOFT = 'rgba(0, 188, 212, 0.25)'
+
+// Azul institucional. Contraste con texto blanco: 9.7:1.
+const COLORES_MESA: SectionColors = {
+  base: '#00457F',
+  dark: '#003866',
+  accent: ACCENT,
+  accentSoft: ACCENT_SOFT,
+}
+
+// Verde petroleo para la bandeja de legajos. Contraste con texto blanco: 6.6:1.
+const COLORES_LEGAJOS: SectionColors = {
+  base: '#00695C',
+  dark: '#004D40',
+  accent: ACCENT,
+  accentSoft: ACCENT_SOFT,
+}
+
+// Mapeo por PREFIJO de ruta, no por coincidencia exacta: el color tiene que
+// acompaniar al usuario en todas las pantallas del contexto donde trabaja.
+// Por ejemplo /legajo/123/medida/456 sigue mostrando el verde de legajos.
+// Se compara por segmento para que /legajo-mesa no matchee contra /legajo.
+const SECCIONES: ReadonlyArray<{ prefijo: string; colores: SectionColors }> = [
+  { prefijo: '/legajo-mesa', colores: COLORES_LEGAJOS },
+  { prefijo: '/legajo', colores: COLORES_LEGAJOS },
+  { prefijo: '/mesadeentrada', colores: COLORES_MESA },
+  { prefijo: '/demanda', colores: COLORES_MESA },
+  { prefijo: '/nuevoingreso', colores: COLORES_MESA },
+  { prefijo: '/evaluacion', colores: COLORES_MESA },
+]
+
+/**
+ * Devuelve los colores de la barra segun la seccion en la que esta el usuario.
+ * El resto de las pantallas (indicadores, oficios, home) usa el azul como neutro.
+ */
+const getSectionColors = (pathname: string | null | undefined): SectionColors => {
+  const ruta = pathname ?? ''
+  const seccion = SECCIONES.find(
+    ({ prefijo }) => ruta === prefijo || ruta.startsWith(`${prefijo}/`),
+  )
+  return seccion?.colores ?? COLORES_MESA
+}
+
 // Rojo del boton de cerrar sesion. Es un color propio (no el de la barra) para que
 // el boton se lea como una accion aparte del bloque de usuario y del de anuncios.
 // Contraste con texto blanco: 5.6:1 (normal) y 7.4:1 (hover) -> cumple WCAG AA.
@@ -55,6 +112,7 @@ export default function Header() {
 
   const user = useUser((state) => state.user) as UserPermissions | null
   const pathname = usePathname()
+  const sectionColors = getSectionColors(pathname)
 
   useEffect(() => {
     setIsClient(true)
@@ -122,7 +180,7 @@ export default function Header() {
     return (
       <header
         className="sticky top-0 z-[1200] text-white px-3 sm:px-6 py-3 flex justify-between items-center h-[72px] shadow-md gap-2 overflow-hidden"
-        style={{ backgroundColor: '#00457F' }}
+        style={{ backgroundColor: sectionColors.base }}
       >
         <div className="flex items-center min-w-0">
           <div className="w-32 sm:w-48 md:w-64 h-10 bg-white/20 rounded animate-pulse"></div>
@@ -160,7 +218,7 @@ export default function Header() {
   return (
     <header
       className="sticky top-0 z-[1200] text-white px-3 sm:px-6 py-3 flex justify-between items-center shadow-md gap-2 relative"
-      style={{ backgroundColor: '#00457F' }}
+      style={{ backgroundColor: sectionColors.base }}
     >
       {/* Logo Gobierno de Córdoba - Lado Izquierdo (Branding) */}
       <Link
@@ -183,6 +241,9 @@ export default function Header() {
       <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
         {/* Navegación completa en escritorio. En tablet/móvil se reemplaza por un menú. */}
         <nav className="hidden xl:flex gap-2" aria-label="Navegación principal">
+          {/* El hover va como clase de Tailwind con valor fijo: las clases arbitrarias
+              se resuelven en build y no pueden leer sectionColors. Coincide con
+              ACCENT_SOFT y se ve bien sobre las dos bases (azul y verde). */}
           {navItems.filter((item) => item.href !== "/legajo/actividades").map((item) => (
             <Link
               key={item.href}
@@ -191,7 +252,7 @@ export default function Header() {
               className="px-3 xl:px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 hover:bg-[rgba(0,188,212,0.25)] cursor-pointer no-underline text-white whitespace-nowrap focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               style={{
                 backgroundColor: isCurrentPath(item.href)
-                  ? 'rgba(0, 188, 212, 0.3)'
+                  ? sectionColors.accent
                   : 'rgba(255, 255, 255, 0.15)',
                 backdropFilter: 'blur(8px)',
               }}
@@ -211,7 +272,7 @@ export default function Header() {
             setShowNotifications(false)
           }}
           className="xl:hidden flex p-2 rounded-md transition-colors items-center justify-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-          style={{ backgroundColor: showMobileNav ? 'rgba(0, 188, 212, 0.3)' : 'rgba(255, 255, 255, 0.15)' }}
+          style={{ backgroundColor: showMobileNav ? sectionColors.accent : 'rgba(255, 255, 255, 0.15)' }}
         >
           {showMobileNav ? <X size={21} /> : <Menu size={21} />}
         </button>
@@ -220,7 +281,8 @@ export default function Header() {
           <nav
             id="mobile-main-navigation"
             aria-label="Navegación principal"
-            className="xl:hidden absolute left-0 right-0 top-full bg-[#003866] border-t border-white/15 shadow-xl p-3"
+            className="xl:hidden absolute left-0 right-0 top-full border-t border-white/15 shadow-xl p-3"
+            style={{ backgroundColor: sectionColors.dark }}
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-3xl ml-auto">
               {navItems.map((item) => (
@@ -230,7 +292,7 @@ export default function Header() {
                   aria-current={isCurrentPath(item.href) ? "page" : undefined}
                   onClick={() => setShowMobileNav(false)}
                   className="rounded-lg px-4 py-3 text-sm font-semibold text-white no-underline transition-colors hover:bg-white/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-                  style={{ backgroundColor: isCurrentPath(item.href) ? 'rgba(0, 188, 212, 0.3)' : 'rgba(255,255,255,0.08)' }}
+                  style={{ backgroundColor: isCurrentPath(item.href) ? sectionColors.accent : 'rgba(255,255,255,0.08)' }}
                 >
                   {item.label}
                 </Link>
@@ -261,7 +323,7 @@ export default function Header() {
             backgroundColor: 'rgba(255, 255, 255, 0.15)',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(0, 188, 212, 0.25)'
+            e.currentTarget.style.backgroundColor = sectionColors.accentSoft
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)'
@@ -286,7 +348,7 @@ export default function Header() {
               backgroundColor: 'rgba(255, 255, 255, 0.15)',
             }}
             onMouseEnter={(e) => {
-              if (!showNotifications) e.currentTarget.style.backgroundColor = 'rgba(0, 188, 212, 0.25)'
+              if (!showNotifications) e.currentTarget.style.backgroundColor = sectionColors.accentSoft
             }}
             onMouseLeave={(e) => {
               if (!showNotifications) e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)'
@@ -295,7 +357,8 @@ export default function Header() {
             <Bell size={20} />
             {pendingCount > 0 && (
               <span
-                className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white shadow-md border-2 border-[#00457F]"
+                className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white shadow-md border-2"
+                style={{ borderColor: sectionColors.base }}
                 title={`${pendingCount} tareas pendientes que requieren tu acción`}
               >
                 {pendingCount > 99 ? '99+' : pendingCount}
