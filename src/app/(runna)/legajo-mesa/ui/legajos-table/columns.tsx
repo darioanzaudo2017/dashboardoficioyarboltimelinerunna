@@ -1,8 +1,7 @@
 "use client"
 
-import { Box, Chip, Tooltip, Typography, alpha } from "@mui/material"
+import { Chip, Tooltip, Typography, alpha } from "@mui/material"
 import type { GridColDef } from "@mui/x-data-grid"
-import { PriorityHigh } from "@mui/icons-material"
 import {
   ChipDemandaPI,
   ChipsOficios,
@@ -30,26 +29,10 @@ export const buildLegajoColumns = ({
   handleOpenModal,
   handleOpenAsignarModal,
 }: BuildLegajoColumnsOptions): GridColDef[] => {
+  // La columna "ID" se saco de la bandeja a pedido de la usuaria: el id se
+  // encuentra dentro de cada legajo. El campo `id` de la fila sigue existiendo
+  // porque es el que usan getRowId, el click de fila y las celdas de acciones.
   const baseColumns: GridColDef[] = [
-    {
-      field: "id",
-      headerName: "ID",
-      width: 80,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => (
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0.5 }}>
-          <Typography variant="body2" sx={{ fontWeight: 600, color: "#334155", fontSize: "0.8125rem" }}>
-            {params.value}
-          </Typography>
-          {params.row.prioridad === "ALTA" && (
-            <Tooltip title="Alta Prioridad" arrow>
-              <PriorityHigh sx={{ fontSize: 16, color: "#dc2626" }} />
-            </Tooltip>
-          )}
-        </Box>
-      )
-    },
     {
       field: "indicadores_alertas",
       headerName: "Alertas",
@@ -229,31 +212,10 @@ export const buildLegajoColumns = ({
         )
       },
     },
-    {
-      field: "oficios_count",
-      headerName: "Oficios",
-      width: 80,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => {
-        const count = params.value || 0
-        return (
-          <Chip
-            label={count}
-            size="small"
-            sx={{
-              minWidth: 32,
-              height: 24,
-              fontSize: "0.75rem",
-              fontWeight: 600,
-              bgcolor: count > 0 ? alpha("#0ea5e9", 0.1) : "#f1f5f9",
-              color: count > 0 ? "#0284c7" : "#94a3b8",
-              border: count > 0 ? "1px solid #7dd3fc" : "1px solid #e2e8f0",
-            }}
-          />
-        )
-      },
-    },
+    // La columna "Oficios" (contador) se saco de la bandeja a pedido de la
+    // usuaria: los oficios se ven dentro de cada legajo. El campo
+    // `oficios_count` de la fila se conserva porque lo usan las tarjetas y las
+    // acciones de fila.
     {
       field: "indicadores_pi",
       headerName: "PI",
