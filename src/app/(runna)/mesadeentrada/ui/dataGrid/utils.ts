@@ -92,7 +92,13 @@ export const mapDemandaToRow = (demanda: TDemanda) => {
     apellido: nnyaInfo.apellido,
     isFromLinkedLegajo: nnyaInfo.isFromLinkedLegajo,
     linkedLegajoNumero: nnyaInfo.legajoNumero,
-    dni: demanda.nnya_principal?.dni || demanda.nnya_nombre_legajo ? "Ver legajo" : ((demanda as any).dni_oficio || "N/A"),
+    // `||` liga mas fuerte que `?:`, asi que la version anterior se evaluaba como
+    // `(dni || nnya_nombre_legajo) ? "Ver legajo" : ...` y pisaba el DNI real con el
+    // literal "Ver legajo" justo cuando el NNyA SI lo tenia. Los parentesis son obligatorios.
+    dni:
+      demanda.nnya_principal?.dni ||
+      (demanda as any).dni_oficio ||
+      (demanda.nnya_nombre_legajo ? "Ver legajo" : "N/A"),
     hasLegajo: !!(demanda.nnya_principal?.legajo) || !!(demanda.nnya_nombre_legajo),
     legajoNumero: demanda.nnya_principal?.legajo?.numero || demanda.nnya_nombre_legajo?.legajo_numero || "N/A",
     calificacion: demanda.calificacion?.estado_calificacion || null,
