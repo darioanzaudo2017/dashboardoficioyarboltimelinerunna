@@ -3,7 +3,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { useEffect, useState, useMemo } from "react"
-import { Bell, LogOut, ChevronDown, BookOpen, Menu, X } from "lucide-react"
+import { Bell, LogOut, BookOpen, Menu, X } from "lucide-react"
 import { toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import { getSession, logout } from "@/utils/auth"
@@ -41,8 +41,13 @@ interface NotificationSummary {
   has_more: boolean
 }
 
+// Rojo del boton de cerrar sesion. Es un color propio (no el de la barra) para que
+// el boton se lea como una accion aparte del bloque de usuario y del de anuncios.
+// Contraste con texto blanco: 5.6:1 (normal) y 7.4:1 (hover) -> cumple WCAG AA.
+const LOGOUT_BG = '#C62828'
+const LOGOUT_BG_HOVER = '#B71C1C'
+
 export default function Header() {
-  const [showMenu, setShowMenu] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
   const [showMobileNav, setShowMobileNav] = useState(false)
   const [loadingUser, setLoadingUser] = useState(true)
@@ -204,7 +209,6 @@ export default function Header() {
           onClick={() => {
             setShowMobileNav((open) => !open)
             setShowNotifications(false)
-            setShowMenu(false)
           }}
           className="xl:hidden flex p-2 rounded-md transition-colors items-center justify-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           style={{ backgroundColor: showMobileNav ? 'rgba(0, 188, 212, 0.3)' : 'rgba(255, 255, 255, 0.15)' }}
@@ -275,7 +279,6 @@ export default function Header() {
             aria-haspopup="true"
             onClick={() => {
               setShowNotifications(!showNotifications)
-              setShowMenu(false)
               setShowMobileNav(false)
             }}
             className="p-2 rounded-full transition-all duration-200 hover:scale-110 relative"
@@ -384,68 +387,59 @@ export default function Header() {
           )}
         </div>
 
-        {/* Avatar y Menú de Usuario */}
-        <div className="relative">
-          <button
-            type="button"
-            aria-label={`Menú de usuario de ${displayName}`}
-            aria-expanded={showMenu}
-            aria-haspopup="true"
-            onClick={() => {
-              setShowMenu(!showMenu)
-              setShowNotifications(false)
-              setShowMobileNav(false)
-            }}
-            className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-md transition-all duration-200 hover:scale-105"
-            style={{
-              backgroundColor: 'rgba(255, 255, 255, 0.15)',
-              backdropFilter: 'blur(8px)',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(0, 188, 212, 0.25)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)'
-            }}
-          >
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold">
-                {avatarText}
-              </div>
-              <div className="text-left hidden md:block">
-                <div className="text-sm font-medium">
-                  {displayName}
-                </div>
-                <div className="text-xs opacity-80">
-                  {displayRole}
-                </div>
-              </div>
-              <ChevronDown
-                size={16}
-                className={`hidden sm:block transition-transform duration-200 ${showMenu ? 'rotate-180' : ''}`}
-              />
-            </div>
-          </button>
+        {/* Separador: el cierre de sesion no forma parte del bloque de anuncios ni del de usuario */}
+        <span className="h-8 w-px bg-white/30 mx-0.5 sm:mx-1" aria-hidden="true" />
 
-          {/* Dropdown Menu */}
-          {showMenu && (
-            <div
-              className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl z-[1300] overflow-hidden"
-              style={{
-                border: '1px solid rgba(0, 188, 212, 0.2)',
-              }}
-            >
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="flex items-center gap-3 w-full px-4 py-3 text-left text-gray-700 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 transition-all duration-200"
-              >
-                <LogOut size={18} className="text-red-600" />
-                <span className="font-medium">Cerrar Sesión</span>
-              </button>
+        {/* Identificacion del usuario: solo informativa, ya no abre ningun menu.
+            El unico item que tenia el desplegable era "Cerrar Sesion", que ahora vive
+            en la barra como boton propio. */}
+        <div
+          className="flex items-center gap-2 px-2 sm:px-3 py-2 rounded-md"
+          style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.15)',
+            backdropFilter: 'blur(8px)',
+          }}
+        >
+          <div
+            className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold shrink-0"
+            aria-hidden="true"
+          >
+            {avatarText}
+          </div>
+          <div className="text-left hidden md:block">
+            <div className="text-sm font-medium">
+              {displayName}
             </div>
-          )}
+            <div className="text-xs opacity-80">
+              {displayRole}
+            </div>
+          </div>
+          {/* En pantallas chicas el nombre y el rol no entran, pero siguen anunciandose */}
+          <span className="sr-only md:hidden">
+            {`Sesion iniciada como ${displayName}. Rol: ${displayRole}`}
+          </span>
         </div>
+
+        {/* Cerrar sesion: boton propio, siempre visible en la barra (antes estaba
+            escondido dentro del desplegable de usuario, pegado al de anuncios).
+            En mobile queda como icono, con aria-label y title para identificarlo. */}
+        <button
+          type="button"
+          onClick={handleLogout}
+          title="Cerrar sesión"
+          aria-label="Cerrar sesión"
+          className="flex items-center gap-2 px-2.5 sm:px-3 py-2 rounded-md text-sm font-semibold text-white whitespace-nowrap shrink-0 transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          style={{ backgroundColor: LOGOUT_BG }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = LOGOUT_BG_HOVER
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = LOGOUT_BG
+          }}
+        >
+          <LogOut size={18} aria-hidden="true" />
+          <span className="hidden lg:inline">Cerrar sesión</span>
+        </button>
       </div>
     </header>
   )
