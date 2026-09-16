@@ -11,6 +11,8 @@ interface DemandaActionsBarProps {
   isLoading: boolean
   onNuevoRegistro: () => void
   onFilterChange: (filters: DemandaFilterState) => void
+  /** Valor actual de estado/objetivo/envío — mantiene el popover en sync si la sidebar cambió algo. */
+  filterState: DemandaFilterState
   /** `mis_demandas=true` activo. */
   misDemandas: boolean
   /** `responsable=<user_id>` activo, o null. */
@@ -27,6 +29,7 @@ export const DemandaActionsBar = ({
   isLoading,
   onNuevoRegistro,
   onFilterChange,
+  filterState,
   misDemandas,
   responsable,
   canFilterByResponsable,
@@ -50,6 +53,7 @@ export const DemandaActionsBar = ({
       isLoading={isLoading}
       handleNuevoRegistro={onNuevoRegistro}
       onFilterChange={onFilterChange}
+      value={filterState}
     />
 
     {/* Queda fuera de `Buttons` a propósito: ese componente se reemplaza por

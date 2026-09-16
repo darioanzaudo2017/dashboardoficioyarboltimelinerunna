@@ -84,6 +84,7 @@ const SECCIONES: ReadonlyArray<{ prefijo: string; colores: SectionColors }> = [
   { prefijo: '/demanda', colores: COLORES_MESA },
   { prefijo: '/nuevoingreso', colores: COLORES_MESA },
   { prefijo: '/evaluacion', colores: COLORES_MESA },
+  { prefijo: '/admin', colores: COLORES_MESA },
 ]
 
 /**
@@ -205,12 +206,15 @@ export default function Header() {
     ? `${user?.first_name?.[0] || ""}${user?.last_name?.[0] || ""}`
     : user?.username?.slice(0, 2).toUpperCase() || "?"
 
+  const isAdminUser = Boolean(user?.is_superuser || user?.is_staff)
+
   const navItems = [
     { href: "/mesadeentrada", label: "Mesa de Entradas", visible: true },
     { href: "/legajo-mesa", label: "Bandeja de legajos", visible: !isAdministracion },
     { href: "/legajo/actividades", label: "Mis actividades", visible: !isAdministracion },
     { href: "/indicadores", label: "Indicadores", visible: true },
     { href: "/oficios", label: "Oficios", visible: true },
+    { href: "/admin/catalogos", label: "Catálogos", visible: isAdminUser },
   ].filter((item) => item.visible)
 
   const isCurrentPath = (href: string) => pathname === href || pathname.startsWith(`${href}/`)

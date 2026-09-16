@@ -28,6 +28,7 @@ export function middleware(req: NextRequest) {
 // Apply middleware to specific routes
 export const config = {
   matcher: [
+    '/admin/:path*',
     '/demanda/:path*',
     '/evaluacion/:path*',
     '/indicadores/:path*',

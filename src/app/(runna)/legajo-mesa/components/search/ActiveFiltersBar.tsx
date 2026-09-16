@@ -16,6 +16,9 @@ interface ActiveFiltersBarProps {
   directorNames?: Record<number, string> // Map director ID to name
   equipoTrabajoNames?: Record<number, string> // Map equipo trabajo ID to name
   equipoCentroVidaNames?: Record<number, string> // Map equipo centro vida ID to name
+  /** "Tareas propias pendientes": vive fuera de `filters` (se resuelve del lado del cliente), por eso se pasa aparte. */
+  tareasPendientesActivo?: boolean
+  onRemoveTareasPendientes?: () => void
 }
 
 /**
@@ -39,9 +42,19 @@ const ActiveFiltersBar: React.FC<ActiveFiltersBarProps> = ({
   directorNames = {},
   equipoTrabajoNames = {},
   equipoCentroVidaNames = {},
+  tareasPendientesActivo = false,
+  onRemoveTareasPendientes,
 }) => {
   // Build array of active filters for display
   const activeFilters: Array<{ key: string; label: string; value: string }> = []
+
+  if (tareasPendientesActivo) {
+    activeFilters.push({
+      key: "tareas_pendientes",
+      label: "Filtro",
+      value: "Tareas Propias Pendientes",
+    })
+  }
 
   // Search filter
   if (filters.search) {
@@ -209,6 +222,30 @@ const ActiveFiltersBar: React.FC<ActiveFiltersBarProps> = ({
     })
   }
 
+  if (filters.user_responsable !== null && filters.user_responsable !== undefined) {
+    activeFilters.push({
+      key: "user_responsable",
+      label: "Responsable",
+      value: "Yo mismo/a",
+    })
+  }
+
+  if (filters.pt_vencidas === true) {
+    activeFilters.push({
+      key: "pt_vencidas",
+      label: "Filtro",
+      value: "Actividades Vencidas",
+    })
+  }
+
+  if (filters.oficios_vencidos === true) {
+    activeFilters.push({
+      key: "oficios_vencidos",
+      label: "Filtro",
+      value: "Oficios Vencidos",
+    })
+  }
+
   // Don't render if no filters are active
   if (activeFilters.length === 0) {
     return null
@@ -268,7 +305,9 @@ const ActiveFiltersBar: React.FC<ActiveFiltersBarProps> = ({
               </Box>
             }
             size="small"
-            onDelete={() => onRemoveFilter(filter.key as any)}
+            onDelete={() =>
+              filter.key === "tareas_pendientes" ? onRemoveTareasPendientes?.() : onRemoveFilter(filter.key as any)
+            }
             deleteIcon={<ClearIcon fontSize="small" />}
             sx={{
               backgroundColor: "white",

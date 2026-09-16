@@ -38,6 +38,7 @@ export const useLegajoFilters = (
       director: null,
       equipo_trabajo: null,
       equipo_centro_vida: null,
+      user_responsable: null,
     }
   })
 
@@ -94,6 +95,7 @@ export const useLegajoFilters = (
       director: null,
       equipo_trabajo: null,
       equipo_centro_vida: null,
+      user_responsable: null,
     })
     setPaginationModel((prev) => ({ ...prev, page: 0 }))
   }

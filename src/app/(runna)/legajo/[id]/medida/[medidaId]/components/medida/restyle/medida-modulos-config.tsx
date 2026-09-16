@@ -16,6 +16,7 @@ import { PlanTrabajoTab } from "../mpe-tabs/plan-trabajo-tab"
 import { HistorialTab } from "../historial/historial-tab"
 import { InformesMensualesTable } from "../informes-mensuales-table"
 import { InformesControlLegalidadKanban } from "../../legal-control"
+import { ActividadesCalendario } from "../calendario/ActividadesCalendario"
 import type { ModuloDef } from "./medida-modulos-row"
 import type { TipoMedidaKey } from "./medida-theme"
 import type { MedidaDetailResponse } from "../../../types/medida-api"
@@ -144,11 +145,31 @@ function buildInformesModule(medidaApiData?: MedidaDetailResponse): ModuloDef | 
   }
 }
 
+function buildCalendarioModule(
+  medidaApiData?: MedidaDetailResponse,
+  planTrabajoId?: number | null
+): ModuloDef | null {
+  if (!planTrabajoId) return null
+  return {
+    key: "calendario",
+    label: "Calendario",
+    icon: "📅",
+    variant: "blue",
+    content: (
+      <ActividadesCalendario
+        planTrabajoId={planTrabajoId}
+        legajoId={(medidaApiData as any)?.legajo}
+        medidaId={medidaApiData?.id}
+      />
+    ),
+  }
+}
+
 /**
  * Returns the always-on module set for a medida, by tipo:
- *   - MPI: plan · control de legalidad · historial · informes
- *   - MPE: plan · control de legalidad · informes
- *   - MPJ: control de legalidad (incluye etapas) · informes
+ *   - MPI: plan · control de legalidad · historial · informes · calendario
+ *   - MPE: plan · control de legalidad · informes · calendario
+ *   - MPJ: control de legalidad (incluye etapas) · informes · calendario
  */
 export function buildMedidaModulos({
   tipo,
@@ -162,14 +183,17 @@ export function buildMedidaModulos({
     modules.push(buildLegalidadModule(medidaApiData, planTrabajoId))
     modules.push(buildHistorialModule(medidaApiData))
     modules.push(buildInformesModule(medidaApiData))
+    modules.push(buildCalendarioModule(medidaApiData, planTrabajoId))
   } else if (tipo === "MPE") {
     modules.push(buildPlanModule(tipo, medidaApiData, planTrabajoId))
     modules.push(buildLegalidadModule(medidaApiData, planTrabajoId))
     modules.push(buildInformesModule(medidaApiData))
+    modules.push(buildCalendarioModule(medidaApiData, planTrabajoId))
   } else {
     // MPJ
     modules.push(buildLegalidadModule(medidaApiData, planTrabajoId, true))
     modules.push(buildInformesModule(medidaApiData))
+    modules.push(buildCalendarioModule(medidaApiData, planTrabajoId))
   }
 
   return modules.filter((m): m is ModuloDef => m !== null)

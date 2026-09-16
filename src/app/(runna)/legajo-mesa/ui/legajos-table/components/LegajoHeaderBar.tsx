@@ -81,7 +81,10 @@ export const LegajoHeaderBar = ({
     </Box>
     <div className="flex flex-wrap gap-2 sm:gap-4 relative z-10">
       <LegajoButtons isLoading={isLoading} handleNuevoRegistro={() => { }} onLegajoCreated={() => loadLegajos()} />
-      <LegajoFilters onFilterChange={(newFilters) => { setApiFilters((prev) => ({ ...prev, ...newFilters })); setPaginationModel((prev) => ({ ...prev, page: 0 })) }} />
+      <LegajoFilters
+        value={apiFilters}
+        onFilterChange={(newFilters) => { setApiFilters((prev) => ({ ...prev, ...newFilters })); setPaginationModel((prev) => ({ ...prev, page: 0 })) }}
+      />
     </div>
   </Box>
 )
