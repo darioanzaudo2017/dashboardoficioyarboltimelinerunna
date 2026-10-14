@@ -27,6 +27,7 @@ import { useGridScrollAffordance } from "./hooks/useGridScrollAffordance"
 import { useDemandaMutations } from "./hooks/useDemandaMutations"
 import { DemandaHeaderBar } from "./components/DemandaHeaderBar"
 import { DemandaActionsBar } from "./components/DemandaActionsBar"
+import { DemandaFilterSidebar } from "./components/DemandaFilterSidebar"
 import { DemandaPresetBar } from "./components/DemandaPresetBar"
 import { GridScrollButtons } from "./components/GridScrollButtons"
 import { DemandaCardsList } from "./components/DemandaCardsList"
@@ -329,15 +330,28 @@ const DemandaTableContent: React.FC = () => {
 
   return (
     <>
-      <Paper
-        sx={{
-          width: "100%",
-          overflow: "hidden",
-          borderRadius: 2,
-          boxShadow: shadows.subtle,
-          border: `1px solid ${rgba.primaryLight(0.1)}`,
-        }}
-      >
+      <Box sx={{ display: "flex", gap: 2, alignItems: "flex-start", width: "100%" }}>
+        {/* Sidebar de filtros rápidos: atajos de un clic sobre los MISMOS
+            filtros de siempre (Popover "Filtros" + "Mis demandas"), no un
+            sistema nuevo. Se oculta en mobile/tablet para no competir por
+            espacio con la lista de tarjetas, que ya es angosta ahí. */}
+        {!isMdDown && (
+          <DemandaFilterSidebar
+            filters={apiFilters}
+            onFilterChange={handleFilterChange}
+            onResponsableFilterChange={handleResponsableFilterChange}
+          />
+        )}
+        <Paper
+          sx={{
+            flex: 1,
+            minWidth: 0,
+            overflow: "hidden",
+            borderRadius: 2,
+            boxShadow: shadows.subtle,
+            border: `1px solid ${rgba.primaryLight(0.1)}`,
+          }}
+        >
         {/* Barra 1: Título */}
         <DemandaHeaderBar
           viewMode={viewMode}
@@ -350,6 +364,11 @@ const DemandaTableContent: React.FC = () => {
           isLoading={isLoading}
           onNuevoRegistro={handleNuevoRegistro}
           onFilterChange={handleFilterChange}
+          filterState={{
+            envio_de_respuesta: apiFilters.envio_de_respuesta,
+            estado_demanda: apiFilters.estado_demanda,
+            objetivo_de_demanda: apiFilters.objetivo_de_demanda,
+          }}
           misDemandas={apiFilters.mis_demandas}
           responsable={apiFilters.responsable}
           canFilterByResponsable={canFilterByResponsable}
@@ -460,7 +479,8 @@ const DemandaTableContent: React.FC = () => {
             )}
           </Box>
         )}
-      </Paper>
+        </Paper>
+      </Box>
 
       {/* Mobile drawer for detail when in list mode */}
       {viewMode === "list" && isMdDown && (

@@ -31,6 +31,8 @@ import { LegajoHeaderBar } from "./components/LegajoHeaderBar"
 import { GridScrollButtons } from "./components/GridScrollButtons"
 import { LegajoCardsList } from "./components/LegajoCardsList"
 import { LegajoDetailPane, LegajoDetailDrawer, LegajoDetailModal } from "./components/LegajoDetailViews"
+import { LegajoFilterSidebar } from "./components/LegajoFilterSidebar"
+import { useLegajosConTareaPendiente } from "./hooks/useLegajosConTareaPendiente"
 
 
 const LegajoTable: React.FC = () => {
@@ -52,6 +54,7 @@ const LegajoTable: React.FC = () => {
   const [isAsignarModalOpen, setIsAsignarModalOpen] = useState(false)
   const [selectedLegajoIdForAssignment, setSelectedLegajoIdForAssignment] = useState<number | null>(null)
   const [isUpdating, setIsUpdating] = useState(false)
+  const [tareasPendientesActivo, setTareasPendientesActivo] = useState(false)
 
   const {
     apiFilters,
@@ -83,10 +86,20 @@ const LegajoTable: React.FC = () => {
   }
 
 
-  // Build query params using useMemo - API uses 1-based pagination
+  // Build query params using useMemo - API uses 1-based pagination.
+  // "Tareas propias pendientes" no tiene parámetro de backend: se resuelve
+  // filtrando del lado del cliente, así que en ese modo se pide una página
+  // grande (en vez de la página elegida en la UI) para filtrar sobre el total
+  // real y no solo sobre los 10/25 legajos que hubiesen tocado en la página
+  // actual del servidor.
   const queryParams = useMemo(
-    () => buildLegajoQueryParams(paginationModel, apiFilters, sortModel),
-    [paginationModel.page, paginationModel.pageSize, apiFilters, sortModel],
+    () =>
+      buildLegajoQueryParams(
+        tareasPendientesActivo ? { page: 0, pageSize: 500 } : paginationModel,
+        apiFilters,
+        sortModel,
+      ),
+    [paginationModel.page, paginationModel.pageSize, apiFilters, sortModel, tareasPendientesActivo],
   )
 
   // Fetch legajos using TanStack Query
@@ -102,22 +115,28 @@ const LegajoTable: React.FC = () => {
     refetch()
   }
 
-  /**
-   * Determina si un legajo debe resaltarse basándose en el rol del usuario y el
-   * estado actual de la etapa actual de sus medidas vigentes.
-   */
-  const shouldHighlightLegajo = (row: any): boolean => {
-    const userPerms: UserPermissions = {
+  const userPerms: UserPermissions = useMemo(
+    () => ({
       isDirector: permissions.isDirector,
       isLegales: permissions.isLegales,
       isEquipoTecnico: permissions.isEquipoTecnico,
       isJefeZonal: permissions.isJefeZonal,
       isAdmin: permissions.isAdmin,
       userId: permissions.user?.id,
-    }
+    }),
+    [permissions],
+  )
 
-    return shouldHighlightLegajoUtil(row, userPerms)
-  }
+  /**
+   * Determina si un legajo debe resaltarse basándose en el rol del usuario y el
+   * estado actual de la etapa actual de sus medidas vigentes.
+   */
+  const shouldHighlightLegajo = (row: any): boolean => shouldHighlightLegajoUtil(row, userPerms)
+
+  // "Tareas propias pendientes": mismo criterio que la campanita de notificaciones,
+  // aplicado del lado del cliente (no hay parámetro de backend para esto).
+  const { legajoIds: legajosConTareaPendiente, isLoading: isLoadingTareasPendientes } =
+    useLegajosConTareaPendiente(userPerms, tareasPendientesActivo)
 
   const handlePrioridadChange = async (legajoId: number, newValue: string) => {
     setIsUpdating(true)
@@ -210,11 +229,28 @@ const LegajoTable: React.FC = () => {
   }, [filterOptions.equiposCentroVida])
 
   const rows = useMemo(() => {
-    return legajosData?.results.map(mapLegajoToRow) || []
-  }, [legajosData])
+    const mapped = legajosData?.results.map(mapLegajoToRow) || []
+    if (!tareasPendientesActivo) return mapped
+    return mapped.filter((row) => legajosConTareaPendiente.has(row.id))
+  }, [legajosData, tareasPendientesActivo, legajosConTareaPendiente])
+
+  // Con "tareas propias pendientes" activo, rows ya es la lista completa
+  // (filtrada del lado del cliente sobre una página grande) — la paginación
+  // pasa a ser local y el conteo mostrado debe reflejar eso, no el total
+  // del servidor sin filtrar.
+  const effectiveTotalCount = tareasPendientesActivo ? rows.length : totalCount
+
+  // LegajoCardsList no auto-pagina: cuando el filtro es local hay que
+  // recortarle la página nosotros (el DataGrid sí lo resuelve solo via
+  // paginationMode="client").
+  const cardsRows = useMemo(() => {
+    if (!tareasPendientesActivo) return rows
+    const start = paginationModel.page * paginationModel.pageSize
+    return rows.slice(start, start + paginationModel.pageSize)
+  }, [rows, tareasPendientesActivo, paginationModel])
 
   const handleExportXlsx = () => {
-    exportLegajosToExcel(rows, { filters: apiFilters, totalCount: totalCount })
+    exportLegajosToExcel(rows, { filters: apiFilters, totalCount: effectiveTotalCount })
     toast.success("Archivo Excel generado correctamente")
   }
 
@@ -232,9 +268,32 @@ const LegajoTable: React.FC = () => {
 
   return (
     <>
+      <Box sx={{ display: "flex", gap: 2, alignItems: "flex-start", width: "100%" }}>
+        {/* Sidebar de filtros rápidos: atajos de un clic sobre los MISMOS
+            filtros de siempre (popovers "Filtros"/"Avanzados" + el toggle de
+            tareas pendientes), no un sistema de filtrado nuevo. Oculta en
+            mobile/tablet para no robarle ancho a la tabla/tarjetas. */}
+        {!isMdDown && (
+          <LegajoFilterSidebar
+            filters={apiFilters}
+            onFilterChange={(partial) => {
+              setApiFilters((prev) => ({ ...prev, ...partial }))
+              setPaginationModel((prev) => ({ ...prev, page: 0 }))
+            }}
+            currentUserId={permissions.user?.id}
+            tareasPendientesActivo={tareasPendientesActivo}
+            onToggleTareasPendientes={() => {
+              setTareasPendientesActivo((prev) => !prev)
+              setPaginationModel((prev) => ({ ...prev, page: 0 }))
+            }}
+            tareasPendientesLoading={tareasPendientesActivo && isLoadingTareasPendientes}
+            onClearAll={handleClearAllFilters}
+          />
+        )}
       <Paper
         sx={{
-          width: "100%",
+          flex: 1,
+          minWidth: 0,
           overflow: "hidden",
           borderRadius: 3,
           boxShadow: "0 1px 3px rgba(0,0,0,0.05), 0 4px 12px rgba(0,0,0,0.05)",
@@ -251,7 +310,18 @@ const LegajoTable: React.FC = () => {
           setApiFilters={setApiFilters}
           setPaginationModel={setPaginationModel}
         />
-        <ActiveFiltersBar filters={apiFilters} totalResults={totalCount} onRemoveFilter={handleRemoveFilter} onClearAll={handleClearAllFilters} jefeZonalNames={jefeZonalNames} directorNames={directorNames} equipoTrabajoNames={equipoTrabajoNames} equipoCentroVidaNames={equipoCentroVidaNames} />
+        <ActiveFiltersBar
+          filters={apiFilters}
+          totalResults={effectiveTotalCount}
+          onRemoveFilter={handleRemoveFilter}
+          onClearAll={() => { handleClearAllFilters(); setTareasPendientesActivo(false) }}
+          jefeZonalNames={jefeZonalNames}
+          directorNames={directorNames}
+          equipoTrabajoNames={equipoTrabajoNames}
+          equipoCentroVidaNames={equipoCentroVidaNames}
+          tareasPendientesActivo={tareasPendientesActivo}
+          onRemoveTareasPendientes={() => setTareasPendientesActivo(false)}
+        />
         {showTable && (
         <Box ref={gridContainerRef} sx={{ position: "relative", height: 650, width: "100%", bgcolor: "#ffffff" }}>
           <GridScrollButtons
@@ -268,8 +338,8 @@ const LegajoTable: React.FC = () => {
             sortModel={sortModel}
             onSortModelChange={setSortModel}
             sortingMode="server"
-            rowCount={totalCount}
-            paginationMode="server"
+            rowCount={effectiveTotalCount}
+            paginationMode={tareasPendientesActivo ? "client" : "server"}
             loading={isLoading || isUpdating}
             onRowClick={(params) => handleOpenModal(params.row.id)}
             localeText={{
@@ -305,11 +375,11 @@ const LegajoTable: React.FC = () => {
           >
             {/* Left pane: 420px sidebar of cards (full width on mobile). */}
             <LegajoCardsList
-              rows={rows}
+              rows={cardsRows}
               isLoading={isLoading}
               selectedLegajoId={selectedLegajoId}
               handleOpenModal={handleOpenModal}
-              totalCount={totalCount}
+              totalCount={effectiveTotalCount}
               paginationModel={paginationModel}
               setPaginationModel={setPaginationModel}
             />
@@ -321,6 +391,7 @@ const LegajoTable: React.FC = () => {
           </Box>
         )}
       </Paper>
+      </Box>
 
       {/* Mobile drawer for detail when in list mode */}
       {viewMode === "list" && isMdDown && (

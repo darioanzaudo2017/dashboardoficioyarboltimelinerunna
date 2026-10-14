@@ -87,6 +87,9 @@ export const buildLegajoQueryParams = (
   if (apiFilters.equipo_centro_vida !== undefined && apiFilters.equipo_centro_vida !== null) {
     params.equipo_centro_vida = apiFilters.equipo_centro_vida
   }
+  if (apiFilters.user_responsable !== undefined && apiFilters.user_responsable !== null) {
+    params.user_responsable = apiFilters.user_responsable
+  }
 
   if (apiFilters.demanda_estado) params.demanda_estado = apiFilters.demanda_estado
   if (apiFilters.medida_tipo?.length) params.medida_tipo = apiFilters.medida_tipo.join(",")

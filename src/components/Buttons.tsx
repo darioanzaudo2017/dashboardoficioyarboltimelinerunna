@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Button, Skeleton, Popover, Box, List, ListItem, ListItemIcon, ListItemText, Typography } from "@mui/material"
 import FilterList from "@mui/icons-material/FilterList"
@@ -30,9 +30,18 @@ interface ButtonsProps {
   isLoading: boolean
   handleNuevoRegistro: () => void
   onFilterChange: (filters: FilterState) => void
+  /**
+   * Estado externo de estos mismos tres filtros (opcional). Este componente
+   * mantiene su propio estado local para no romper a quien ya lo use tal
+   * cual, pero si otro control (ej. la sidebar de filtros rápidos) cambia
+   * `estado_demanda`/`objetivo_de_demanda`/`envio_de_respuesta` por su cuenta,
+   * este `value` permite que el popover se entere y no pise esa selección la
+   * próxima vez que el usuario toque algo acá adentro.
+   */
+  value?: FilterState
 }
 
-const Buttons: React.FC<ButtonsProps> = ({ isLoading, handleNuevoRegistro, onFilterChange }) => {
+const Buttons: React.FC<ButtonsProps> = ({ isLoading, handleNuevoRegistro, onFilterChange, value }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const user = useUser((state) => state.user)
 
@@ -53,6 +62,12 @@ const Buttons: React.FC<ButtonsProps> = ({ isLoading, handleNuevoRegistro, onFil
     estado_demanda: null,
     objetivo_de_demanda: null,
   })
+
+  // Mantiene el checkmark del popover al día si estos filtros cambiaron
+  // desde afuera (ver comentario de `value` en ButtonsProps).
+  useEffect(() => {
+    if (value) setFilterState(value)
+  }, [value])
 
   const handleFilterClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget)

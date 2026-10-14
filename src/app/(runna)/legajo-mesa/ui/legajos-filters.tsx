@@ -48,6 +48,8 @@ export interface LegajoFiltersState {
   director?: number | null
   equipo_trabajo?: number | null
   equipo_centro_vida?: number | null
+  /** Legajos donde el usuario actual es el profesional responsable. */
+  user_responsable?: number | null
   // Advanced filters (LEG-03 CA-3)
   demanda_estado?: "ACTIVA" | "CERRADA" | "DERIVADA" | null
   medida_tipo?: string[]
@@ -63,6 +65,8 @@ export interface LegajoFiltersState {
 
 interface LegajoFiltersProps {
   onFilterChange: (filters: LegajoFiltersState) => void
+  /** Valor actual de los filtros — mantiene el popover en sync si cambiaron desde afuera (ej. la sidebar). */
+  value?: LegajoFiltersState
 }
 
 interface Zona {
@@ -71,7 +75,7 @@ interface Zona {
   codigo: string | null
 }
 
-const LegajoFilters: React.FC<LegajoFiltersProps> = ({ onFilterChange }) => {
+const LegajoFilters: React.FC<LegajoFiltersProps> = ({ onFilterChange, value }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [advancedAnchorEl, setAdvancedAnchorEl] = useState<null | HTMLElement>(null)
 
@@ -99,6 +103,7 @@ const LegajoFilters: React.FC<LegajoFiltersProps> = ({ onFilterChange }) => {
     director: null,
     equipo_trabajo: null,
     equipo_centro_vida: null,
+    user_responsable: null,
     demanda_estado: null,
     medida_tipo: [],
     medida_estado: [],
@@ -110,6 +115,10 @@ const LegajoFilters: React.FC<LegajoFiltersProps> = ({ onFilterChange }) => {
     pt_vencidas: null,
     etapa_medida: null,
   })
+
+  useEffect(() => {
+    if (value) setFilterState(value)
+  }, [value])
 
   const handleFilterClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget)
@@ -172,6 +181,7 @@ const LegajoFilters: React.FC<LegajoFiltersProps> = ({ onFilterChange }) => {
       director: null,
       equipo_trabajo: null,
       equipo_centro_vida: null,
+      user_responsable: null,
       demanda_estado: null,
       medida_tipo: [],
       medida_estado: [],
