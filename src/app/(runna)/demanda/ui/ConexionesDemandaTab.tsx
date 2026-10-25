@@ -34,6 +34,7 @@ import { useVinculos } from "@/app/(runna)/legajo/[id]/medida/[medidaId]/hooks/u
 import { hasVinculacionAccess } from "@/utils/auth/permissionUtils"
 import CrearVinculoLegajoDialog from "./dialogs/CrearVinculoLegajoDialog"
 import DesvincularVinculoDialog from "./dialogs/DesvincularVinculoDialog"
+import ConfirmDialog from "@/components/shared/ConfirmDialog"
 import { logger } from "@/utils/logger"
 
 // Type matching actual API response for demanda vinculos
@@ -94,6 +95,8 @@ export function ConexionesDemandaTab({ demandaId }: ConexionesDemandaTabProps) {
 
   // States for existing connections
   const [error, setError] = useState<string | null>(null)
+  // Demanda conectada que se está por desconectar (espera confirmación)
+  const [demandaToDisconnect, setDemandaToDisconnect] = useState<number | null>(null)
 
   // States for legajo vinculos
   const [crearVinculoDialogOpen, setCrearVinculoDialogOpen] = useState(false)
@@ -354,8 +357,16 @@ export function ConexionesDemandaTab({ demandaId }: ConexionesDemandaTabProps) {
     }
   }
 
+  // Desconectar pide confirmación: antes un clic en la papelera quitaba la conexión sin avisar
   const handleDeleteConnection = (connectedDemandaId: number) => {
-    deleteConnectionMutation.mutate(connectedDemandaId)
+    setDemandaToDisconnect(connectedDemandaId)
+  }
+
+  const handleConfirmDisconnect = () => {
+    if (demandaToDisconnect === null) return
+    deleteConnectionMutation.mutate(demandaToDisconnect, {
+      onSettled: () => setDemandaToDisconnect(null),
+    })
   }
 
   const isLoading = isLoadingDemandas || isLoadingConexiones
@@ -387,6 +398,7 @@ export function ConexionesDemandaTab({ demandaId }: ConexionesDemandaTabProps) {
           isModal={false}
           mode="connect"
           onConnect={handleConnect}
+          connectedIds={conexiones.map((conexion: Demanda) => conexion.id)}
           title="Buscar demandas para conectar"
           compact={true}
           demanda={demandaId}
@@ -427,7 +439,8 @@ export function ConexionesDemandaTab({ demandaId }: ConexionesDemandaTabProps) {
                   secondaryAction={
                     <IconButton
                       edge="end"
-                      aria-label="delete"
+                      aria-label={`Desconectar la demanda ${demanda.id}`}
+                      title="Desconectar"
                       onClick={() => handleDeleteConnection(demanda.id)}
                       disabled={deleteConnectionMutation.isPending}
                       sx={{
@@ -677,6 +690,22 @@ export function ConexionesDemandaTab({ demandaId }: ConexionesDemandaTabProps) {
         onClose={handleCloseDesvincular}
         vinculo={vinculoToDesvincular}
         onVinculoDesvinculado={handleVinculoDesvinculado}
+      />
+
+      <ConfirmDialog
+        open={demandaToDisconnect !== null}
+        title="¿Desconectar esta demanda?"
+        message={
+          <>
+            Se quita la conexión entre la demanda #{demandaId} y la demanda #{demandaToDisconnect}. Las demandas no
+            se borran y podés volver a conectarlas cuando quieras.
+          </>
+        }
+        confirmLabel="Desconectar"
+        confirmColor="error"
+        loading={deleteConnectionMutation.isPending}
+        onConfirm={handleConfirmDisconnect}
+        onCancel={() => setDemandaToDisconnect(null)}
       />
     </Box>
   )

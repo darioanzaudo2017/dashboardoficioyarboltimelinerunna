@@ -26,6 +26,7 @@ import { useApiQuery, useCatalogData, extractArray } from "@/hooks/useApiQuery"
 import { usePdfViewer } from "@/hooks"
 import { isPdfFile } from "@/utils/pdfUtils"
 import { logger } from "@/utils/logger"
+import ConfirmDialog from "@/components/shared/ConfirmDialog"
 
 // URL base para los archivos
 const BASE_URL = "https://web-runna-v2legajos.up.railway.app"
@@ -126,7 +127,11 @@ export function EnviarRespuestaForm({ demandaId }: EnviarRespuestaFormProps) {
     setSelectedFiles((prev) => prev.filter((_, i) => i !== index))
   }
 
+  // Enviar un correo no se puede deshacer: primero se pide confirmar a quién y con qué asunto sale
+  const [pendingRespuesta, setPendingRespuesta] = useState<RespuestaFormData | null>(null)
+
   const onSubmit = async (data: RespuestaFormData) => {
+    setPendingRespuesta(null)
     setIsLoading(true)
     setError(null)
 
@@ -187,7 +192,7 @@ export function EnviarRespuestaForm({ demandaId }: EnviarRespuestaFormProps) {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      <Box component="form" onSubmit={handleSubmit((data) => setPendingRespuesta(data))} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         <Controller
           name="to"
           control={control}
@@ -508,6 +513,31 @@ export function EnviarRespuestaForm({ demandaId }: EnviarRespuestaFormProps) {
           {snackbar.message}
         </Alert>
       </Snackbar>
+
+      <ConfirmDialog
+        open={pendingRespuesta !== null}
+        title="¿Enviar esta respuesta?"
+        message={
+          pendingRespuesta && (
+            <>
+              Se enviará un correo a{" "}
+              <strong>
+                {pendingRespuesta.to
+                  .split(",")
+                  .map((email) => email.trim())
+                  .filter(Boolean)
+                  .join(", ")}
+              </strong>{" "}
+              con el asunto &quot;<strong>{pendingRespuesta.asunto}</strong>&quot;. Una vez enviado no se puede
+              deshacer.
+            </>
+          )
+        }
+        confirmLabel="Enviar correo"
+        loading={isLoading}
+        onConfirm={() => (pendingRespuesta ? onSubmit(pendingRespuesta) : undefined)}
+        onCancel={() => setPendingRespuesta(null)}
+      />
 
       {/* PDF Viewer Modal */}
       {PdfModal}
