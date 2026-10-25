@@ -6,7 +6,7 @@ import { Paper, Box, Typography, useMediaQuery, useTheme } from "@mui/material"
 import { DataGrid, type GridPaginationModel } from "@mui/x-data-grid"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useRouter, useSearchParams } from "next/navigation"
-import AsignarModal from "@/components/asignarModal"
+import AsignarModal, { objetivoDemandaToAsignacion } from "@/components/asignarModal"
 import LegajoSearchBar from "../../../legajo-mesa/components/search/LegajoSearchBar"
 import { useUser } from "@/utils/auth/userZustand"
 
@@ -496,6 +496,9 @@ const DemandaTableContent: React.FC = () => {
         onClose={handleCloseAsignarModal}
         demandaId={selectedDemandaIdForAssignment}
         onSuccess={refetch}
+        objetivoInicial={objetivoDemandaToAsignacion(
+          rows.find((row) => row.id === selectedDemandaIdForAssignment)?.objetivoDemanda,
+        )}
       />
     </>
   )

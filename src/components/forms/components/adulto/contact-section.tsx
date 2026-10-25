@@ -7,6 +7,7 @@ import { Phone as PhoneIcon, Home as HomeIcon } from "@mui/icons-material"
 import FormSection from "../form-section"
 import LocalizacionFields from "../../LocalizacionFields"
 import type { DropdownData, FormData } from "../../types/formTypes"
+import { phoneFieldRules } from "../../utils/numberRules"
 
 interface ContactSectionProps {
   index: number
@@ -24,6 +25,7 @@ const ContactSection: React.FC<ContactSectionProps> = ({ index, control, dropdow
           <Controller
             name={`adultosConvivientes.${index}.telefono`}
             control={control}
+            rules={phoneFieldRules}
             render={({ field, fieldState: { error } }) => (
               <TextField
                 {...field}

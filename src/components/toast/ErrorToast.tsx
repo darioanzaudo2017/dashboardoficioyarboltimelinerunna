@@ -22,7 +22,7 @@ const ErrorToast: React.FC<ErrorToastProps> = ({ message, details }) => {
 
   return (
     <div>
-      <p>{message}</p>
+      <p style={{ whiteSpace: 'pre-line' }}>{message}</p>
       <button
          onClick={() => {
           // Expandir para mostrar detalles adicionales

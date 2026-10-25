@@ -68,6 +68,9 @@ export const DemandaSuccessModal: React.FC<DemandaSuccessModalProps> = ({
   const nnyaCount = getNnyaCount(data)
   const adultosCount = getAdultosCount(data)
   const hasPlanTrabajo = localActividades.length > 0
+  const incorporatedCount = vinculos_legajo?.length
+    ? Math.max(0, (data.demanda_personas?.length ?? 0) - personas.length)
+    : 0
 
   // Get first medida and legajo for navigation
   const firstMedida = medidas_creadas?.[0]
@@ -260,7 +263,7 @@ export const DemandaSuccessModal: React.FC<DemandaSuccessModalProps> = ({
         {medidas_creadas.length > 0 && (
           <Box sx={{ mt: 2 }}>
             <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
-              Medidas creadas:
+              Medidas asociadas:
             </Typography>
             <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
               {medidas_creadas.map((medida) => (
@@ -301,7 +304,7 @@ export const DemandaSuccessModal: React.FC<DemandaSuccessModalProps> = ({
               ))}
               {personas.length > 5 && (
                 <Chip
-                  label={`+${personas.length - 5} mas`}
+                  label={`+${personas.length - 5} más`}
                   size="small"
                   variant="outlined"
                   color="primary"
@@ -309,6 +312,23 @@ export const DemandaSuccessModal: React.FC<DemandaSuccessModalProps> = ({
               )}
             </Box>
           </Box>
+        )}
+
+        {/* The backend can add people on its own (e.g. the NNyA of a linked legajo); explain why the counts exceed the list */}
+        {incorporatedCount > 0 && (
+          <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1 }}>
+            {incorporatedCount === 1
+              ? "Incluye 1 persona incorporada automáticamente desde el legajo vinculado."
+              : `Incluye ${incorporatedCount} personas incorporadas automáticamente desde el legajo vinculado.`}
+          </Typography>
+        )}
+
+        {/* Next step: a new demanda is not worked on until it is derived to a team */}
+        {demanda.estado_demanda === "SIN_ASIGNAR" && (
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+            <strong>Próximo paso:</strong> derivar la demanda a un equipo desde la Mesa de Entrada (botón &quot;Asignar&quot;
+            de su fila). Mientras tanto queda en estado &quot;Sin Asignar&quot;.
+          </Typography>
         )}
       </Paper>
 
@@ -330,7 +350,7 @@ export const DemandaSuccessModal: React.FC<DemandaSuccessModalProps> = ({
               />
             </Box>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Las siguientes actividades fueron creadas automaticamente como parte del plan de trabajo.
+              Las siguientes actividades fueron creadas automáticamente como parte del plan de trabajo.
               Puede asignar responsables y gestionar las actividades desde esta vista.
             </Typography>
 
@@ -359,7 +379,7 @@ export const DemandaSuccessModal: React.FC<DemandaSuccessModalProps> = ({
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <AssignmentIcon sx={{ color: "info.main" }} />
             <Typography variant="body2" color="text.secondary">
-              El plan de trabajo sera creado una vez que se asigne una medida de proteccion a esta demanda.
+              El plan de trabajo será creado una vez que se asigne una medida de protección a esta demanda.
             </Typography>
           </Box>
         </Box>

@@ -6,6 +6,7 @@ import { Controller, type Control } from "react-hook-form"
 import { Person as PersonIcon } from "@mui/icons-material"
 import FormSection from "../form-section"
 import type { DropdownData, FormData } from "../../types/formTypes"
+import { dniFieldRules } from "../../utils/numberRules"
 
 interface PersonalInfoSectionProps {
   index: number
@@ -63,6 +64,7 @@ const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({ index, contro
           <Controller
             name={`adultosConvivientes.${index}.dni`}
             control={control}
+            rules={dniFieldRules}
             render={({ field, fieldState: { error } }) => (
               <TextField
                 {...field}

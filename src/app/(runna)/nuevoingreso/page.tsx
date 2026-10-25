@@ -205,13 +205,13 @@ const Home: React.FC = () => {
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="draft-dialog-description" sx={{ mb: 2 }}>
-            Se ha encontrado un borrador guardado anteriormente. ¿Desea continuar con el borrador o comenzar un nuevo
-            registro?
+            Hay un registro sin enviar que se guardó automáticamente. ¿Querés retomarlo donde lo dejaste o empezar uno
+            nuevo? Si empezás uno nuevo, el borrador se elimina y no se puede recuperar.
           </DialogContentText>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3 }}>
           <Button onClick={handleClearDraft} color="error" variant="outlined" startIcon={<Delete />}>
-            Comenzar nuevo
+            Descartar y empezar nuevo
           </Button>
           <Button onClick={handleLoadDraft} color="primary" variant="contained" startIcon={<Save />} autoFocus>
             Continuar borrador

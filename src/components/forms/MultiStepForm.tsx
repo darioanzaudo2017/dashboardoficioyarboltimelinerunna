@@ -40,6 +40,18 @@ import { fetchDropdownData } from "./utils/fetchFormCase"
 import VinculosManager from "./components/VinculosManager"
 import FormSection from "./components/form-section"
 import { logger } from "@/utils/logger"
+import { describeApiError } from "@/utils/apiErrorFormatter"
+import { showErrorToast } from "@/utils/showErrorToast"
+import {
+  buildInvalidFieldsMessage,
+  buildVinculoProblemsMessage,
+  collectInvalidFieldLabels,
+  describeVinculoProblems,
+  focusFirstInvalidField,
+  revealVinculosSection,
+} from "./utils/formValidationFeedback"
+
+const INVALID_FIELDS_TOAST_ID = "campos-invalidos"
 
 // Step 0: Objetivo Selection
 const objetivoStep = {
@@ -217,7 +229,8 @@ const MultiStepForm: React.FC<MultiStepFormProps> = ({
     },
     onError: (error) => {
       logger.error("Error submitting form:", error)
-      toast.error("Error al enviar el formulario. Por favor, intente nuevamente.")
+      const { message, details } = describeApiError(error, "No se pudo guardar la demanda. Corregí lo siguiente:")
+      showErrorToast(message, details)
     },
   })
 
@@ -230,6 +243,22 @@ const MultiStepForm: React.FC<MultiStepFormProps> = ({
     setFormVariant(variant)
     // Set the objetivo_de_demanda in the form
     methods.setValue("objetivo_de_demanda", objetivo)
+  }
+
+  /**
+   * Avisa qué campos faltan y lleva al primero. Espera un instante para que React
+   * pinte los errores (aria-invalid) antes de leerlos del DOM.
+   */
+  const notifyInvalidFields = () => {
+    window.setTimeout(() => {
+      toast.dismiss(INVALID_FIELDS_TOAST_ID)
+      toast.error(buildInvalidFieldsMessage(collectInvalidFieldLabels()), {
+        toastId: INVALID_FIELDS_TOAST_ID,
+        autoClose: 7000,
+        style: { whiteSpace: "pre-line" },
+      })
+      focusFirstInvalidField()
+    }, 80)
   }
 
   const handleNext = async () => {
@@ -259,8 +288,7 @@ const MultiStepForm: React.FC<MultiStepFormProps> = ({
       saveDraft(formId, methods.getValues())
       setActiveStep((prevActiveStep) => prevActiveStep + 1)
     } else {
-      // Show error toast if validation fails
-      toast.error("Por favor, complete todos los campos requeridos antes de continuar.")
+      notifyInvalidFields()
     }
   }
 
@@ -310,7 +338,7 @@ const MultiStepForm: React.FC<MultiStepFormProps> = ({
       const isValid = await methods.trigger()
       if (!isValid) {
         canProceed = false
-        toast.error("Por favor, complete todos los campos requeridos antes de continuar.")
+        notifyInvalidFields()
         break
       }
     }
@@ -329,18 +357,14 @@ const MultiStepForm: React.FC<MultiStepFormProps> = ({
 
     // REG-01: Validate vinculos if they exist
     if (data.vinculos && data.vinculos.length > 0) {
-      const invalidVinculos = data.vinculos.filter(
-        (v) =>
-          !v.legajo ||
-          !v.tipo_vinculo ||
-          !v.justificacion ||
-          v.justificacion.trim().length < 20
-      )
+      const vinculoProblems = describeVinculoProblems(data.vinculos)
 
-      if (invalidVinculos.length > 0) {
-        toast.error(
-          "Por favor, complete todos los campos obligatorios en los vínculos antes de enviar."
-        )
+      if (vinculoProblems.length > 0) {
+        toast.error(buildVinculoProblemsMessage(vinculoProblems), {
+          autoClose: 7000,
+          style: { whiteSpace: "pre-line" },
+        })
+        revealVinculosSection()
         return
       }
     }
@@ -357,7 +381,7 @@ const MultiStepForm: React.FC<MultiStepFormProps> = ({
     } else {
       onSubmit(formDataWithArrays)
     }
-  })
+  }, notifyInvalidFields)
 
   // Add this new function to handle the final step button click
   const handleFinalSubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -645,8 +669,8 @@ const MultiStepForm: React.FC<MultiStepFormProps> = ({
               ? isReadOnly
                 ? "Finalizar"
                 : mutation.isPending
-                  ? "Enviando..."
-                  : "Enviar"
+                  ? "Guardando..."
+                  : "Guardar demanda"
               : "Siguiente"}
           </Button>}
         </Box>}
