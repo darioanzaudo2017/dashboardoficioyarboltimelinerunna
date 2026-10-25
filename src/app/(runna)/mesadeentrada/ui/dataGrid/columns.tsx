@@ -6,6 +6,7 @@ import { TouchApp, Edit, Warning, Visibility, Assignment, Link as LinkIcon } fro
 import { AdjuntosCell } from "./AdjuntosCell"
 import { StatusChip } from "./StatusChip"
 import { DNI_VER_LEGAJO, formatCalificacionValue, formatUnderscoreText } from "./utils"
+import { formatObjetivoDemanda } from "@/utils/demandaLabels"
 
 export interface BuildDemandaColumnsOptions {
   isMobile: boolean
@@ -323,7 +324,7 @@ export const buildDemandaColumns = ({
         renderCell: (params) => {
           return (
             <div style={{ display: "flex", justifyContent: "center", width: "100%" }}>
-              <Typography variant="body2">{formatUnderscoreText(params.value)}</Typography>
+              <Typography variant="body2">{formatObjetivoDemanda(params.value) || "N/A"}</Typography>
             </div>
           )
         },

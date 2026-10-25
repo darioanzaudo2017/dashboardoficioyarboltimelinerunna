@@ -2,6 +2,7 @@ import * as XLSX from "xlsx"
 import { toast } from "react-toastify"
 import { getCurrentDateISO } from "@/utils/dateUtils"
 import { formatUnderscoreText } from "./utils"
+import { formatEstadoDemanda, formatObjetivoDemanda } from "@/utils/demandaLabels"
 import type { DemandaRow } from "./utils"
 
 // Add this function to handle Excel export
@@ -19,9 +20,9 @@ export const exportDemandasToXlsx = (rows: DemandaRow[]) => {
         "Última Actualización": row.ultimaActualizacion,
         Localidad: row.localidad,
         "Zona/Equipo": row.zonaEquipo,
-        Estado: formatUnderscoreText(row.estado_demanda),
+        Estado: formatEstadoDemanda(row.estado_demanda) || "N/A",
         "Envío Respuesta": formatUnderscoreText(row.envioRespuesta),
-        "Objetivo de Demanda": formatUnderscoreText(row.objetivoDemanda),
+        "Objetivo de Demanda": formatObjetivoDemanda(row.objetivoDemanda) || "N/A",
         Etiqueta: row.etiqueta,
         "Cantidad de Adjuntos": Array.isArray(row.adjuntos) ? row.adjuntos.length : 0,
       }
