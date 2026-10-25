@@ -1,16 +1,34 @@
 "use client"
 
 import type React from "react"
-import { Snackbar, Paper, Typography, Box, Button, Chip, Stack, IconButton, Divider } from "@mui/material"
-import { alpha } from "@mui/material/styles"
-import LinkRoundedIcon from "@mui/icons-material/LinkRounded"
+import { Snackbar, Paper, Typography, Box, Button, Chip, Stack, IconButton, Divider, Collapse } from "@mui/material"
+import { alpha, keyframes } from "@mui/material/styles"
+import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded"
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded"
-import { useRouter, useParams } from "next/navigation"
+import ExpandLessRoundedIcon from "@mui/icons-material/ExpandLessRounded"
+import ExpandMoreRoundedIcon from "@mui/icons-material/ExpandMoreRounded"
+import { useParams } from "next/navigation"
 import { useEffect, useState } from "react"
 import { create } from "@/app/api/apiService"
 import { useUser } from "@/utils/auth/userZustand"
 import { hasVinculacionAccess } from "@/utils/auth/permissionUtils"
 import { logger } from "@/utils/logger"
+import { normalizeMatchDescription } from "./utils/matchDescription"
+
+// Llamado de atención: un anillo que se expande y un leve sacudón del ícono. Se repiten pocas veces
+// (no para siempre) y sólo si el sistema del usuario no pidió reducir animaciones.
+const ringPulse = keyframes`
+  0%   { box-shadow: 0 0 0 0 rgba(237, 108, 2, 0.55); }
+  70%  { box-shadow: 0 0 0 12px rgba(237, 108, 2, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(237, 108, 2, 0); }
+`
+const wiggle = keyframes`
+  0%, 80%, 100% { transform: rotate(0deg); }
+  15% { transform: rotate(-14deg); }
+  30% { transform: rotate(12deg); }
+  45% { transform: rotate(-8deg); }
+  60% { transform: rotate(6deg); }
+`
 
 interface VinculacionResult {
   demanda_ids: number[]
@@ -39,10 +57,11 @@ const VinculacionNotification: React.FC<VinculacionNotificationProps> = ({
   currentDemandaId,
   onVincularLegajo,
 }) => {
-  const router = useRouter()
   const params = useParams()
   const [shouldShow, setShouldShow] = useState(true)
   const [isVinculando, setIsVinculando] = useState(false)
+  // Arranca colapsada: avisa sin ocupar lugar mientras se sigue completando el formulario
+  const [expanded, setExpanded] = useState(false)
   const user = useUser((state) => state.user)
 
   // Check if user has permission to view/access connections
@@ -86,14 +105,14 @@ const VinculacionNotification: React.FC<VinculacionNotificationProps> = ({
 
   if (!hasDemandas && !hasLegajos) return null
 
-  // Función para abrir la demanda en página completa
+  // Se abren en una pestaña nueva: salir de la página en medio del registro haría perder el lugar
+  // en el formulario (sólo queda el borrador guardado).
   const handleOpenDemanda = (demandaId: number) => {
-    router.push(`/demanda/${demandaId}`)
+    window.open(`/demanda/${demandaId}`, "_blank", "noopener,noreferrer")
   }
 
-  // Función para abrir el legajo en página completa
   const handleOpenLegajo = (legajoId: number) => {
-    router.push(`/legajo/${legajoId}`)
+    window.open(`/legajo/${legajoId}`, "_blank", "noopener,noreferrer")
   }
 
   // Función para vincular demandas
@@ -142,20 +161,32 @@ const VinculacionNotification: React.FC<VinculacionNotificationProps> = ({
       open={open && shouldShow}
       autoHideDuration={null}
       onClose={onClose}
-      anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      // Abajo a la derecha: se puede usar pero no tapa la barra de navegación ni el formulario centrado
+      anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       sx={{ width: { xs: "calc(100% - 16px)", sm: "auto" } }}
     >
       <Paper
         elevation={8}
         sx={{
-          width: { xs: "100%", sm: 420 },
+          width: { xs: "100%", sm: 380 },
           maxWidth: "calc(100vw - 16px)",
           borderRadius: 3,
           overflow: "hidden",
+          // Tono de alerta: borde y fondo ámbar suave (no es un error, pero pide revisar)
+          borderLeft: "5px solid",
+          borderColor: "warning.main",
+          backgroundImage: (theme) =>
+            `linear-gradient(${alpha(theme.palette.warning.main, 0.1)}, ${alpha(theme.palette.warning.main, 0.1)})`,
         }}
       >
-        {/* Header */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, px: 2, py: 1.5 }}>
+        {/* Header: al tocarlo se expande o se pliega el detalle */}
+        <Box
+          onClick={() => setExpanded((prev) => !prev)}
+          sx={{ display: "flex", alignItems: "center", gap: 1.5, px: 2, py: 1.25, cursor: "pointer" }}
+          role="button"
+          aria-expanded={expanded}
+          aria-label={expanded ? "Ocultar posibles coincidencias" : "Ver posibles coincidencias"}
+        >
           <Box
             sx={{
               width: 36,
@@ -165,26 +196,48 @@ const VinculacionNotification: React.FC<VinculacionNotificationProps> = ({
               alignItems: "center",
               justifyContent: "center",
               flexShrink: 0,
-              color: "primary.main",
-              bgcolor: (theme) => alpha(theme.palette.primary.main, 0.12),
+              color: "warning.dark",
+              bgcolor: (theme) => alpha(theme.palette.warning.main, 0.2),
+              // Se anima mientras está plegada (pide atención); al expandirla ya está leyéndola
+              "@media (prefers-reduced-motion: no-preference)": {
+                animation: expanded ? "none" : `${ringPulse} 1.6s ease-out 3, ${wiggle} 1.1s ease-in-out 3`,
+              },
             }}
           >
-            <LinkRoundedIcon fontSize="small" />
+            <WarningAmberRoundedIcon fontSize="small" />
           </Box>
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography variant="subtitle2" fontWeight={700} lineHeight={1.25}>
-              Coincidencias encontradas
+              Posibles coincidencias
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              {totalCount} {totalCount === 1 ? "resultado" : "resultados"}
+              {totalCount} {totalCount === 1 ? "resultado" : "resultados"} · todavía no vinculadas
             </Typography>
           </Box>
-          <IconButton size="small" onClick={onClose} sx={{ flexShrink: 0, color: "text.secondary" }}>
+          {expanded ? (
+            <ExpandMoreRoundedIcon fontSize="small" sx={{ color: "text.secondary" }} />
+          ) : (
+            <ExpandLessRoundedIcon fontSize="small" sx={{ color: "text.secondary" }} />
+          )}
+          <IconButton
+            size="small"
+            aria-label="Cerrar aviso de coincidencias"
+            onClick={(event) => {
+              event.stopPropagation() // no debe también expandir/plegar
+              onClose()
+            }}
+            sx={{ flexShrink: 0, color: "text.secondary" }}
+          >
             <CloseRoundedIcon fontSize="small" />
           </IconButton>
         </Box>
 
+        <Collapse in={expanded} timeout="auto" unmountOnExit>
         <Divider />
+
+        <Typography variant="caption" color="text.secondary" sx={{ display: "block", px: 2, pt: 1.25 }}>
+          Revisalas para evitar duplicados.
+        </Typography>
 
         {/* Contenido scrolleable con scrollbar fino */}
         <Box
@@ -219,12 +272,18 @@ const VinculacionNotification: React.FC<VinculacionNotificationProps> = ({
                   }}
                 >
                   <Typography variant="body2" sx={{ overflowWrap: "anywhere", lineHeight: 1.5 }}>
-                    {vinculacionResults.match_descriptions[index]}
+                    {normalizeMatchDescription(vinculacionResults.match_descriptions[index] ?? "")}
                   </Typography>
                   <Stack direction="row" spacing={1} sx={{ mt: 1, flexWrap: "wrap", gap: 1 }}>
                     <Button onClick={() => handleOpenDemanda(demandaId)} size="small" variant="text">
                       Ver demanda
                     </Button>
+                    {/* Al crear una demanda todavía no existe su ID: se explica cuándo se podrá vincular */}
+                    {!(currentDemandaId || params.id) && (
+                      <Typography variant="caption" color="text.secondary" sx={{ alignSelf: "center" }}>
+                        Podrás vincularla después de guardar, desde el detalle de la demanda.
+                      </Typography>
+                    )}
                     {/* Mostrar botón de vincular solo si hay un ID de demanda actual */}
                     {(currentDemandaId || params.id) && (
                       <Button
@@ -301,6 +360,7 @@ const VinculacionNotification: React.FC<VinculacionNotificationProps> = ({
             </Box>
           )}
         </Box>
+        </Collapse>
       </Paper>
     </Snackbar>
   )
