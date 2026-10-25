@@ -94,7 +94,10 @@ const Home: React.FC = () => {
     const draft = getDraft(formId)
     if (draft) {
       setFormData(draft)
-      toast.info("Borrador cargado exitosamente")
+      // El formulario ya estaba montado sin datos: se remonta para que calcule el paso inicial del borrador
+      setFormKey((prev) => prev + 1)
+      const step = useDraftStore.getState().getDraftStep(formId)
+      toast.info(step ? `Borrador cargado: retomás en el paso ${step + 1}.` : "Borrador cargado exitosamente")
     }
     setShowDraftModal(false)
   }

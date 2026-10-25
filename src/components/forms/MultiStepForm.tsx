@@ -41,6 +41,7 @@ import VinculosManager from "./components/VinculosManager"
 import FormSection from "./components/form-section"
 import { logger } from "@/utils/logger"
 import { describeApiError } from "@/utils/apiErrorFormatter"
+import { resolveResumeStep } from "./utils/draftStep"
 import { showErrorToast } from "@/utils/showErrorToast"
 import {
   buildInvalidFieldsMessage,
@@ -147,14 +148,23 @@ const MultiStepForm: React.FC<MultiStepFormProps> = ({
   form,
   demandaId,
 }) => {
-  const [activeStep, setActiveStep] = useState(0)
+  const formId = form || "new"
+  // Sólo los borradores con nombre (el registro nuevo) recuerdan el paso; la edición de una demanda no.
+  const remembersStep = !!form && !id && !readOnly && mode === "form"
+  const [activeStep, setActiveStep] = useState(() => {
+    // Al retomar un borrador (ya tiene objetivo, por eso no hay paso de objetivo) se vuelve al paso
+    // donde se dejó, no al primero.
+    if (!remembersStep || !initialData?.objetivo_de_demanda) return 0
+    const variant = getFormVariantFromObjetivo(initialData.objetivo_de_demanda as ObjetivoDemanda)
+    const saved = useDraftStore.getState().getDraftStep(formId)
+    return resolveResumeStep(saved, getSteps(variant, false).length)
+  })
   const [formVariant, setFormVariant] = useState<FormVariant>(
     getFormVariantFromObjetivo(initialData?.objetivo_de_demanda as ObjetivoDemanda | undefined)
   )
   const [selectedObjetivo, setSelectedObjetivo] = useState<ObjetivoDemanda | null>(
     initialData?.objetivo_de_demanda as ObjetivoDemanda | null
   )
-  const formId = form || "new"
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"))
 
@@ -171,7 +181,7 @@ const MultiStepForm: React.FC<MultiStepFormProps> = ({
   const contentStepIndex = showObjetivoStep ? activeStep - 1 : activeStep
 
   // Get draft store functions
-  const { saveDraft, getDraft, clearDraft } = useDraftStore()
+  const { saveDraft, getDraft, clearDraft, saveDraftStep } = useDraftStore()
 
   // Get saved draft if it exists
   const savedDraft = getDraft(formId)
@@ -189,6 +199,11 @@ const MultiStepForm: React.FC<MultiStepFormProps> = ({
       ...savedDraft,
     },
   })
+
+  // Recordar en qué paso está, para volver ahí al retomar el borrador (no se guarda mientras se elige el objetivo)
+  useEffect(() => {
+    if (remembersStep && !isOnObjetivoStep) saveDraftStep(formId, contentStepIndex)
+  }, [remembersStep, isOnObjetivoStep, contentStepIndex, formId, saveDraftStep])
 
   // Watch for form changes to save draft
   const formValues = methods.watch()
