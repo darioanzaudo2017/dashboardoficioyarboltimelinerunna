@@ -24,6 +24,16 @@ import { useUser } from "@/utils/auth/userZustand"
 import { fetchUsuarios } from "@/app/(runna)/legajo-mesa/api/legajo-asignacion-api-service"
 import { normalizeApiText } from "@/components/evaluacion/utils/evaluacion-data-mappers"
 import { logger } from "@/utils/logger"
+import { describeApiError } from "@/utils/apiErrorFormatter"
+import { showErrorToast } from "@/utils/showErrorToast"
+
+// Cómo se nombra cada acción en el aviso de error ("No se pudo …")
+const ACCION_TEXTO: Record<string, string> = {
+  "autorizar tomar medida": "enviar la solicitud de adopción de medida",
+  "autorizar archivar": "enviar la solicitud de archivo",
+  autorizar: "autorizar la solicitud",
+  "no autorizar": "registrar la no autorización",
+}
 
 // Dynamic imports para evitar errores SSR con Next.js
 const DownloadPDFButton = dynamic(() => import("./pdf/download-pdf-button"), {
@@ -146,15 +156,15 @@ export default function ActionButtons({
     }
   }, [tipoMedidaSolicitado]);
 
+  // Zona de la demanda: se saca como valor simple para que el efecto de abajo dependa de ella y no de
+  // `data`, que es un objeto nuevo en cada render y disparaba la carga de usuarios en bucle.
+  const zonaId =
+    data?.relacion_demanda?.demanda_zona?.zona || data?.registrado_por_user_zona?.id || null
+
   // Fetch users from API for firmantes filtered by zona
   useEffect(() => {
     const loadUsuarios = async () => {
       try {
-        // Get zona ID from demanda data
-        const zonaId = data?.relacion_demanda?.demanda_zona?.zona ||
-          data?.registrado_por_user_zona?.id ||
-          null
-
         logger.log("Loading usuarios for zona:", zonaId)
 
         // Fetch all usuarios (API doesn't properly filter by zona)
@@ -216,7 +226,7 @@ export default function ActionButtons({
     }
 
     loadUsuarios()
-  }, [user, data])
+  }, [user, zonaId])
 
   const handleChildChange = (event: SelectChangeEvent<typeof selectedChildrenIds>) => {
     const {
@@ -444,10 +454,9 @@ export default function ActionButtons({
       }
     } catch (error) {
       logger.error(`Error in ${action}:`, error)
-      toast.error(`Error al procesar la solicitud de ${action}`, {
-        position: "top-center",
-        autoClose: 3000,
-      })
+      // Muestra el motivo que devolvió el servidor (qué campo falta, etc.) en lugar de un aviso genérico.
+      const { message, details } = describeApiError(error, `No se pudo ${ACCION_TEXTO[action] || "procesar la solicitud"}:`)
+      showErrorToast(message, details)
     } finally {
       setIsSubmitting(false)
     }

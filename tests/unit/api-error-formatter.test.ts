@@ -43,6 +43,30 @@ describe("describeApiError", () => {
     expect(describeApiError(apiError(500, {})).message).toBe("Error interno del servidor. Por favor, inténtalo más tarde.")
   })
 
+  it("nombra los campos de la evaluación en lugar de mostrar el nombre técnico", () => {
+    const { message } = describeApiError(
+      apiError(400, { justificacion_tecnico: ["Este campo no puede estar en blanco."] }),
+      "No se pudo enviar la solicitud:",
+    )
+
+    expect(message).toBe("No se pudo enviar la solicitud:\n• Justificación del técnico: Este campo no puede estar en blanco.")
+  })
+
+  it("muestra el detalle de un error simple del servidor", () => {
+    const { message } = describeApiError(apiError(400, { detail: "El campo justificacion_director es obligatorio." }))
+
+    expect(message).toContain("• El campo justificacion_director es obligatorio.")
+  })
+
+  it("no vuelca la página HTML de un error 500 al usuario", () => {
+    const html = "\n<!doctype html>\n<html><head><title>Server Error (500)</title></head></html>"
+
+    const { message } = describeApiError(apiError(500, html), "No se pudo enviar la solicitud:")
+
+    expect(message).toBe("Error interno del servidor. Por favor, inténtalo más tarde.")
+    expect(message).not.toContain("<")
+  })
+
   it("avisa de un problema de conexión cuando no hubo respuesta", () => {
     expect(describeApiError(new Error("Network Error")).message).toContain("No se pudo conectar")
   })

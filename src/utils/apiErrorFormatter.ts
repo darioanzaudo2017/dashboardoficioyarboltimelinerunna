@@ -43,6 +43,15 @@ const FIELD_LABELS: Record<string, string> = {
   medida: "Medida",
   tipo_vinculo: "Tipo de vínculo",
   justificacion: "Justificación",
+  justificacion_tecnico: "Justificación del técnico",
+  justificacion_director: "Justificación del director",
+  descripcion_de_la_situacion: "Descripción de la situación",
+  valoracion_profesional_final: "Valoración profesional final",
+  tipo_medida_evaluado: "Tipo de medida",
+  nnyas_evaluados_id: "NNyA evaluados",
+  solicitud_tecnico: "Solicitud del técnico",
+  decision_director: "Decisión del director",
+  uploaded_files: "Archivos adjuntos",
   observaciones: "Observaciones",
   zona: "Zona",
   codigo: "Código",
@@ -78,6 +87,8 @@ const collectMessages = (node: unknown, path: string[], out: string[]): void => 
   if (node === null || node === undefined) return
 
   if (typeof node === "string") {
+    // Un error 500 del servidor llega como una página HTML: no se muestra tal cual al usuario.
+    if (/^\s*<(!doctype|html)/i.test(node)) return
     const message = translateMessage(node)
     out.push(path.length ? `${path.join(SEPARATOR)}: ${message}` : message)
     return
