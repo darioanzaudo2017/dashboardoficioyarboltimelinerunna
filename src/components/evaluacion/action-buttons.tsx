@@ -13,11 +13,17 @@ import {
   Autocomplete,
   TextField,
   Typography,
+  Paper,
+  Divider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
   type SelectChangeEvent,
 } from "@mui/material"
 import { toast } from "react-toastify"
 import dynamic from "next/dynamic"
-import { Cancel as CancelIcon, Person as PersonIcon } from "@mui/icons-material"
+import { Cancel as CancelIcon, Person as PersonIcon, Check as CheckIcon } from "@mui/icons-material"
 import { create } from "@/app/api/apiService"
 import axiosInstance from "@/app/api/utils/axiosInstance"
 import { useUser } from "@/utils/auth/userZustand"
@@ -56,7 +62,55 @@ interface ActionButtonsProps {
   nnyaIds?: (string | number)[]
   adjuntos?: any[]
   fileManagementRef?: React.RefObject<any> // Add ref to get files on demand
+  // Nombres de los archivos cargados en la sección ARCHIVOS (los que se van a enviar)
+  nombresInformes?: string[]
+  // Zona de carga de archivos: se dibuja dentro del panel, justo debajo de los botones del borrador
+  archivosSlot?: React.ReactNode
 }
+
+interface Confirmacion {
+  accion: string
+  titulo: string
+  texto: string
+  boton: string
+  color: "primary" | "secondary" | "error"
+}
+
+// Encabezado de cada paso del panel de cierre: número (o tilde si está listo) y título.
+const PasoTitulo = ({
+  n,
+  titulo,
+  listo,
+  etiquetaListo = "Listo",
+}: {
+  n: number
+  titulo: string
+  listo: boolean
+  etiquetaListo?: string
+}) => (
+  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
+    <Box
+      sx={{
+        width: 28,
+        height: 28,
+        borderRadius: "50%",
+        bgcolor: listo ? "success.main" : "primary.main",
+        color: "#fff",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontWeight: 700,
+        fontSize: 14,
+      }}
+    >
+      {listo ? <CheckIcon sx={{ fontSize: 18 }} /> : n}
+    </Box>
+    <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+      {titulo}
+    </Typography>
+    {listo && <Chip size="small" color="success" variant="outlined" label={etiquetaListo} />}
+  </Box>
+)
 
 interface ChildOption {
   id: string | number
@@ -110,7 +164,11 @@ export default function ActionButtons({
   nnyaIds,
   adjuntos = [],
   fileManagementRef,
+  nombresInformes = [],
+  archivosSlot = null,
 }: ActionButtonsProps) {
+  const [borradorGenerado, setBorradorGenerado] = useState(false)
+  const [confirmacion, setConfirmacion] = useState<Confirmacion | null>(null)
   const [selectedChildrenIds, setSelectedChildrenIds] = useState<(string | number)[]>([])
   const [firmantes, setFirmantes] = useState<Firmante[]>([])
   const [firmantesDisponibles, setFirmantesDisponibles] = useState<Firmante[]>([])
@@ -454,7 +512,13 @@ export default function ActionButtons({
   }
 
 
-  const handlePDFGenerated = (blob: Blob, fileName: string) => {
+  // El borrador se descarga pero NO se adjunta solo: hay que revisarlo, firmarlo y subir la versión firmada.
+  const handleBorradorGenerado = (blob: Blob, fileName: string) => {
+    setBorradorGenerado(true)
+    toast.info("Borrador descargado. Revisalo, firmalo y subí la versión firmada en ARCHIVOS", {
+      position: "top-center",
+      autoClose: 5000,
+    })
     if (onPDFGenerated) {
       onPDFGenerated(blob, fileName)
     }
@@ -491,226 +555,326 @@ export default function ActionButtons({
     />
   ) : null
 
-  // Botones del flujo del Técnico (solicitud de archivo / tomar medida)
-  const tecnicoActions = (
-    <>
-      <Button
-        variant="contained"
-        color="secondary"
-        onClick={() => handleAuthorizationAction("autorizar archivar")}
-        disabled={isSubmitting}
-      >
-        Solicitud de autorización de archivo
-      </Button>
+  // Qué falta para poder pedir cada autorización. Se muestra debajo de los botones
+  // para que no haya que adivinar por qué están deshabilitados.
+  const faltaInforme = nombresInformes.length === 0
+  const faltantesArchivo = faltaInforme ? ["subir el informe firmado"] : []
+  const faltantesMedida = [
+    ...(faltaInforme ? ["subir el informe firmado"] : []),
+    ...(selectedChildrenIds.length === 0 ? ["elegir al menos un NNyA"] : []),
+    ...(!tipoMedidaEvaluado ? ["elegir el tipo de medida"] : []),
+  ]
 
-      {/* Multi-select for children before "Autorizar tomar medida" */}
-      <FormControl sx={{ minWidth: 250 }}>
-        <InputLabel id="select-multiple-children-label">Seleccionar NNyA</InputLabel>
-        <Select
-          labelId="select-multiple-children-label"
-          id="select-multiple-children"
-          multiple
-          value={selectedChildrenIds}
-          onChange={handleChildChange}
-          input={<OutlinedInput id="select-multiple-chip" label="Seleccionar NNyA" />}
-          renderValue={(selected) => (
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-              {selected.map((value) => {
-                const child = children.find((c) => c.id === value)
-                return (
-                  <Chip
-                    key={value}
-                    label={child ? child.name : value}
-                    size="small"
-                    deleteIcon={<CancelIcon onMouseDown={(event) => event.stopPropagation()} />}
-                    onDelete={() => {
-                      setSelectedChildrenIds(selectedChildrenIds.filter((id) => id !== value))
-                    }}
-                  />
-                )
-              })}
-            </Box>
-          )}
-          size="small"
-          MenuProps={{
-            PaperProps: {
-              style: {
-                maxHeight: 224,
-                width: 250,
-              },
-            },
-          }}
-        >
-          {children.length > 0 ? (
-            children.map((child) => (
-              <MenuItem key={child.id} value={child.id}>
-                {child.name} ({child.type})
-              </MenuItem>
-            ))
-          ) : (
-            <MenuItem disabled value="">
-              No hay NNyA registrados
-            </MenuItem>
-          )}
-        </Select>
-      </FormControl>
+  const textoInformes = nombresInformes.length > 0 ? ` Se adjunta: ${nombresInformes.join(", ")}.` : ""
 
-      {/* Tipo de Medida selector */}
-      <FormControl sx={{ minWidth: 250 }}>
-        <InputLabel id="select-tipo-medida-label">Tipo de Medida *</InputLabel>
-        <Select
-          labelId="select-tipo-medida-label"
-          id="select-tipo-medida"
-          value={tipoMedidaEvaluado}
-          onChange={(e) => setTipoMedidaEvaluado(e.target.value)}
-          input={<OutlinedInput label="Tipo de Medida *" />}
-          size="small"
-        >
-          <MenuItem value="MPI">Medida de Protección Integral (MPI)</MenuItem>
-          <MenuItem value="MPE">Medida de Protección Excepcional (MPE)</MenuItem>
-          {/* MPJ ya no se solicita desde acá (entra por el circuito de oficios),
-              pero si una evaluación vieja lo tiene guardado hay que poder
-              mostrarlo en vez de dejar el selector en un valor fuera de rango. */}
-          {tipoMedidaEvaluado === "MPJ" && (
-            <MenuItem value="MPJ" disabled>
-              Medida Penal Juvenil (MPJ)
-            </MenuItem>
-          )}
-        </Select>
-      </FormControl>
+  const pedirConfirmacion = (accion: string) => {
+    const nombresNnya = selectedChildrenIds
+      .map((id) => children.find((c) => c.id === id)?.name)
+      .filter(Boolean)
+      .join(", ")
+    const demanda = demandaId ? ` #${demandaId}` : ""
+    switch (accion) {
+      case "autorizar archivar":
+        setConfirmacion({
+          accion,
+          titulo: "Solicitar autorización para archivar",
+          texto: `Se enviará al Director la solicitud de archivo de la demanda${demanda}.${textoInformes}`,
+          boton: "Enviar solicitud",
+          color: "secondary",
+        })
+        break
+      case "autorizar tomar medida":
+        setConfirmacion({
+          accion,
+          titulo: "Solicitar autorización de adopción de medida",
+          texto: `Se enviará al Director la solicitud de ${tipoMedidaEvaluado ? TIPO_MEDIDA_LABELS[tipoMedidaEvaluado] || tipoMedidaEvaluado : "medida"} para ${nombresNnya || "los NNyA elegidos"} (demanda${demanda}).${textoInformes}`,
+          boton: "Enviar solicitud",
+          color: "secondary",
+        })
+        break
+      case "autorizar":
+        setConfirmacion({
+          accion,
+          titulo: "Autorizar la solicitud",
+          texto: `Vas a AUTORIZAR${solicitudTecnicoPrevia ? ` la solicitud del técnico (${solicitudTecnicoPrevia})` : " la solicitud"} de la demanda${demanda}. ¿Confirmás?`,
+          boton: "Autorizar",
+          color: "primary",
+        })
+        break
+      case "no autorizar":
+        setConfirmacion({
+          accion,
+          titulo: "No autorizar la solicitud",
+          texto: `Vas a NO AUTORIZAR${solicitudTecnicoPrevia ? ` la solicitud del técnico (${solicitudTecnicoPrevia})` : " la solicitud"} de la demanda${demanda}. ¿Confirmás?`,
+          boton: "No autorizar",
+          color: "error",
+        })
+        break
+    }
+  }
 
-      <Button
-        variant="contained"
-        color="secondary"
-        onClick={() => handleAuthorizationAction("autorizar tomar medida")}
-        disabled={selectedChildrenIds.length === 0 || !tipoMedidaEvaluado || isSubmitting}
-      >
-        Solicitud de autorización de adopción de medida
-      </Button>
-    </>
+  // Selector de firmantes (se usa en el paso 1 y en la vista del Director)
+  const firmantesSelector = (
+    <Autocomplete
+      multiple
+      id="firmantes-autocomplete"
+      options={firmantesDisponibles}
+      value={firmantes}
+      onChange={(event, newValue) => {
+        setFirmantes(newValue)
+      }}
+      getOptionLabel={(option) => `${option.nombre} (${option.cargo})`}
+      isOptionEqualToValue={(option, value) => option.id === value.id}
+      renderInput={(params) => <TextField {...params} label="Firmantes" placeholder="Buscar firmantes..." size="small" />}
+      renderTags={(value, getTagProps) =>
+        value.map((option, index) => (
+          <Chip
+            {...getTagProps({ index })}
+            key={option.id}
+            label={option.nombre}
+            size="small"
+            icon={<PersonIcon fontSize="small" />}
+          />
+        ))
+      }
+      sx={{ minWidth: 300 }}
+      size="small"
+      limitTags={2}
+      filterOptions={(options, state) => {
+        const inputValue = state.inputValue.toLowerCase()
+        return options.filter(
+          (option) =>
+            option.nombre.toLowerCase().includes(inputValue) || option.cargo.toLowerCase().includes(inputValue),
+        )
+      }}
+    />
   )
 
-  // Botones del flujo del Director (autorizar / no autorizar)
-  const directorActions = (
-    <>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={() => handleAuthorizationAction("autorizar")}
-        disabled={isSubmitting}
+  const nnyaSelect = (
+    <FormControl sx={{ minWidth: 250 }}>
+      <InputLabel id="select-multiple-children-label">Seleccionar NNyA</InputLabel>
+      <Select
+        labelId="select-multiple-children-label"
+        id="select-multiple-children"
+        multiple
+        value={selectedChildrenIds}
+        onChange={handleChildChange}
+        input={<OutlinedInput id="select-multiple-chip" label="Seleccionar NNyA" />}
+        renderValue={(selected) => (
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+            {selected.map((value) => {
+              const child = children.find((c) => c.id === value)
+              return (
+                <Chip
+                  key={value}
+                  label={child ? child.name : value}
+                  size="small"
+                  deleteIcon={<CancelIcon onMouseDown={(event) => event.stopPropagation()} />}
+                  onDelete={() => {
+                    setSelectedChildrenIds(selectedChildrenIds.filter((id) => id !== value))
+                  }}
+                />
+              )
+            })}
+          </Box>
+        )}
+        size="small"
+        MenuProps={{ PaperProps: { style: { maxHeight: 224, width: 250 } } }}
       >
-        Autorizar
-      </Button>
+        {children.length > 0 ? (
+          children.map((child) => (
+            <MenuItem key={child.id} value={child.id}>
+              {child.name} ({child.type})
+            </MenuItem>
+          ))
+        ) : (
+          <MenuItem disabled value="">
+            No hay NNyA registrados
+          </MenuItem>
+        )}
+      </Select>
+    </FormControl>
+  )
 
-      <Button
-        variant="contained"
-        color="error"
-        onClick={() => handleAuthorizationAction("no autorizar")}
-        disabled={isSubmitting}
+  const tipoMedidaSelect = (
+    <FormControl sx={{ minWidth: 250 }}>
+      <InputLabel id="select-tipo-medida-label">Tipo de Medida *</InputLabel>
+      <Select
+        labelId="select-tipo-medida-label"
+        id="select-tipo-medida"
+        value={tipoMedidaEvaluado}
+        onChange={(e) => setTipoMedidaEvaluado(e.target.value)}
+        input={<OutlinedInput label="Tipo de Medida *" />}
+        size="small"
       >
-        No autorizar
-      </Button>
-    </>
+        <MenuItem value="MPI">Medida de Protección Integral (MPI)</MenuItem>
+        <MenuItem value="MPE">Medida de Protección Excepcional (MPE)</MenuItem>
+        {/* MPJ ya no se solicita desde acá (entra por el circuito de oficios),
+            pero si una evaluación vieja lo tiene guardado hay que poder
+            mostrarlo en vez de dejar el selector en un valor fuera de rango. */}
+        {tipoMedidaEvaluado === "MPJ" && (
+          <MenuItem value="MPJ" disabled>
+            Medida Penal Juvenil (MPJ)
+          </MenuItem>
+        )}
+      </Select>
+    </FormControl>
+  )
+
+  // Panel del Técnico: los tres pasos en el orden en que se hacen.
+  const panelTecnico = (
+    <Paper variant="outlined" sx={{ p: 2.5, display: "flex", flexDirection: "column", gap: 3 }}>
+      <Typography variant="h6" sx={{ fontWeight: "bold", color: "#0EA5E9" }}>
+        CIERRE DE LA EVALUACIÓN
+      </Typography>
+
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+        <PasoTitulo n={1} titulo="Generar el borrador del informe (opcional)" listo={borradorGenerado} etiquetaListo="Descargado" />
+        <Typography variant="body2" color="text.secondary">
+          Incluye lo cargado en la constatación y lo que escribiste en esta pantalla. Es un borrador: descargalo,
+          revisalo, firmalo y subí la versión firmada en el paso 2. Si ya tenés el informe redactado por fuera del
+          sistema, saltealo y subilo directamente.
+        </Typography>
+        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, alignItems: "center" }}>
+          {firmantesSelector}
+          <DownloadPDFButton data={combinedData} label="Generar borrador (PDF)" onGenerate={handleBorradorGenerado} />
+          <DownloadDocxButton data={combinedData} label="Generar borrador (Word)" onGenerate={handleBorradorGenerado} />
+        </Box>
+      </Box>
+
+      <Divider />
+
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+        <PasoTitulo n={2} titulo="Subir el informe firmado (obligatorio)" listo={!faltaInforme} />
+        <Typography variant="body2" color="text.secondary">
+          {faltaInforme
+            ? "Todavía no hay ningún archivo cargado. Arrastralo o seleccionalo acá abajo."
+            : `Archivos cargados: ${nombresInformes.join(", ")}.`}
+        </Typography>
+        {archivosSlot}
+      </Box>
+
+      <Divider />
+
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+        <PasoTitulo n={3} titulo="Pedir la autorización al Director" listo={Boolean(solicitudTecnicoPrevia)} etiquetaListo="Solicitada" />
+        {solicitudTecnicoResumen}
+        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
+          <Paper variant="outlined" sx={{ p: 2, flex: "1 1 420px", display: "flex", flexDirection: "column", gap: 1.5 }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+              Adoptar una medida
+            </Typography>
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
+              {nnyaSelect}
+              {tipoMedidaSelect}
+            </Box>
+            <Box>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={() => pedirConfirmacion("autorizar tomar medida")}
+                disabled={faltantesMedida.length > 0 || isSubmitting}
+              >
+                Solicitud de autorización de adopción de medida
+              </Button>
+            </Box>
+            {faltantesMedida.length > 0 && (
+              <Typography variant="caption" color="warning.dark">
+                Falta: {faltantesMedida.join(", ")}.
+              </Typography>
+            )}
+          </Paper>
+          <Paper variant="outlined" sx={{ p: 2, flex: "1 1 260px", display: "flex", flexDirection: "column", gap: 1.5 }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+              Archivar la demanda
+            </Typography>
+            <Box>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={() => pedirConfirmacion("autorizar archivar")}
+                disabled={faltantesArchivo.length > 0 || isSubmitting}
+              >
+                Solicitud de autorización de archivo
+              </Button>
+            </Box>
+            {faltantesArchivo.length > 0 && (
+              <Typography variant="caption" color="warning.dark">
+                Falta: {faltantesArchivo.join(", ")}.
+              </Typography>
+            )}
+          </Paper>
+        </Box>
+      </Box>
+    </Paper>
+  )
+
+  // Panel del Director: ve lo que pidió el técnico y decide.
+  // El Director también puede adjuntar archivos; si es solo Director (no admin) la zona de carga va acá.
+  const panelDirector = (
+    <Paper variant="outlined" sx={{ p: 2.5, display: "flex", flexDirection: "column", gap: 2 }}>
+      <Typography variant="h6" sx={{ fontWeight: "bold", color: "primary.main" }}>
+        DECISIÓN DEL DIRECTOR
+      </Typography>
+      {solicitudTecnicoResumen || (
+        <Typography variant="body2" color="text.secondary">
+          El técnico todavía no registró una solicitud.
+        </Typography>
+      )}
+      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, alignItems: "center" }}>
+        {firmantesSelector}
+        <DownloadPDFButton data={combinedData} label="Generar PDF" onGenerate={handleBorradorGenerado} />
+        <DownloadDocxButton data={combinedData} label="Generar Word" onGenerate={handleBorradorGenerado} />
+      </Box>
+      {!isAdmin && archivosSlot}
+      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
+        <Button variant="contained" color="primary" onClick={() => pedirConfirmacion("autorizar")} disabled={isSubmitting}>
+          Autorizar
+        </Button>
+        <Button variant="contained" color="error" onClick={() => pedirConfirmacion("no autorizar")} disabled={isSubmitting}>
+          No autorizar
+        </Button>
+      </Box>
+    </Paper>
   )
 
   return (
-    <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end", gap: 2, flexWrap: "wrap", alignItems: "center" }}>
-      <DownloadPDFButton data={combinedData} onGenerate={handlePDFGenerated} />
-      <DownloadDocxButton data={combinedData} />
-
-      {/* Selector de firmantes con búsqueda */}
-      <Autocomplete
-        multiple
-        id="firmantes-autocomplete"
-        options={firmantesDisponibles}
-        value={firmantes}
-        onChange={(event, newValue) => {
-          setFirmantes(newValue)
-        }}
-        getOptionLabel={(option) => `${option.nombre} (${option.cargo})`}
-        isOptionEqualToValue={(option, value) => option.id === value.id}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            label="Firmantes"
-            placeholder="Buscar firmantes..."
-            size="small"
-          />
-        )}
-        renderTags={(value, getTagProps) =>
-          value.map((option, index) => (
-            <Chip
-              {...getTagProps({ index })}
-              key={option.id}
-              label={option.nombre}
-              size="small"
-              icon={<PersonIcon fontSize="small" />}
-            />
-          ))
-        }
-        sx={{ minWidth: 300 }}
-        size="small"
-        limitTags={2}
-        filterOptions={(options, state) => {
-          const inputValue = state.inputValue.toLowerCase()
-          return options.filter(
-            (option) =>
-              option.nombre.toLowerCase().includes(inputValue) ||
-              option.cargo.toLowerCase().includes(inputValue)
-          )
-        }}
-      />
-
+    <Box sx={{ mt: 2, display: "flex", flexDirection: "column", gap: 3 }}>
       {isAdmin ? (
-        // Admin: ve ambos flujos, separados y etiquetados
+        // Admin: ve ambos flujos, separados
         <>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 1.5,
-              p: 1.5,
-              border: "1px dashed",
-              borderColor: "secondary.main",
-              borderRadius: 1,
-            }}
-          >
-            <Typography variant="caption" sx={{ fontWeight: "bold", color: "secondary.main", letterSpacing: 0.5 }}>
-              TÉCNICO
-            </Typography>
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, alignItems: "center" }}>
-              {tecnicoActions}
-            </Box>
-          </Box>
-
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 1.5,
-              p: 1.5,
-              border: "1px dashed",
-              borderColor: "primary.main",
-              borderRadius: 1,
-            }}
-          >
-            <Typography variant="caption" sx={{ fontWeight: "bold", color: "primary.main", letterSpacing: 0.5 }}>
-              DIRECTOR
-            </Typography>
-            {solicitudTecnicoResumen}
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, alignItems: "center" }}>
-              {directorActions}
-            </Box>
-          </Box>
+          {panelTecnico}
+          {panelDirector}
         </>
+      ) : isDirector ? (
+        panelDirector
       ) : (
-        // Resto de roles: un solo flujo, sin etiquetas
-        <>
-          {solicitudTecnicoResumen}
-          {!isDirector && tecnicoActions}
-          {isDirector && directorActions}
-        </>
+        panelTecnico
       )}
+
+      <Dialog open={confirmacion !== null} onClose={() => setConfirmacion(null)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700 }}>{confirmacion?.titulo}</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2">{confirmacion?.texto}</Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setConfirmacion(null)} sx={{ textTransform: "none" }}>
+            Cancelar
+          </Button>
+          <Button
+            variant="contained"
+            color={confirmacion?.color || "primary"}
+            onClick={() => {
+              const accion = confirmacion?.accion
+              setConfirmacion(null)
+              if (accion) handleAuthorizationAction(accion)
+            }}
+            sx={{ textTransform: "none", fontWeight: 600 }}
+          >
+            {confirmacion?.boton}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   )
 }

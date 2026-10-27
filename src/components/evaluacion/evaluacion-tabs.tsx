@@ -124,12 +124,8 @@ export default function EvaluacionTabs({ data }: EvaluacionTabsProps) {
   }
 
 
-  const handlePDFGenerated = (blob: Blob, fileName: string) => {
-    // Add the generated PDF to the file management component
-    if (fileManagementRef.current) {
-      fileManagementRef.current.addGeneratedPDF(blob, fileName)
-    }
-  }
+  // Nombres de los archivos cargados en ARCHIVOS: el panel de cierre los usa para exigir el informe firmado.
+  const [nombresInformes, setNombresInformes] = useState<string[]>([])
 
   const allNnyaIds = [
     ...(nnyaConvivientes || []).map((nnya: any) => nnya.persona?.id || nnya.id || nnya.ID || nnya.DNI).filter(Boolean),
@@ -239,13 +235,6 @@ export default function EvaluacionTabs({ data }: EvaluacionTabsProps) {
 
 
 
-      {/* File Management Section */}
-      <FileManagement
-        ref={fileManagementRef}
-        demandaId={demandaId}
-        existingAdjuntos={data.latest_evaluacion?.adjuntos || []}
-      />
-
       {/* Justificaciones internas: solo se habilitan ante discrepancia del director (no autorización),
           para el intercambio de mensajes entre técnico y director */}
       {hayDiscrepanciaDirector && (
@@ -326,7 +315,6 @@ export default function EvaluacionTabs({ data }: EvaluacionTabsProps) {
 
       <ActionButtons
         data={collectUpdatedData()}
-        onPDFGenerated={handlePDFGenerated}
         demandaId={demandaId}
         nnyaIds={allNnyaIds}
         valoracionProfesional={valoracionProfesional}
@@ -335,6 +323,15 @@ export default function EvaluacionTabs({ data }: EvaluacionTabsProps) {
         descripcionSituacion={descripcionSituacion}
         adjuntos={adjuntos}
         fileManagementRef={fileManagementRef}
+        nombresInformes={nombresInformes}
+        archivosSlot={
+          <FileManagement
+            ref={fileManagementRef}
+            demandaId={demandaId}
+            existingAdjuntos={data.latest_evaluacion?.adjuntos || []}
+            onFilesChange={setNombresInformes}
+          />
+        }
       />
     </Box>
   )

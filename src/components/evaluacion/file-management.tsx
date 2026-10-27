@@ -22,6 +22,8 @@ interface FileInfo {
 interface FileManagementProps {
   demandaId?: number | null
   existingAdjuntos?: Array<{ archivo: string }>
+  // Avisa los nombres de los archivos cargados cada vez que cambia la lista.
+  onFilesChange?: (nombres: string[]) => void
 }
 
 // Export the handle type for TypeScript support
@@ -30,8 +32,12 @@ export interface FileManagementHandle {
   getFiles: () => File[] // Add method to get original File objects
 }
 
-const FileManagement = forwardRef<FileManagementHandle, FileManagementProps>(({ demandaId, existingAdjuntos = [] }, ref) => {
+const FileManagement = forwardRef<FileManagementHandle, FileManagementProps>(({ demandaId, existingAdjuntos = [], onFilesChange }, ref) => {
   const [files, setFiles] = useState<FileInfo[]>([])
+
+  useEffect(() => {
+    onFilesChange?.(files.map((f) => f.name))
+  }, [files, onFilesChange])
 
   // Load existing adjuntos when component mounts or when existingAdjuntos changes
   useEffect(() => {
@@ -161,7 +167,7 @@ const FileManagement = forwardRef<FileManagementHandle, FileManagementProps>(({ 
   }
 
   return (
-    <Box sx={{ mt: 4, mb: 2 }}>
+    <Box id="evaluacion-archivos" sx={{ mt: 4, mb: 2 }}>
       <FileUploadSection
         files={displayFiles}
         onUpload={handleFileUpload}
