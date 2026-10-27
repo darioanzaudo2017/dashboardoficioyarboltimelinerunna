@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import { CircularProgress, Typography, IconButton, Box, Alert, Tabs, Tab, Paper, Button, Chip } from "@mui/material"
+import { CircularProgress, Typography, IconButton, Box, Alert, Tabs, Tab, Paper, Button, Chip, Tooltip } from "@mui/material"
 import CloseIcon from "@mui/icons-material/Close"
 import SendIcon from "@mui/icons-material/Send"
 import ArticleIcon from "@mui/icons-material/Article"
@@ -25,6 +25,9 @@ import { fetchCaseData } from "@/components/forms/utils/apiToFormData"
 import { useUser } from "@/utils/auth/userZustand"
 import { hasVinculacionAccess } from "@/utils/auth/permissionUtils"
 import { logger } from "@/utils/logger"
+import { useApiQuery } from "@/hooks/useApiQuery"
+import ConfirmDialog from "@/components/shared/ConfirmDialog"
+import { countItems, describeConstatacion, tabLabelWithCount } from "./utils/constatacionResumen"
 
 interface TabPanelProps {
   children?: React.ReactNode
@@ -73,6 +76,8 @@ export default function DemandaDetail({ params, onClose, isFullPage = false }: D
   const [tabValue, setTabValue] = useState(0)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isMarkingSubido, setIsMarkingSubido] = useState(false)
+  // Confirmación previa a "Enviar a Evaluación" (con el resumen de lo cargado en la Constatación)
+  const [confirmEvaluacionOpen, setConfirmEvaluacionOpen] = useState(false)
   // Modal de éxito reutilizado de nuevoingreso para mostrar actividades
   // creadas automáticamente cuando Rosa setea tipo_oficio (post-creación).
   const [showSuccessModal, setShowSuccessModal] = useState(false)
@@ -82,6 +87,14 @@ export default function DemandaDetail({ params, onClose, isFullPage = false }: D
 
   // Check if user has permission to view/access connections
   const hasVinculacionPermission = hasVinculacionAccess(user)
+
+  // Cuánto se cargó en la Constatación. Mismas consultas (y misma caché) que usan las pestañas de
+  // "Registrar Actividad" y "Enviar Respuesta": al registrar algo allí, estos números se actualizan solos.
+  const demandaIdNumber = Number.parseInt(params.id)
+  const { data: actividadesData } = useApiQuery<unknown>("actividad/", { demanda: demandaIdNumber })
+  const { data: respuestasData } = useApiQuery<unknown>("respuesta/", { demanda: demandaIdNumber })
+  const actividadesCount = countItems(actividadesData)
+  const respuestasCount = countItems(respuestasData)
 
   useEffect(() => {
     const loadCaseData = async () => {
@@ -351,15 +364,43 @@ export default function DemandaDetail({ params, onClose, isFullPage = false }: D
                 </Typography>
               </Box>
             </Box>
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<ArrowBackIcon />}
-              onClick={() => router.push(`/mesadeentrada?demanda=${params.id}`)}
-              sx={{ textTransform: "none", whiteSpace: "nowrap" }}
-            >
-              Volver a Mesa de Entrada
-            </Button>
+            <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap", alignItems: "center" }}>
+              {/* Acción principal de la etapa: siempre a la vista, en cualquier pestaña (antes estaba solo
+                  al pie de "Detalles"). La regla de cuándo se puede enviar no cambia. */}
+              {!isPeticionDeInforme && !isCargaOficios && (
+                <Tooltip
+                  title={
+                    isEvaluacionDisabled
+                      ? "La demanda ya está en Evaluación"
+                      : isEditingBlocked
+                        ? "En este estado no se puede enviar a Evaluación"
+                        : "Pasar la demanda a la etapa de Evaluación"
+                  }
+                >
+                  <span>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      startIcon={<SendIcon />}
+                      onClick={() => setConfirmEvaluacionOpen(true)}
+                      disabled={isSubmitting || isEvaluacionDisabled || isEditingBlocked}
+                      sx={{ textTransform: "none", whiteSpace: "nowrap" }}
+                    >
+                      {isSubmitting ? "Enviando..." : "Enviar a Evaluación"}
+                    </Button>
+                  </span>
+                </Tooltip>
+              )}
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<ArrowBackIcon />}
+                onClick={() => router.push(`/mesadeentrada?demanda=${params.id}`)}
+                sx={{ textTransform: "none", whiteSpace: "nowrap" }}
+              >
+                Volver a Mesa de Entrada
+              </Button>
+            </Box>
           </Paper>
         )}
 
@@ -537,9 +578,9 @@ export default function DemandaDetail({ params, onClose, isFullPage = false }: D
           <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
             <Tabs value={tabValue} onChange={handleTabChange} aria-label="demanda tabs" variant="fullWidth">
               <Tab label="Detalles" {...a11yProps(0)} />
-              <Tab label="Enviar Respuesta" {...a11yProps(1)} />
+              <Tab label={tabLabelWithCount("Enviar Respuesta", respuestasCount)} {...a11yProps(1)} />
               <Tab
-                label="Registrar Actividad"
+                label={tabLabelWithCount("Registrar Actividad", actividadesCount)}
                 {...a11yProps(2)}
                 disabled={isPeticionDeInforme}
                 sx={{ opacity: isPeticionDeInforme ? 0.7 : 1 }}
@@ -570,25 +611,6 @@ export default function DemandaDetail({ params, onClose, isFullPage = false }: D
                   id={params.id}
                   demandaId={Number.parseInt(params.id)}
                 />
-                {!isPeticionDeInforme && !isCargaOficios && (
-                  <Box sx={{ mt: 4, display: "flex", justifyContent: "flex-end" }}>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      startIcon={<SendIcon />}
-                      onClick={handleEnviarEvaluacion}
-                      disabled={isSubmitting || isEvaluacionDisabled || isEditingBlocked}
-                      sx={{
-                        backgroundColor: "primary.main",
-                        "&:hover": {
-                          backgroundColor: "primary.dark",
-                        },
-                      }}
-                    >
-                      {isSubmitting ? "Enviando..." : "Enviar a Evaluación"}
-                    </Button>
-                  </Box>
-                )}
               </>
             )}
           </TabPanel>
@@ -624,6 +646,24 @@ export default function DemandaDetail({ params, onClose, isFullPage = false }: D
           )}
         </Paper>
       </Box>
+
+      <ConfirmDialog
+        open={confirmEvaluacionOpen}
+        title="¿Enviar la demanda a Evaluación?"
+        message={
+          <>
+            La demanda #{params.id} pasa a la etapa de <strong>Evaluación</strong>. Resumen de la Constatación:{" "}
+            <strong>{describeConstatacion(actividadesCount ?? 0, respuestasCount ?? 0)}</strong>.
+          </>
+        }
+        confirmLabel="Enviar a Evaluación"
+        loading={isSubmitting}
+        onConfirm={async () => {
+          setConfirmEvaluacionOpen(false)
+          await handleEnviarEvaluacion()
+        }}
+        onCancel={() => setConfirmEvaluacionOpen(false)}
+      />
 
       {/* Modal compartido con nuevoingreso. Aparece cuando un edit dispara
           creación automática de actividades (Rosa completa tipo_oficio en
