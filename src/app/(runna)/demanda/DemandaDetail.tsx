@@ -82,6 +82,12 @@ export default function DemandaDetail({ params, onClose, isFullPage = false }: D
 
   // Check if user has permission to view/access connections
   const hasVinculacionPermission = hasVinculacionAccess(user)
+  // Mismo criterio que usa la bandeja para mostrar el botón "Evaluar".
+  const puedeEvaluar = Boolean(
+    user?.all_permissions?.some((p: string) => ["add_tevaluacion", "change_tevaluacion", "view_tevaluacion"].includes(p)) ||
+      user?.is_superuser ||
+      user?.is_staff,
+  )
 
   useEffect(() => {
     const loadCaseData = async () => {
@@ -381,8 +387,22 @@ export default function DemandaDetail({ params, onClose, isFullPage = false }: D
         {isEvaluacionDisabled && (
           <Alert
             severity="info"
+            action={
+              puedeEvaluar ? (
+                <Button
+                  color="info"
+                  variant="contained"
+                  size="small"
+                  onClick={() => router.push(`/evaluacion?id=${params.id}`)}
+                  sx={{ textTransform: "none", fontWeight: 600 }}
+                >
+                  Ir a Evaluación
+                </Button>
+              ) : undefined
+            }
             sx={{
               mb: 3,
+              alignItems: "center",
               backgroundColor: "info.lighter",
               "& .MuiAlert-message": {
                 color: "info.dark",

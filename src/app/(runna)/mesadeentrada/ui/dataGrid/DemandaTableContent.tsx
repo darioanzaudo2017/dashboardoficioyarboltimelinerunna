@@ -91,7 +91,12 @@ const DemandaTableContent: React.FC = () => {
     const fromUrl = searchParams.get("demanda")
     if (fromUrl) {
       const parsed = Number(fromUrl)
-      if (!Number.isNaN(parsed)) setSelectedDemandaId(parsed)
+      if (!Number.isNaN(parsed)) {
+        setSelectedDemandaId(parsed)
+        // En modo tabla el detalle es un modal: sin esto, volver desde Evaluación
+        // ("Ver constatación") dejaba la demanda elegida pero sin abrir nada.
+        setIsModalOpen(true)
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -263,8 +268,19 @@ const DemandaTableContent: React.FC = () => {
     updateUrlSelection(null)
   }
 
+  // Una demanda en Evaluación / Pendiente de autorización se trabaja en la pantalla de
+  // Evaluación; la constatación sigue disponible desde el botón "Ver constatación" de allá.
+  // Quien no puede evaluar sigue abriendo el detalle, para no mandarlo a una pantalla que no usa.
+  const abrirEvaluacionSiCorresponde = (row: { id: number; estado_demanda?: string | null }) => {
+    const enEvaluacion = row.estado_demanda === "EVALUACION" || row.estado_demanda === "PENDIENTE_AUTORIZACION"
+    if (!enEvaluacion || !hasEvaluatePermission) return false
+    router.push(`/evaluacion?id=${row.id}`)
+    return true
+  }
+
   // Click handler shared by both views: marks recibido (if needed) and selects the demanda.
-  const handleSelectDemanda = (row: { id: number; recibido?: boolean; demanda_zona_id?: number | null }) => {
+  const handleSelectDemanda = (row: { id: number; estado_demanda?: string | null; recibido?: boolean; demanda_zona_id?: number | null }) => {
+    if (abrirEvaluacionSiCorresponde(row)) return
     if (!row.recibido && row.demanda_zona_id) {
       updateDemandaZona.mutate({
         id: row.demanda_zona_id,
@@ -430,6 +446,7 @@ const DemandaTableContent: React.FC = () => {
                     !cellElement.closest("button") &&
                     !cellElement.closest("select")
                   ) {
+                    if (abrirEvaluacionSiCorresponde(params.row)) return
                     if (!params.row.recibido && params.row.demanda_zona_id) {
                       // Try to mark as received, but will still show details even if it fails with 403
                       updateDemandaZona.mutate({
