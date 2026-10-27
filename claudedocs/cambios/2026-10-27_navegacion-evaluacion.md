@@ -9,8 +9,9 @@ Quien entraba por la fila no tenía ninguna pista de que lo siguiente estaba en 
 
 ## Cambios
 1. **Clic en la fila** (tabla y lista de tarjetas): si el estado es `EVALUACION` o `PENDIENTE_AUTORIZACION` y la
-   persona puede evaluar (mismo criterio que el botón "Evaluar"), va a `/evaluacion?id=<id>`.
-   El resto de los estados no cambia. Quien no puede evaluar sigue abriendo el detalle.
+   persona puede evaluar (mismo criterio que el botón "Evaluar"), se abre un modal "Demanda #N en evaluación" con
+   dos opciones: **Ver constatación** (abre el detalle) o **Ir a la evaluación** (`/evaluacion?id=<id>`).
+   El resto de los estados no cambia. Quien no puede evaluar sigue abriendo el detalle directo.
 2. **Pantalla de Evaluación**: el botón "Volver a la demanda" pasa a llamarse "Ver constatación", que dice qué hay
    del otro lado. Lleva al detalle de la demanda.
 3. **Detalle de la demanda en Evaluación**: el aviso "Esta demanda ya se encuentra en evaluación" tiene ahora el botón
@@ -24,7 +25,7 @@ Quien entraba por la fila no tenía ninguna pista de que lo siguiente estaba en 
 - `src/components/evaluacion/demanda-context-card.tsx`
 
 ## Cómo probar
-1. Mesa de Entradas, clic en la fila de una demanda en Evaluación: abre Evaluación.
+1. Mesa de Entradas, clic en la fila de una demanda en Evaluación: aparece el modal con las dos opciones.
 2. En Evaluación, "Ver constatación": vuelve al detalle con la demanda seleccionada.
 3. En ese detalle, "Ir a Evaluación": vuelve a Evaluación.
 4. Clic en la fila de una demanda en Constatación o Sin asignar: abre el detalle como siempre.
