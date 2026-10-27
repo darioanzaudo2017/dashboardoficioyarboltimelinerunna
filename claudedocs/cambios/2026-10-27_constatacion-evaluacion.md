@@ -65,5 +65,5 @@ Si el cliente la quiere como regla dura, tiene que validarla el back.
 ## Pendiente / notas
 - La pestaña "Conexiones" no tiene contador: su lista se arma de otra forma (combina varias consultas) y un
   número desfasado confundiría más de lo que ayuda.
-- En el botón de "Detalles" (mismo `ConfirmDialog`) y en `mejora-constatacion-feedback` el archivo
-  `ConfirmDialog.tsx` es el mismo: al juntar las ramas no debería haber conflicto.
+- `ConfirmDialog.tsx` aparece también en `mejora-constatacion-feedback` con el mismo contenido: al juntar las
+  dos ramas Git lo toma como un solo archivo y no debería haber conflicto.
