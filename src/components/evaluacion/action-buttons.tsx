@@ -19,6 +19,8 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Alert,
+  CircularProgress,
   type SelectChangeEvent,
 } from "@mui/material"
 import { toast } from "react-toastify"
@@ -30,6 +32,8 @@ import { useUser } from "@/utils/auth/userZustand"
 import { fetchUsuarios } from "@/app/(runna)/legajo-mesa/api/legajo-asignacion-api-service"
 import { normalizeApiText } from "@/components/evaluacion/utils/evaluacion-data-mappers"
 import { logger } from "@/utils/logger"
+import { chequearLegajoYMedidas } from "@/components/evaluacion/utils/chequeoLegajoMedidasApi"
+import type { PersonaAEvaluar } from "@/components/evaluacion/utils/chequeoLegajoMedidas"
 
 // Dynamic imports para evitar errores SSR con Next.js
 const DownloadPDFButton = dynamic(() => import("./pdf/download-pdf-button"), {
@@ -74,6 +78,8 @@ interface Confirmacion {
   texto: string
   boton: string
   color: "primary" | "secondary" | "error"
+  // Solo en las acciones que crean legajo/medida: resultado de buscar legajo y medidas vigentes del NNyA
+  chequeo?: { estado: "cargando" | "listo" | "error"; hallazgos: string[] }
 }
 
 // Encabezado de cada paso del panel de cierre: número (o tilde si está listo) y título.
@@ -117,6 +123,7 @@ interface ChildOption {
   name: string
   type: string
   databaseId?: string | number
+  dni?: string | number | null
 }
 
 interface Firmante {
@@ -292,12 +299,14 @@ export default function ActionButtons({
       name: nnya.ApellidoNombre || nnya.apellido_nombre,
       type: "Conviviente",
       databaseId: nnya.persona?.id, // Store the database ID separately
+      dni: nnya.persona?.dni ?? nnya.DNI,
     })),
     ...(data.NNYANoConvivientes || []).map((nnya: any) => ({
       id: nnya.persona?.id || nnya.id || nnya.ID || nnya.DNI,
       name: nnya.ApellidoNombre || nnya.apellido_nombre,
       type: "No Conviviente",
       databaseId: nnya.persona?.id, // Store the database ID separately
+      dni: nnya.persona?.dni ?? nnya.DNI,
     })),
   ]
 
@@ -567,12 +576,49 @@ export default function ActionButtons({
 
   const textoInformes = nombresInformes.length > 0 ? ` Se adjunta: ${nombresInformes.join(", ")}.` : ""
 
+  // NNyA sobre los que se crea legajo/medida: al autorizar, los que registró el técnico en la solicitud;
+  // si no vienen, los elegidos en pantalla.
+  const personasAEvaluar = (accion: string): PersonaAEvaluar[] => {
+    if (accion === "autorizar") {
+      let evaluacion: any = data?.latest_evaluacion
+      if (typeof evaluacion === "string") {
+        try {
+          evaluacion = JSON.parse(evaluacion)
+        } catch {
+          evaluacion = null
+        }
+      }
+      const registradas: PersonaAEvaluar[] = (evaluacion?.evaluacion_personas ?? [])
+        .map((ep: any) => ep?.persona)
+        .filter(Boolean)
+        .map((p: any) => ({ id: p.id, nombre: [p.nombre, p.apellido].filter(Boolean).join(" ") || `Persona ${p.id}`, dni: p.dni }))
+      if (registradas.length > 0) return registradas
+    }
+    return selectedChildrenIds
+      .map((id) => children.find((c) => c.id === id))
+      .filter((c): c is ChildOption => Boolean(c))
+      .map((c) => ({ id: c.databaseId ?? c.id, nombre: c.name, dni: c.dni }))
+  }
+
+  // Busca legajo y medidas vigentes en el momento de confirmar y lo muestra dentro del modal.
+  const iniciarChequeo = async (accion: string) => {
+    const actualizar = (chequeo: NonNullable<Confirmacion["chequeo"]>) =>
+      setConfirmacion((prev) => (prev && prev.accion === accion ? { ...prev, chequeo } : prev))
+    try {
+      actualizar({ estado: "listo", hallazgos: await chequearLegajoYMedidas(personasAEvaluar(accion)) })
+    } catch (error) {
+      logger.error("Error al comprobar legajo y medidas vigentes:", error)
+      actualizar({ estado: "error", hallazgos: [] })
+    }
+  }
+
   const pedirConfirmacion = (accion: string) => {
     const nombresNnya = selectedChildrenIds
       .map((id) => children.find((c) => c.id === id)?.name)
       .filter(Boolean)
       .join(", ")
     const demanda = demandaId ? ` #${demandaId}` : ""
+    const creaMedida = /TOMAR/i.test(solicitudTecnicoPrevia)
     switch (accion) {
       case "autorizar archivar":
         setConfirmacion({
@@ -590,7 +636,9 @@ export default function ActionButtons({
           texto: `Se enviará al Director la solicitud de ${tipoMedidaEvaluado ? TIPO_MEDIDA_LABELS[tipoMedidaEvaluado] || tipoMedidaEvaluado : "medida"} para ${nombresNnya || "los NNyA elegidos"} (demanda${demanda}).${textoInformes}`,
           boton: "Enviar solicitud",
           color: "secondary",
+          chequeo: { estado: "cargando", hallazgos: [] },
         })
+        void iniciarChequeo(accion)
         break
       case "autorizar":
         setConfirmacion({
@@ -599,7 +647,10 @@ export default function ActionButtons({
           texto: `Vas a AUTORIZAR${solicitudTecnicoPrevia ? ` la solicitud del técnico (${solicitudTecnicoPrevia})` : " la solicitud"} de la demanda${demanda}. ¿Confirmás?`,
           boton: "Autorizar",
           color: "primary",
+          // Archivar no crea legajo ni medida: el chequeo solo corre si lo que se autoriza es tomar una medida.
+          chequeo: creaMedida ? { estado: "cargando", hallazgos: [] } : undefined,
         })
+        if (creaMedida) void iniciarChequeo(accion)
         break
       case "no autorizar":
         setConfirmacion({
@@ -856,6 +907,42 @@ export default function ActionButtons({
         <DialogTitle sx={{ fontWeight: 700 }}>{confirmacion?.titulo}</DialogTitle>
         <DialogContent>
           <Typography variant="body2">{confirmacion?.texto}</Typography>
+
+          {confirmacion?.chequeo?.estado === "cargando" && (
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mt: 2 }}>
+              <CircularProgress size={18} />
+              <Typography variant="body2" color="text.secondary">
+                Comprobando legajos y medidas vigentes…
+              </Typography>
+            </Box>
+          )}
+          {confirmacion?.chequeo?.estado === "listo" && confirmacion.chequeo.hallazgos.length > 0 && (
+            <Alert severity="warning" sx={{ mt: 2 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5 }}>
+                Antes de continuar, revisá:
+              </Typography>
+              <Box component="ul" sx={{ m: 0, pl: 2.5, listStyle: "disc" }}>
+                {confirmacion.chequeo.hallazgos.map((hallazgo) => (
+                  <li key={hallazgo}>
+                    <Typography variant="body2">{hallazgo}</Typography>
+                  </li>
+                ))}
+              </Box>
+              <Typography variant="caption" sx={{ display: "block", mt: 1 }}>
+                Podés continuar igual, pero así se crea una medida nueva (y un legajo, si la persona no tiene).
+              </Typography>
+            </Alert>
+          )}
+          {confirmacion?.chequeo?.estado === "listo" && confirmacion.chequeo.hallazgos.length === 0 && (
+            <Alert severity="success" sx={{ mt: 2 }}>
+              No se encontró ningún legajo ni medida vigente asociados al DNI de los NNyA.
+            </Alert>
+          )}
+          {confirmacion?.chequeo?.estado === "error" && (
+            <Alert severity="info" sx={{ mt: 2 }}>
+              No se pudo comprobar si los NNyA ya tienen legajo o medidas vigentes. Podés continuar bajo tu criterio.
+            </Alert>
+          )}
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button onClick={() => setConfirmacion(null)} sx={{ textTransform: "none" }}>
@@ -863,7 +950,8 @@ export default function ActionButtons({
           </Button>
           <Button
             variant="contained"
-            color={confirmacion?.color || "primary"}
+            color={confirmacion?.chequeo?.estado === "listo" && confirmacion.chequeo.hallazgos.length > 0 ? "warning" : confirmacion?.color || "primary"}
+            disabled={confirmacion?.chequeo?.estado === "cargando"}
             onClick={() => {
               const accion = confirmacion?.accion
               setConfirmacion(null)
@@ -871,7 +959,9 @@ export default function ActionButtons({
             }}
             sx={{ textTransform: "none", fontWeight: 600 }}
           >
-            {confirmacion?.boton}
+            {confirmacion?.chequeo?.estado === "listo" && confirmacion.chequeo.hallazgos.length > 0
+              ? `${confirmacion.boton} de todos modos`
+              : confirmacion?.boton}
           </Button>
         </DialogActions>
       </Dialog>
