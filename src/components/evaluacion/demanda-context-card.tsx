@@ -114,7 +114,7 @@ export default function DemandaContextCard({ apiData }: DemandaContextCardProps)
         startIcon={<ArrowBackIcon />}
         sx={{ textTransform: "none", whiteSpace: "nowrap", alignSelf: { xs: "flex-start", sm: "center" } }}
       >
-        Volver a la demanda
+        Ver constatación
       </Button>
     </Paper>
   )

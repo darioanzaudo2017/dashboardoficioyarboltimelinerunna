@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState, useMemo, useEffect } from "react"
-import { Paper, Box, Typography, useMediaQuery, useTheme } from "@mui/material"
+import { Paper, Box, Typography, useMediaQuery, useTheme, Dialog, DialogTitle, DialogContent, DialogActions, Button } from "@mui/material"
 import { DataGrid, type GridPaginationModel } from "@mui/x-data-grid"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -91,7 +91,12 @@ const DemandaTableContent: React.FC = () => {
     const fromUrl = searchParams.get("demanda")
     if (fromUrl) {
       const parsed = Number(fromUrl)
-      if (!Number.isNaN(parsed)) setSelectedDemandaId(parsed)
+      if (!Number.isNaN(parsed)) {
+        setSelectedDemandaId(parsed)
+        // En modo tabla el detalle es un modal: sin esto, volver desde Evaluación
+        // ("Ver constatación") dejaba la demanda elegida pero sin abrir nada.
+        setIsModalOpen(true)
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -263,8 +268,21 @@ const DemandaTableContent: React.FC = () => {
     updateUrlSelection(null)
   }
 
+  // Una demanda en Evaluación / Pendiente de autorización tiene dos pantallas posibles (la
+  // constatación y la evaluación), así que se le pregunta a la persona a cuál quiere ir.
+  // Quien no puede evaluar sigue abriendo el detalle, para no mostrarle una opción que no usa.
+  const [demandaEnEleccion, setDemandaEnEleccion] = useState<number | null>(null)
+
+  const abrirEvaluacionSiCorresponde = (row: { id: number; estado_demanda?: string | null }) => {
+    const enEvaluacion = row.estado_demanda === "EVALUACION" || row.estado_demanda === "PENDIENTE_AUTORIZACION"
+    if (!enEvaluacion || !hasEvaluatePermission) return false
+    setDemandaEnEleccion(row.id)
+    return true
+  }
+
   // Click handler shared by both views: marks recibido (if needed) and selects the demanda.
-  const handleSelectDemanda = (row: { id: number; recibido?: boolean; demanda_zona_id?: number | null }) => {
+  const handleSelectDemanda = (row: { id: number; estado_demanda?: string | null; recibido?: boolean; demanda_zona_id?: number | null }) => {
+    if (abrirEvaluacionSiCorresponde(row)) return
     if (!row.recibido && row.demanda_zona_id) {
       updateDemandaZona.mutate({
         id: row.demanda_zona_id,
@@ -430,6 +448,7 @@ const DemandaTableContent: React.FC = () => {
                     !cellElement.closest("button") &&
                     !cellElement.closest("select")
                   ) {
+                    if (abrirEvaluacionSiCorresponde(params.row)) return
                     if (!params.row.recibido && params.row.demanda_zona_id) {
                       // Try to mark as received, but will still show details even if it fails with 403
                       updateDemandaZona.mutate({
@@ -491,6 +510,40 @@ const DemandaTableContent: React.FC = () => {
         selectedDemandaId={selectedDemandaId}
         onClose={handleCloseModal}
       />
+      <Dialog open={demandaEnEleccion !== null} onClose={() => setDemandaEnEleccion(null)} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700 }}>Demanda #{demandaEnEleccion} en evaluación</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary">
+            ¿Qué querés hacer? Podés revisar la información que se cargó en la constatación o ir directo al formulario de
+            evaluación.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2, gap: 1, flexWrap: "wrap" }}>
+          <Button
+            variant="outlined"
+            onClick={() => {
+              const id = demandaEnEleccion
+              setDemandaEnEleccion(null)
+              if (id !== null) handleOpenModal(id)
+            }}
+            sx={{ textTransform: "none" }}
+          >
+            Ver constatación
+          </Button>
+          <Button
+            variant="contained"
+            color="success"
+            onClick={() => {
+              const id = demandaEnEleccion
+              setDemandaEnEleccion(null)
+              if (id !== null) router.push(`/evaluacion?id=${id}`)
+            }}
+            sx={{ textTransform: "none", fontWeight: 600 }}
+          >
+            Ir a la evaluación
+          </Button>
+        </DialogActions>
+      </Dialog>
       <AsignarModal
         open={isAsignarModalOpen}
         onClose={handleCloseAsignarModal}
