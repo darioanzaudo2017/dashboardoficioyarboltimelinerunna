@@ -74,7 +74,7 @@ export const buscarDuplicados = async (
 
     // Make API call - Using 'create' since it's a POST endpoint
     const response = await create<DuplicateSearchResponse>(
-      "legajos/buscar-duplicados",
+      "legajos/buscar-duplicados/",
       payload
     )
 

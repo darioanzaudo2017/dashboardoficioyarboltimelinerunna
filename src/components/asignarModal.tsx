@@ -34,8 +34,8 @@ import { logger } from "@/utils/logger"
 type ObjetivoAsignacion = "peticion_informe" | "proteccion"
 
 /**
- * El backend no devuelve el objetivo de la derivación anterior, pero sí el de la demanda
- * (ej. "PROTECCION"). Se usa como valor inicial para no ofrecer "Petición de informe" por defecto.
+ * Las derivaciones anteriores al 2026-10-29 no guardaban su objetivo; en ese caso se usa el de la
+ * demanda (ej. "PROTECCION") como valor inicial para no ofrecer "Petición de informe" por defecto.
  */
 export const objetivoDemandaToAsignacion = (objetivoDemanda?: string | null): ObjetivoAsignacion | undefined => {
   if (objetivoDemanda === "PROTECCION") return "proteccion"
@@ -96,11 +96,21 @@ interface DemandaZona {
   id: number
   zona: Zona
   user_responsable: User | null
+  /** Todos los responsables de la derivación (incluye al principal). */
+  users_responsables?: User[]
   enviado_por: User | null
   recibido_por: User | null
   esta_activo: boolean
   comentarios: string
-  objetivo?: string
+  objetivo?: string | null
+}
+
+/** Ids de los responsables de una derivación, con el principal primero. */
+export const responsablesDeDerivacion = (dz: Pick<DemandaZona, "user_responsable" | "users_responsables">): number[] => {
+  const ids = (dz.users_responsables ?? []).map((user) => user.id)
+  const principal = dz.user_responsable?.id
+  if (principal === undefined) return ids
+  return [principal, ...ids.filter((id) => id !== principal)]
 }
 
 const AsignarModal: React.FC<AsignarModalProps> = ({ open, onClose, demandaId, onSuccess, objetivoInicial }) => {
@@ -154,8 +164,7 @@ const AsignarModal: React.FC<AsignarModalProps> = ({ open, onClose, demandaId, o
   useEffect(() => {
     if (lastActiveDemandaZona) {
       setSelectedZona(lastActiveDemandaZona.zona.id)
-      // Convert single user to array for backward compatibility
-      setSelectedUsers(lastActiveDemandaZona.user_responsable ? [lastActiveDemandaZona.user_responsable.id] : [])
+      setSelectedUsers(responsablesDeDerivacion(lastActiveDemandaZona))
       setObjetivo(lastActiveDemandaZona.objetivo || objetivoInicial || "peticion_informe")
     } else {
       // Si no hay demanda activa, resetear los campos
@@ -223,11 +232,8 @@ const AsignarModal: React.FC<AsignarModalProps> = ({ open, onClose, demandaId, o
     const hasChanges =
       !lastActiveDemandaZona ||
       lastActiveDemandaZona.zona.id !== selectedZona ||
-      // Check if the selected users have changed
-      (lastActiveDemandaZona.user_responsable
-        ? ![lastActiveDemandaZona.user_responsable.id].every((id) => selectedUsers.includes(id)) ||
-          selectedUsers.length !== 1
-        : selectedUsers.length > 0) ||
+      // Cambió el conjunto de responsables o cuál es el principal
+      responsablesDeDerivacion(lastActiveDemandaZona).join(",") !== selectedUsers.join(",") ||
       (lastActiveDemandaZona.objetivo || objetivoInicial || "peticion_informe") !== objetivo
 
     if (!hasChanges && comentarios.trim() === "") {
@@ -260,7 +266,6 @@ const AsignarModal: React.FC<AsignarModalProps> = ({ open, onClose, demandaId, o
           recibido_por: null,
           zona: selectedZona,
           // Responsable principal = primero de la selección; la lista completa va en users_responsables.
-          // Con null (más de un usuario) la demanda quedaba en "Sin Asignar".
           user_responsable: selectedUsers[0] ?? null,
           demanda: demandaId,
           objetivo: objetivo,
@@ -410,7 +415,10 @@ const AsignarModal: React.FC<AsignarModalProps> = ({ open, onClose, demandaId, o
                         multiple
                         options={filteredUsersByZona}
                         getOptionLabel={(option) => option.username}
-                        value={filteredUsersByZona.filter((user) => selectedUsers.includes(user.id))}
+                        // En el orden de selección: el primer chip es el responsable principal.
+                        value={selectedUsers
+                          .map((id) => filteredUsersByZona.find((user) => user.id === id))
+                          .filter((user): user is User => Boolean(user))}
                         onChange={(_, newValue) => setSelectedUsers(newValue.map((user) => user.id))}
                         loading={isLoadingUsersForZona}
                         renderOption={(props, option) => {
@@ -492,11 +500,9 @@ const AsignarModal: React.FC<AsignarModalProps> = ({ open, onClose, demandaId, o
                       {selectedUsers.length === 0 && !isLoadingUsersForZona && (
                         <FormHelperText>Seleccione al menos un usuario responsable</FormHelperText>
                       )}
-                      {lastActiveDemandaZona?.user_responsable && (
-                        // El servidor solo informa al responsable principal de una asignación previa.
+                      {selectedUsers.length > 1 && (
                         <FormHelperText>
-                          Se muestra el responsable principal de la asignación anterior. Si había más de uno,
-                          volvé a seleccionarlos antes de asignar.
+                          El primero de la lista queda como responsable principal y recibe el aviso por mail.
                         </FormHelperText>
                       )}
                     </FormControl>
