@@ -30,6 +30,7 @@ import { extractArray } from "@/hooks/useApiQuery"
 import SearchModal from "@/components/searchModal/searchModal"
 import { useUser } from "@/utils/auth/userZustand"
 import { formatDateLocaleAR } from "@/utils/dateUtils"
+import { formatEstadoDemanda } from "@/utils/demandaLabels"
 import { useVinculos } from "@/app/(runna)/legajo/[id]/medida/[medidaId]/hooks/useVinculos"
 import { hasVinculacionAccess } from "@/utils/auth/permissionUtils"
 import CrearVinculoLegajoDialog from "./dialogs/CrearVinculoLegajoDialog"
@@ -449,7 +450,7 @@ export function ConexionesDemandaTab({ demandaId }: ConexionesDemandaTabProps) {
                     }
                     secondary={
                       <Typography variant="body2" color="text.secondary">
-                        Estado: {demanda.estado_demanda} | Fecha: {" "}
+                        Estado: {formatEstadoDemanda(demanda.estado_demanda)} | Fecha: {" "}
                         {formatDateLocaleAR(demanda.fecha_ingreso_senaf)}
                       </Typography>
                     }

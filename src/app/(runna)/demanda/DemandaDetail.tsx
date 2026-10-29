@@ -22,6 +22,7 @@ import { DemandaSuccessModal } from "@/app/(runna)/nuevoingreso/components/Deman
 import type { DemandaCreatedResponse } from "@/app/(runna)/nuevoingreso/types/demanda-response"
 import { useRouter } from "next/navigation"
 import { fetchCaseData } from "@/components/forms/utils/apiToFormData"
+import { formatEstadoDemanda, formatObjetivoDemanda } from "@/utils/demandaLabels"
 import { useUser } from "@/utils/auth/userZustand"
 import { hasVinculacionAccess } from "@/utils/auth/permissionUtils"
 import { logger } from "@/utils/logger"
@@ -333,10 +334,10 @@ export default function DemandaDetail({ params, onClose, isFullPage = false }: D
                   Demanda #{params.id}
                 </Typography>
                 {formData.objetivo_de_demanda && (
-                  <Chip label={formData.objetivo_de_demanda.replaceAll("_", " ")} size="small" variant="outlined" />
+                  <Chip label={formatObjetivoDemanda(formData.objetivo_de_demanda)} size="small" variant="outlined" />
                 )}
                 {formData.estado_demanda && (
-                  <Chip label={formData.estado_demanda.replaceAll("_", " ")} size="small" color="primary" variant="outlined" />
+                  <Chip label={formatEstadoDemanda(formData.estado_demanda)} size="small" color="primary" variant="outlined" />
                 )}
               </Box>
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>

@@ -2,64 +2,54 @@
 
 import type React from "react"
 import { Chip } from "@mui/material"
+import { ESTADO_DEMANDA_LABELS } from "@/utils/demandaLabels"
 
 // Status chip component for better visual representation
 export const StatusChip = ({ status, onClick }: { status: string; onClick?: (e: React.MouseEvent<HTMLDivElement>) => void }) => {
   let color: "default" | "primary" | "secondary" | "error" | "info" | "success" | "warning" = "default"
-  let label = status
+  // Los nombres viven en un solo lugar (utils/demandaLabels); acá sólo se decide el color
+  const label = ESTADO_DEMANDA_LABELS[status] ?? "Desconocido"
   const isEvaluacion = status === "EVALUACION" || status === "PENDIENTE_AUTORIZACION"
 
   switch (status) {
     case "SIN_ASIGNAR":
       color = "default"
-      label = "Sin Asignar"
       break
     case "CONSTATACION":
       color = "success"
-      label = "Constatación"
       break
     case "EVALUACION":
       color = "info"
-      label = "Evaluación"
       break
     case "PENDIENTE_AUTORIZACION":
       color = "warning"
-      label = "Pendiente Autorización"
       break
     case "ARCHIVADA":
       color = "default"
-      label = "Archivada"
       break
     case "ADMITIDA":
       color = "secondary"
-      label = "Admitida"
       break
     case "RESPUESTA_SIN_ENVIAR":
       color = "error"
-      label = "Respuesta Sin Enviar"
       break
     case "INFORME_SIN_ENVIAR":
       color = "warning"
-      label = "Informe Sin Enviar"
       break
     case "REPUESTA_ENVIADA":
       color = "success"
-      label = "Respuesta Enviada"
       break
     case "INFORME_ENVIADO":
       color = "info"
-      label = "Informe Enviado"
       break
     case "PENDIENTE_SUBIR_PJ":
       color = "warning"
-      label = "Listo para subir al PJ"
       break
     case "SUBIDO_A_PODER_JUDICIAL":
       color = "success"
-      label = "Subido al PJ"
       break
     default:
-      label = "Desconocido"
+      break
   }
 
   return (

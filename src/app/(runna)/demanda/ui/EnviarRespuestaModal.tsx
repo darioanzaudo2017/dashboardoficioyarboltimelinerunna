@@ -26,6 +26,7 @@ import { useApiQuery, useCatalogData, extractArray } from "@/hooks/useApiQuery"
 import { usePdfViewer } from "@/hooks"
 import { isPdfFile } from "@/utils/pdfUtils"
 import { logger } from "@/utils/logger"
+import { demandaGridLocaleText } from "@/app/(runna)/mesadeentrada/ui/dataGrid/gridConfig"
 
 // URL base para los archivos
 const BASE_URL = "https://web-runna-v2legajos.up.railway.app"
@@ -194,7 +195,7 @@ export function EnviarRespuestaForm({ demandaId }: EnviarRespuestaFormProps) {
           render={({ field }) => (
             <TextField
               {...field}
-              label="Para (To)"
+              label="Para"
               fullWidth
               error={!!errors.to}
               helperText={errors.to?.message || "Ingrese correos separados por comas"}
@@ -494,6 +495,8 @@ export function EnviarRespuestaForm({ demandaId }: EnviarRespuestaFormProps) {
               }}
               disableRowSelectionOnClick
               autoHeight
+              // Textos de la tabla en español (antes: "Rows per page", "0–0 of 0", "No rows")
+              localeText={{ ...demandaGridLocaleText, noRowsLabel: "Todavía no se envió ninguna respuesta" }}
             />
           </Paper>
         )}

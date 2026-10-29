@@ -388,11 +388,14 @@ const Step1Form: React.FC<{
       <Box sx={{ maxWidth: "1200px", mx: "auto", p: 2 }}>
         {!reviewMode && (
           <Paper elevation={0} sx={{ p: 3, mb: 4, borderRadius: "12px", bgcolor: "primary.light", color: "white" }}>
+            {/* Con `id` se está viendo una demanda que ya existe, no registrando una nueva */}
             <Typography variant="h5" gutterBottom>
-              Registro de Demanda
+              {id ? "Datos de la demanda" : "Registro de Demanda"}
             </Typography>
             <Typography variant="body2">
-              Complete todos los campos requeridos para registrar una nueva demanda en el sistema.
+              {id
+                ? "Revisá y completá los datos de esta demanda. Los campos marcados con * son obligatorios."
+                : "Complete todos los campos requeridos para registrar una nueva demanda en el sistema."}
             </Typography>
           </Paper>
         )}
