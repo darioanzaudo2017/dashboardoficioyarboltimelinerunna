@@ -1,7 +1,10 @@
 "use client"
 
 import type React from "react"
+import { useMemo, useState } from "react"
 import {
+  ToggleButton,
+  ToggleButtonGroup,
   Typography,
   Table,
   TableBody,
@@ -28,6 +31,8 @@ import { getMedidasByLegajo } from "@/app/(runna)/legajo-mesa/api/medidas-api-se
 import type { MedidaBasicResponse } from "@/app/(runna)/legajo-mesa/types/medida-api"
 import { SectionCard } from "../medida/shared/section-card"
 import { logger } from "@/utils/logger"
+import { MedidaResumenCard } from "./medida-resumen-card"
+import { otrasVigentesDelMismoTipo } from "./medida-resumen"
 
 interface MedidasActivasSectionProps {
   legajoData: LegajoDetailResponse
@@ -35,6 +40,8 @@ interface MedidasActivasSectionProps {
   onAddMedida?: () => void
   showAddButton?: boolean
   refreshTrigger?: number // Prop para forzar recarga
+  /** Abre la pestaña Plan de Trabajo con esta medida elegida. */
+  onVerPlanTrabajo?: (medidaId: number) => void
 }
 
 export const MedidasActivasSection: React.FC<MedidasActivasSectionProps> = ({
@@ -43,8 +50,10 @@ export const MedidasActivasSection: React.FC<MedidasActivasSectionProps> = ({
   onAddMedida,
   showAddButton = false,
   refreshTrigger = 0,
+  onVerPlanTrabajo,
 }) => {
   const router = useRouter()
+  const [vista, setVista] = useState<"resumen" | "tabla">("resumen")
   const legajoActualId = legajoData.legajo.id
 
   // Fetch medidas using TanStack Query (only if not prefetched)
@@ -70,6 +79,18 @@ export const MedidasActivasSection: React.FC<MedidasActivasSectionProps> = ({
     medidasFromDetail.length > 0 ? medidasFromDetail : extractArray(medidasData)
 
   const error = queryError ? String(queryError) : null
+
+  // Para las tarjetas: vigentes primero y, dentro de cada grupo, la más nueva arriba.
+  const medidasOrdenadas = useMemo(
+    () =>
+      [...medidas].sort((a, b) => {
+        const va = a.estado_vigencia === "VIGENTE" ? 1 : 0
+        const vb = b.estado_vigencia === "VIGENTE" ? 1 : 0
+        if (va !== vb) return vb - va
+        return new Date(b.fecha_apertura || 0).getTime() - new Date(a.fecha_apertura || 0).getTime()
+      }),
+    [medidas],
+  )
 
   logger.log("MedidasActivasSection render - State:", {
     medidasCount: medidas.length,
@@ -196,6 +217,40 @@ export const MedidasActivasSection: React.FC<MedidasActivasSectionProps> = ({
         ) : undefined
       }
     >
+      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 1.5 }}>
+        <ToggleButtonGroup
+          size="small"
+          exclusive
+          value={vista}
+          onChange={(_, valor) => valor && setVista(valor)}
+          aria-label="Forma de ver las medidas"
+        >
+          <ToggleButton value="resumen" sx={{ textTransform: "none", px: 1.5 }}>
+            Resumen
+          </ToggleButton>
+          <ToggleButton value="tabla" sx={{ textTransform: "none", px: 1.5 }}>
+            Tabla
+          </ToggleButton>
+        </ToggleButtonGroup>
+      </Box>
+
+      {vista === "resumen" && (
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          {medidasOrdenadas.map((medida) => (
+            <MedidaResumenCard
+              key={medida.id}
+              medida={medida}
+              legajoId={legajoActualId}
+              otrasVigentes={otrasVigentesDelMismoTipo(medida as any, medidasOrdenadas as any)}
+              esCompartida={(medida.legajos_adicionales ?? []).length > 0}
+              onVerMedida={() => handleNavigateToMedida(medida.id, extractString(medida.tipo_medida, "N/A"))}
+              onVerPlanTrabajo={onVerPlanTrabajo ? () => onVerPlanTrabajo(medida.id) : undefined}
+            />
+          ))}
+        </Box>
+      )}
+
+      {vista === "tabla" && (
       <TableContainer>
         <Table size="small">
           <TableHead>
@@ -316,6 +371,7 @@ export const MedidasActivasSection: React.FC<MedidasActivasSectionProps> = ({
           </TableBody>
         </Table>
       </TableContainer>
+      )}
     </SectionCard>
   )
 }

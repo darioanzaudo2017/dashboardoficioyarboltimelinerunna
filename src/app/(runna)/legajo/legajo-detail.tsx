@@ -44,6 +44,8 @@ interface LegajoDetailProps {
 
 export default function LegajoDetail({ params, onClose, isFullPage = false }: LegajoDetailProps) {
   const [activeTab, setActiveTab] = useState(0)
+  // Medida que el usuario eligió en una tarjeta de "Ver plan de trabajo": la pestaña Plan de Trabajo arranca con ella.
+  const [planMedidaId, setPlanMedidaId] = useState<number | null>(null)
   const [openEditDatosDialog, setOpenEditDatosDialog] = useState(false)
   const [openCrearMedidaDialog, setOpenCrearMedidaDialog] = useState(false)
   const [openPersonaCompletaModal, setOpenPersonaCompletaModal] = useState(false)
@@ -285,6 +287,10 @@ export default function LegajoDetail({ params, onClose, isFullPage = false }: Le
               onAddMedida={() => setOpenCrearMedidaDialog(true)}
               showAddButton={isAdmin || legajoData.permisos_usuario?.puede_tomar_medidas || false}
               refreshTrigger={medidasRefreshTrigger}
+              onVerPlanTrabajo={(medidaId) => {
+                setPlanMedidaId(medidaId)
+                setActiveTab(5)
+              }}
             />
           </Box>
         )}
@@ -322,7 +328,7 @@ export default function LegajoDetail({ params, onClose, isFullPage = false }: Le
         {/* TAB 5: Plan de Trabajo */}
         {activeTab === 5 && (
           <>
-            <PlanTrabajoSection legajoData={legajoData} />
+            <PlanTrabajoSection legajoData={legajoData} initialMedidaId={planMedidaId} />
           </>
         )}
 
