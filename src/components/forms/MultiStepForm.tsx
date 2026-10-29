@@ -17,7 +17,7 @@ import {
   useMediaQuery,
 } from "@mui/material"
 import { useMutation, useQuery } from "@tanstack/react-query"
-import { toast, ToastContainer } from "react-toastify"
+import { toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import { NavigateNext, NavigateBefore, Send } from "@mui/icons-material"
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider"
@@ -675,17 +675,8 @@ const MultiStepForm: React.FC<MultiStepFormProps> = ({
           </Button>}
         </Box>}
       </form>
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
+      {/* Los avisos los muestra el ToastContainer global del layout. Tener otro acá (que se monta y
+          desmonta con la pestaña "Detalles") hacía que los avisos de las otras pestañas no aparecieran. */}
     </FormProvider>
   )
 }

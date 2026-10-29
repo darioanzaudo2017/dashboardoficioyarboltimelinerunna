@@ -30,6 +30,7 @@ import HomeIcon from "@mui/icons-material/Home"
 import CloseIcon from "@mui/icons-material/Close"
 import SearchIcon from "@mui/icons-material/Search"
 import LinkIcon from "@mui/icons-material/Link"
+import CheckCircleIcon from "@mui/icons-material/CheckCircle"
 import { create } from "@/app/api/apiService"
 import { useCatalogData, extractArray } from "@/hooks/useApiQuery"
 import { debounce } from "lodash"
@@ -75,6 +76,8 @@ interface SearchModalProps {
   compact?: boolean
   // Current demanda ID to exclude from search results
   demanda?: number
+  // Demandas que ya están conectadas: se muestran como "Conectada" en vez de ofrecer "Conectar" otra vez
+  connectedIds?: number[]
 }
 
 export default function SearchModal({
@@ -86,6 +89,7 @@ export default function SearchModal({
   isModal = true,
   compact = false,
   demanda,
+  connectedIds = [],
 }: SearchModalProps) {
   const router = useRouter()
   const theme = useTheme()
@@ -450,6 +454,8 @@ export default function SearchModal({
             onChange={handleInputChange("calle")}
             variant="outlined"
             size={compact ? "small" : "medium"}
+            // La búsqueda por calle no devuelve resultados si falta la localidad (y no avisaba por qué)
+            helperText={searchParams.calle && !searchParams.localidad ? "La calle se busca junto con la localidad: elegí también la localidad." : undefined}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -579,7 +585,11 @@ export default function SearchModal({
                 }}
               >
                 <List disablePadding>
-                  {searchResults.match_descriptions.map((description, index) => (
+                  {searchResults.match_descriptions.map((description, index) => {
+                    // El backend a veces devuelve más textos que demandas (ej. una coincidencia con un legajo):
+                    // sin demanda no hay nada que conectar ni abrir, así que esa fila no se dibuja.
+                    if (searchResults.demanda_ids[index] === undefined) return null
+                    return (
                     <React.Fragment key={index}>
                       <ListItem
                         alignItems="flex-start"
@@ -619,7 +629,16 @@ export default function SearchModal({
                                 {description}
                               </Typography>
                               <Box sx={{ display: "flex", gap: 1, mt: compact ? 0.5 : 1 }}>
-                                {mode === "connect" && onConnect && (
+                                {mode === "connect" && onConnect && connectedIds.includes(searchResults.demanda_ids[index]) && (
+                                  <Chip
+                                    icon={<CheckCircleIcon />}
+                                    label="Ya conectada"
+                                    color="success"
+                                    variant="outlined"
+                                    size="small"
+                                  />
+                                )}
+                                {mode === "connect" && onConnect && !connectedIds.includes(searchResults.demanda_ids[index]) && (
                                   <Tooltip title="Conectar esta demanda">
                                     <Button
                                       variant="contained"
@@ -656,11 +675,12 @@ export default function SearchModal({
                           }
                         />
                       </ListItem>
-                      {index < searchResults.match_descriptions.length - 1 && (
+                      {index < searchResults.demanda_ids.length - 1 && (
                         <Divider variant="fullWidth" component="li" />
                       )}
                     </React.Fragment>
-                  ))}
+                    )
+                  })}
                 </List>
               </Paper>
             ) : (

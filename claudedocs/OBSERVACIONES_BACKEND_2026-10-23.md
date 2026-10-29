@@ -18,6 +18,8 @@
 | B7 | Baja | varios | Formato de errores inconsistente; error de infraestructura devuelto como `400` |
 | B8 | Baja | `POST demanda-busqueda-vinculacion` | El texto dice "vinculado a la demanda N" cuando no se vinculó nada |
 | B9 | Datos | catálogos / usuarios | Datos de prueba que impiden completar flujos |
+| B10 | Media | `POST demanda-busqueda-vinculacion` | Una demanda **desconectada** no vuelve a aparecer en la búsqueda: no se puede reconectar |
+| B11 | Baja | `POST demanda-busqueda-vinculacion` | Devuelve más textos (`match_descriptions`) que demandas (`demanda_ids`) |
 
 ---
 
@@ -190,6 +192,40 @@ No se vinculó nada: es solo una coincidencia. Además, coincidir por calle + lo
 - `tipos-vinculo`: la opción `id 20` tiene el nombre "who" y una descripción de texto de relleno ("What act culture whether world…").
 - Condiciones de vulnerabilidad: el catálogo está vacío ("No options"), no se puede completar.
 - Zona `1EQUIPO RUNNA` (id 5): solo hay dos usuarios (`UsuarioDirector`, `UsuarioLegal`), sin técnicos ni "legales de protección"; el filtro "Solo legales de protección" queda vacío.
+
+---
+
+## B10 — Una demanda desconectada no se puede volver a conectar
+
+En la pestaña **Conexiones** de una demanda se buscan otras para conectar. Al desconectar, el front marca el
+registro de `demanda-vinculada` con `deleted: true` (no lo borra).
+
+**Reproducción** (con las demandas #324 y #323, ya conectadas y luego desconectadas):
+```bash
+POST /api/demanda-busqueda-vinculacion/   {"dni":50111222}                    -> demanda_ids: [323]
+POST /api/demanda-busqueda-vinculacion/   {"dni":50111222,"demanda":324}       -> demanda_ids: []     (!)
+POST /api/demanda-busqueda-vinculacion/   {"dni":50111222,"demanda":321}       -> demanda_ids: [323]
+GET  /api/demanda-vinculada/?demanda_preexistente=324 -> [{"id":68,"demanda_entrante":323,"deleted":true}]
+```
+Con `demanda: 324` la #323 queda excluida **porque existe un vínculo con `deleted: true`**. Desde la #323 tampoco
+encuentra a la #324.
+
+**Impacto:** después de desconectar por error no hay forma de volver a conectar desde la pantalla.
+
+**Sugerencia:** al excluir demandas ya conectadas, ignorar los vínculos con `deleted: true`.
+
+---
+
+## B11 — `match_descriptions` más largo que `demanda_ids`
+
+Al buscar por nombre (ej. "Tutorial RUNNA 0909" desde la #324) la respuesta trae 2 textos de coincidencia pero 1
+solo id de demanda. El front los emparejaba por posición y dibujaba una fila "Demanda ID:" vacía con el botón
+"Conectar" activo.
+
+**Sugerencia:** que cada texto lleve su id (por ejemplo una lista de objetos `{demanda_id, descripcion}`), o que
+los textos de legajos vengan en otro campo.
+
+**Mitigación en el front:** no se dibuja la fila que no tiene demanda.
 
 ---
 
