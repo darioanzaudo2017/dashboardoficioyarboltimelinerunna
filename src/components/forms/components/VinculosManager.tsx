@@ -424,7 +424,7 @@ export default function VinculosManager({
       {!readOnly && vinculos.length > 0 && Object.keys(vinculoErrors).length > 0 && (
         <Alert severity="warning" sx={{ mt: 2 }}>
           <Typography variant="body2">
-            Por favor, complete todos los campos obligatorios en los vínculos antes de enviar el formulario.
+            Por favor, complete todos los campos obligatorios en los vínculos antes de guardar la demanda.
           </Typography>
         </Alert>
       )}

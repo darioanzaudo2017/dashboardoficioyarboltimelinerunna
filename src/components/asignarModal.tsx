@@ -31,11 +31,25 @@ import { toast } from "react-toastify"
 import { useUser } from "@/utils/auth/userZustand"
 import { logger } from "@/utils/logger"
 
+type ObjetivoAsignacion = "peticion_informe" | "proteccion"
+
+/**
+ * El backend no devuelve el objetivo de la derivación anterior, pero sí el de la demanda
+ * (ej. "PROTECCION"). Se usa como valor inicial para no ofrecer "Petición de informe" por defecto.
+ */
+export const objetivoDemandaToAsignacion = (objetivoDemanda?: string | null): ObjetivoAsignacion | undefined => {
+  if (objetivoDemanda === "PROTECCION") return "proteccion"
+  if (objetivoDemanda === "PETICION_DE_INFORME") return "peticion_informe"
+  return undefined
+}
+
 interface AsignarModalProps {
   open: boolean
   onClose: () => void
   demandaId: number | null
   onSuccess?: () => void
+  /** Objetivo con el que se precarga el formulario cuando la derivación previa no lo informa. */
+  objetivoInicial?: ObjetivoAsignacion
 }
 
 interface Zona {
@@ -89,12 +103,12 @@ interface DemandaZona {
   objetivo?: string
 }
 
-const AsignarModal: React.FC<AsignarModalProps> = ({ open, onClose, demandaId, onSuccess }) => {
+const AsignarModal: React.FC<AsignarModalProps> = ({ open, onClose, demandaId, onSuccess, objetivoInicial }) => {
   const currentUser = useUser((state) => state.user)
   const [value, setValue] = useState(0)
   const [selectedZona, setSelectedZona] = useState<number | null>(null)
   const [comentarios, setComentarios] = useState("")
-  const [objetivo, setObjetivo] = useState<string>("peticion_informe")
+  const [objetivo, setObjetivo] = useState<string>(objetivoInicial ?? "peticion_informe")
   const [selectedUsers, setSelectedUsers] = useState<number[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [usersForSelectedZona, setUsersForSelectedZona] = useState<User[]>([])
@@ -106,22 +120,23 @@ const AsignarModal: React.FC<AsignarModalProps> = ({ open, onClose, demandaId, o
    */
   const [soloLegalesProteccion, setSoloLegalesProteccion] = useState(false)
 
-  // Fetch main data using TanStack Query (only when modal is open)
+  // Fetch main data using TanStack Query (only when modal is open).
+  // staleTime 0: el caché por defecto (5 min) dejaba ver una asignación vieja al reabrir el modal.
   const { data: mainData, isLoading: isDataLoading, refetch: refetchMainData } = useConditionalData<{
     zonas: Zona[]
     demanda_zonas: DemandaZona[]
     users: User[]
-  }>(`gestion-demanda-zona/${demandaId}/`, open && !!demandaId)
+  }>(`gestion-demanda-zona/${demandaId}/`, open && !!demandaId, undefined, { staleTime: 0 })
 
   // Fetch audit history using TanStack Query (only when modal is open)
-  const { data: auditHistoryData } = useConditionalData<
+  const { data: auditHistoryData, refetch: refetchAuditHistory } = useConditionalData<
     Array<{
       id: number
       descripcion: string
       action: string
       timestamp: string
     }>
-  >(`auditoria-demanda-zona/${demandaId}`, open && !!demandaId)
+  >(`auditoria-demanda-zona/${demandaId}`, open && !!demandaId, undefined, { staleTime: 0 })
   const auditHistory = extractArray(auditHistoryData)
 
   // Extract data from response (memoize to prevent infinite loops)
@@ -141,14 +156,14 @@ const AsignarModal: React.FC<AsignarModalProps> = ({ open, onClose, demandaId, o
       setSelectedZona(lastActiveDemandaZona.zona.id)
       // Convert single user to array for backward compatibility
       setSelectedUsers(lastActiveDemandaZona.user_responsable ? [lastActiveDemandaZona.user_responsable.id] : [])
-      setObjetivo(lastActiveDemandaZona.objetivo || "peticion_informe")
+      setObjetivo(lastActiveDemandaZona.objetivo || objetivoInicial || "peticion_informe")
     } else {
       // Si no hay demanda activa, resetear los campos
       setSelectedZona(null)
       setSelectedUsers([])
-      setObjetivo("peticion_informe")
+      setObjetivo(objetivoInicial || "peticion_informe")
     }
-  }, [lastActiveDemandaZona])
+  }, [lastActiveDemandaZona, objetivoInicial])
 
   // Fetch users for selected zona using the users-zonas endpoint with user_info
   useEffect(() => {
@@ -213,12 +228,22 @@ const AsignarModal: React.FC<AsignarModalProps> = ({ open, onClose, demandaId, o
         ? ![lastActiveDemandaZona.user_responsable.id].every((id) => selectedUsers.includes(id)) ||
           selectedUsers.length !== 1
         : selectedUsers.length > 0) ||
-      (lastActiveDemandaZona.objetivo || "peticion_informe") !== objetivo
+      (lastActiveDemandaZona.objetivo || objetivoInicial || "peticion_informe") !== objetivo
 
     if (!hasChanges && comentarios.trim() === "") {
       toast.info("No se detectaron cambios para asignar")
       return
     }
+
+    // El aviso de éxito dice a quién quedó asignada; sin responsables lo aclara, porque en ese caso
+    // el estado no cambia hasta que alguien tenga la demanda a cargo.
+    const responsables = usersForSelectedZona
+      .filter((user) => selectedUsers.includes(user.id))
+      .map((user) => user.username)
+      .join(", ")
+    const successMessage = responsables
+      ? `Demanda #${demandaId} asignada a ${responsables}.`
+      : `Demanda #${demandaId} derivada a la zona, todavía sin responsable: seguirá "Sin Asignar" hasta elegir uno.`
 
     setIsLoading(true)
     try {
@@ -234,20 +259,25 @@ const AsignarModal: React.FC<AsignarModalProps> = ({ open, onClose, demandaId, o
           ...(currentUser?.id ? { enviado_por: currentUser.id } : {}),
           recibido_por: null,
           zona: selectedZona,
-          user_responsable: selectedUsers.length === 1 ? selectedUsers[0] : null,
+          // Responsable principal = primero de la selección; la lista completa va en users_responsables.
+          // Con null (más de un usuario) la demanda quedaba en "Sin Asignar".
+          user_responsable: selectedUsers[0] ?? null,
           demanda: demandaId,
           objetivo: objetivo,
           users_responsables: selectedUsers,
         },
         true,
-        "Demanda asignada exitosamente",
+        successMessage,
       )
 
-      // Recargar los datos para obtener la última asignación
-      await refetchMainData()
+      // Recargar los datos para obtener la última asignación (quedan en caché para la próxima apertura)
+      await Promise.all([refetchMainData(), refetchAuditHistory()])
       setComentarios("")
       // Notificar al componente padre para refrescar la bandeja
       onSuccess?.()
+      // La tarea terminó: se cierra el modal para volver a la bandeja con el estado actualizado
+      // (antes quedaba abierto con el formulario reseteado y parecía que no había pasado nada).
+      onClose()
     } catch (error) {
       logger.error("Error assigning demanda:", error)
       toast.error("Error al asignar la demanda")
@@ -461,6 +491,13 @@ const AsignarModal: React.FC<AsignarModalProps> = ({ open, onClose, demandaId, o
                       />
                       {selectedUsers.length === 0 && !isLoadingUsersForZona && (
                         <FormHelperText>Seleccione al menos un usuario responsable</FormHelperText>
+                      )}
+                      {lastActiveDemandaZona?.user_responsable && (
+                        // El servidor solo informa al responsable principal de una asignación previa.
+                        <FormHelperText>
+                          Se muestra el responsable principal de la asignación anterior. Si había más de uno,
+                          volvé a seleccionarlos antes de asignar.
+                        </FormHelperText>
                       )}
                     </FormControl>
                   )}

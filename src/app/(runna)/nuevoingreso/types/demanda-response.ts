@@ -138,7 +138,7 @@ export const getAdultosCount = (response: DemandaCreatedResponse): number => {
  * Objective labels for display
  */
 export const OBJETIVO_LABELS: Record<DemandaCreatedResponse["demanda"]["objetivo_de_demanda"], string> = {
-  PROTECCION: "Proteccion",
-  PETICION_DE_INFORME: "Peticion de Informe",
+  PROTECCION: "Protección",
+  PETICION_DE_INFORME: "Petición de Informe",
   CARGA_OFICIOS: "Carga de Oficios",
 }

@@ -25,6 +25,7 @@ import { parseDateSafely, formatDateSafely } from "../../utils/dateUtils"
 import FormSection from "../form-section"
 import LocalizacionFields from "../../LocalizacionFields"
 import type { DropdownData, FormData } from "../../types/formTypes"
+import { dniFieldRules } from "../../utils/numberRules"
 
 interface PersonalInfoTabProps {
   index: number
@@ -87,6 +88,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ index, control, dropd
             <Controller
               name={`ninosAdolescentes.${index}.dni`}
               control={control}
+              rules={dniFieldRules}
               render={({ field, fieldState: { error } }) => (
                 <TextField
                   {...field}
