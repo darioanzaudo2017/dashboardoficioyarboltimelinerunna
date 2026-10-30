@@ -9,6 +9,8 @@ import { logger } from "@/utils/logger"
 interface LocalizacionData {
   calle: string
   localidad: number
+  /** Altura: sin ella el backend no busca coincidencias por dirección. */
+  casa_nro?: number
 }
 
 interface BusquedaVinculacionRequest {

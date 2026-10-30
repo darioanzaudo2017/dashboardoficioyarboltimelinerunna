@@ -129,7 +129,7 @@ export const vincularDemandaALegajo = async (
 
     // Make API call
     const response = await create<VincularDemandaResponse>(
-      `legajos/${legajoId}/vincular-demanda`,
+      `legajos/${legajoId}/vincular-demanda/`,
       data
     )
 

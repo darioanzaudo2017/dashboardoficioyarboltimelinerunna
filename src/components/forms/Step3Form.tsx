@@ -206,6 +206,8 @@ const Step3Form: React.FC<Step3FormProps> = ({ dropdownData, readOnly = false, a
           localizacionData = {
             calle: localizacion.calle || "",
             localidad: Number(localizacion.localidad) || 0,
+            // Sin altura el backend no busca por dirección (calle + localidad solas daban falsos positivos).
+            casa_nro: Number(localizacion.casa_nro) || undefined,
           }
         }
       }
@@ -307,8 +309,8 @@ const Step3Form: React.FC<Step3FormProps> = ({ dropdownData, readOnly = false, a
       setDuplicateModalOpen(false)
       clearResults()
 
-      // Show success notification
-      alert(`Nuevo legajo creado. Justificación registrada en auditoría.`)
+      // El legajo no se crea acá: se registra la decisión y el legajo sale al admitir la demanda.
+      alert(response.mensaje)
     } catch (error: any) {
       logger.error("Error al crear legajo con duplicado:", error)
       alert(`Error al crear legajo: ${error.message}`)

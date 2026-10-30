@@ -23,7 +23,7 @@ interface FilterState {
   | "ARCHIVADA"
   | "ADMITIDA"
   | null
-  objetivo_de_demanda: "CONSTATACION" | "PETICION_DE_INFORME" | null
+  objetivo_de_demanda: "PROTECCION" | "PETICION_DE_INFORME" | "CARGA_OFICIOS" | null
 }
 
 interface ButtonsProps {
@@ -340,14 +340,14 @@ const Buttons: React.FC<ButtonsProps> = ({ isLoading, handleNuevoRegistro, onFil
 
                 <ListItem
                   component="div"
-                  onClick={() => handleFilterChange("objetivo_de_demanda", "CONSTATACION")}
+                  onClick={() => handleFilterChange("objetivo_de_demanda", "PROTECCION")}
                   sx={{ py: 1, px: 2, cursor: 'pointer' }}
                 >
                   <ListItemIcon sx={{ minWidth: 36 }}>
                     <FileText className="h-4 w-4" />
                   </ListItemIcon>
-                  <ListItemText primary="Constatación" />
-                  {filterState.objetivo_de_demanda === "CONSTATACION" && <Check className="h-4 w-4 text-primary" />}
+                  <ListItemText primary="Protección" />
+                  {filterState.objetivo_de_demanda === "PROTECCION" && <Check className="h-4 w-4 text-primary" />}
                 </ListItem>
 
                 <ListItem
@@ -362,6 +362,18 @@ const Buttons: React.FC<ButtonsProps> = ({ isLoading, handleNuevoRegistro, onFil
                   {filterState.objetivo_de_demanda === "PETICION_DE_INFORME" && (
                     <Check className="h-4 w-4 text-primary" />
                   )}
+                </ListItem>
+
+                <ListItem
+                  component="div"
+                  onClick={() => handleFilterChange("objetivo_de_demanda", "CARGA_OFICIOS")}
+                  sx={{ py: 1, px: 2, cursor: 'pointer' }}
+                >
+                  <ListItemIcon sx={{ minWidth: 36 }}>
+                    <FileText className="h-4 w-4" />
+                  </ListItemIcon>
+                  <ListItemText primary="Carga de Oficios" />
+                  {filterState.objetivo_de_demanda === "CARGA_OFICIOS" && <Check className="h-4 w-4 text-primary" />}
                 </ListItem>
               </List>
             </Box>
