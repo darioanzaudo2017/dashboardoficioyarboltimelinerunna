@@ -153,13 +153,13 @@ export const buildWorkflowSteps = ({
         id: 3,
         label: "Cierre de Medida",
         description: "Registro del informe final y cierre administrativo",
-        status: determineStepStatus(2, activeStep, mpiStep3Completed, mpiStep2Completed),
+        status: determineStepStatus(2, activeStep, mpiStep3Completed, step1Completed),
         progress: createStepProgress(mpiStep3Completed ? 100 : 0),
         content: (
           <WorkflowStepContent
             stepNumber={2}
             totalSteps={totalSteps}
-            status={determineStepStatus(2, activeStep, mpiStep3Completed, mpiStep2Completed)}
+            status={determineStepStatus(2, activeStep, mpiStep3Completed, step1Completed)}
             isFirst={false}
             isLast={true}
             canContinue={mpiStep3Completed}
