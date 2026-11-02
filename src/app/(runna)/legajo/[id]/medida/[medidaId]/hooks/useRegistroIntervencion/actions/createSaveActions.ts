@@ -34,6 +34,14 @@ interface SaveActionsParams {
   validateForm: () => ValidationErrors
 }
 
+interface GuardarOpciones {
+  /**
+   * No mostrar el toast de éxito del guardado. Se usa cuando el guardado es
+   * un paso de otra acción (guardar y enviar), que muestra su propio toast.
+   */
+  silencioso?: boolean
+}
+
 export function createSaveActions({
   medidaId,
   intervencionId,
@@ -51,7 +59,9 @@ export function createSaveActions({
   /**
    * Create new intervención (BORRADOR)
    */
-  const createNewIntervencion = async (): Promise<IntervencionResponse | null> => {
+  const createNewIntervencion = async (
+    { silencioso = false }: GuardarOpciones = {}
+  ): Promise<IntervencionResponse | null> => {
     // Validate required fields
     const errors = validateForm()
     if (Object.keys(errors).length > 0) {
@@ -89,10 +99,12 @@ export function createSaveActions({
         workflow_phase: workflowPhase ?? null,
       })
 
-      toast.success('Registro de Intervención creado exitosamente', {
-        position: 'top-center',
-        autoClose: 3000,
-      })
+      if (!silencioso) {
+        toast.success('Registro de Intervención creado exitosamente', {
+          position: 'top-center',
+          autoClose: 3000,
+        })
+      }
 
       // Force immediate refetch to update UI
       try {
@@ -135,7 +147,9 @@ export function createSaveActions({
   /**
    * Update existing intervención
    */
-  const updateExistingIntervencion = async (): Promise<IntervencionResponse | null> => {
+  const updateExistingIntervencion = async (
+    { silencioso = false }: GuardarOpciones = {}
+  ): Promise<IntervencionResponse | null> => {
     const effectiveId = intervencionId || intervencion?.id
     if (!effectiveId) {
       setError("No se puede actualizar: ID de intervención no definido")
@@ -172,10 +186,12 @@ export function createSaveActions({
       const data = await updateIntervencion(medidaId, effectiveId, payload)
       setIntervencion(data)
 
-      toast.success('Registro de Intervención actualizado exitosamente', {
-        position: 'top-center',
-        autoClose: 3000,
-      })
+      if (!silencioso) {
+        toast.success('Registro de Intervención actualizado exitosamente', {
+          position: 'top-center',
+          autoClose: 3000,
+        })
+      }
 
       // Force immediate refetch to update UI
       try {
@@ -218,13 +234,15 @@ export function createSaveActions({
   /**
    * Save intervención (create or update based on whether intervencionId exists)
    */
-  const guardarBorrador = async (): Promise<IntervencionResponse | null> => {
+  const guardarBorrador = async (
+    opciones: GuardarOpciones = {}
+  ): Promise<IntervencionResponse | null> => {
     // Use prop intervencionId, or fallback to a just-created intervention's ID
     const effectiveId = intervencionId || intervencion?.id
     if (effectiveId) {
-      return await updateExistingIntervencion()
+      return await updateExistingIntervencion(opciones)
     } else {
-      return await createNewIntervencion()
+      return await createNewIntervencion(opciones)
     }
   }
 

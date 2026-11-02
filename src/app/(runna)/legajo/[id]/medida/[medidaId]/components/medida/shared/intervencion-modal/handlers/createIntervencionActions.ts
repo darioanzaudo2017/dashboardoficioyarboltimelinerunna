@@ -153,7 +153,8 @@ export function createIntervencionActions({
                     await uploadAdjuntoFile(informeObligatorio, 'INFORME')
                 }
 
-                const result = await guardarBorrador()
+                // Silencioso: el toast de esta acción es el de "enviada" (no "actualizado")
+                const result = await guardarBorrador({ silencioso: true })
                 if (!result) {
                     setSnackbar({
                         open: true,

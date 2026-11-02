@@ -12,7 +12,6 @@
 
 import { get } from "@/app/api/apiService"
 import axiosInstance from "@/app/api/utils/axiosInstance"
-import { toast } from "react-toastify"
 import type {
   RatificacionJudicial,
   CreateRatificacionJudicialRequest,
@@ -97,7 +96,7 @@ export async function createRatificacion(
       `medidas/${medidaId}/ratificacion/`,
       formData
     )
-    toast.success('Ratificación judicial registrada exitosamente')
+    // El toast lo muestra el hook que llama (useRatificacionJudicial)
 
     logger.log("Ratificación created successfully:", response)
 

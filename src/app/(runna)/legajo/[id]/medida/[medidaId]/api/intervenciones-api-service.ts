@@ -512,7 +512,7 @@ export const enviarIntervencion = async (
       `medidas/${medidaId}/intervenciones/${intervencionId}/enviar/`,
       {}
     )
-    toast.success('Intervención enviada exitosamente')
+    // El toast de éxito lo muestra el hook que llama (useRegistroIntervencion)
 
     logger.log("Intervención enviada successfully:", response)
 
@@ -548,11 +548,10 @@ export const aprobarIntervencion = async (
     logger.log(`Aprobando intervención: medida ${medidaId}, intervención ${intervencionId}`)
 
     // Uses create() with empty object for POST to custom action endpoint
+    // Sin toast acá: lo muestra el hook que llama (useRegistroIntervencion)
     const response = await create<AprobarIntervencionResponse>(
       `medidas/${medidaId}/intervenciones/${intervencionId}/aprobar/`,
-      {},
-      true,
-      'Intervención aprobada exitosamente'
+      {}
     )
 
     logger.log("Intervención aprobada successfully:", response)
@@ -598,7 +597,7 @@ export const rechazarIntervencion = async (
       `medidas/${medidaId}/intervenciones/${intervencionId}/rechazar/`,
       data
     )
-    toast.success('Intervención rechazada')
+    // El toast lo muestra el hook que llama (useRegistroIntervencion)
 
     logger.log("Intervención rechazada successfully:", response)
 
