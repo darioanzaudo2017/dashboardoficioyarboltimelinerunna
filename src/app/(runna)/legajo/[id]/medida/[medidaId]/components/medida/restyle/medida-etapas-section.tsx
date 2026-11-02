@@ -39,6 +39,7 @@ import { formatDateLocaleAR } from "@/utils/dateUtils"
 import { MEDIDA_COLORS, type TipoMedidaKey } from "./medida-theme"
 import { UnifiedWorkflowTab } from "../unified-workflow-tab"
 import { useEtapaDetail } from "../../../hooks/useEtapaDetail"
+import { getEtapaEstadoLabel } from "../../../utils/etapa-estado-label"
 import { tipoEtapaToWorkflowPhase, workflowPhaseToTipoEtapa } from "../../../utils/workflow-tipo-mapper"
 import type { WorkflowPhase } from "../../../types/workflow"
 import type { TipoEtapa } from "../../../types/estado-etapa"
@@ -50,6 +51,8 @@ export interface EtapaLike {
   nombre: string
   estado: string
   estado_display?: string
+  /** Catálogo del estado (el back lo manda anidado, con `nombre_display`). */
+  estado_especifico?: number | { nombre_display?: string | null } | null
   tipo_etapa?: string
   fecha_inicio_estado?: string | null
   fecha_inicio?: string | null
@@ -484,7 +487,7 @@ const PhaseRow: React.FC<PhaseRowProps> = ({ phase, etapasOfPhase, isCurrent, on
   const rawFecha = latest?.fecha_inicio ?? latest?.fecha_inicio_estado
   const fecha = rawFecha ? formatDateLocaleAR(rawFecha) : ""
   const count = etapasOfPhase.length
-  const estadoLabel = isCurrent ? latest?.estado_display || "En curso" : count > 0 ? "Registrada" : "No iniciada"
+  const estadoLabel = isCurrent ? getEtapaEstadoLabel(latest) || "En curso" : count > 0 ? "Registrada" : "No iniciada"
 
   return (
     <Box
