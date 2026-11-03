@@ -1,6 +1,7 @@
 import React from "react"
 import { Box, Typography } from "@mui/material"
 import type { EtapaDetailResponse } from "../../../../api/etapa-detail-api-service"
+import { formatDateLocaleAR } from "@/utils/dateUtils"
 
 type EtapaHistorial = NonNullable<EtapaDetailResponse["etapas_mismo_tipo"]>[number]
 
@@ -32,7 +33,7 @@ export const EtapaHistorialSelector = ({
     const total = etapasHistorial.length
     const ordinal = total - index
     const fechaInicio = e.fecha_inicio
-      ? new Date(e.fecha_inicio).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" })
+      ? formatDateLocaleAR(e.fecha_inicio)
       : "sin fecha"
     const estadoLabel = e.estado_nombre ?? (e.activa ? "activa" : "cerrada")
     const suffix = e.activa ? " · activa" : " · cerrada"

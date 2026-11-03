@@ -24,6 +24,7 @@ import { UnifiedActividadesTable } from "@/app/(runna)/legajo/actividades/compon
 import { extractArray } from "@/hooks/useApiQuery"
 import type { TActividadPlanTrabajo } from "../../types/actividades"
 import { useUser } from "@/utils/auth/userZustand"
+import { formatDateLocaleAR } from "@/utils/dateUtils"
 
 // ============================================================================
 // Filtros de actor disponibles
@@ -65,7 +66,7 @@ function formatMedidaLabel(m: MedidaInfo): string {
   const numero = m.numero_medida || m.numero || `#${m.id}`
   const estadoActual = getMedidaEstado(m)
   const estado = esVigente(estadoActual) ? "✓ Vigente" : estadoActual
-  const fecha = m.fecha_apertura ? new Date(m.fecha_apertura).toLocaleDateString("es-AR") : ""
+  const fecha = m.fecha_apertura ? formatDateLocaleAR(m.fecha_apertura) : ""
   return `${tipo} ${numero} — ${estado}${fecha ? ` (${fecha})` : ""}`
 }
 
@@ -220,7 +221,7 @@ export const PlanTrabajoSection: React.FC<PlanTrabajoSectionProps> = ({
                       </Typography>
                       {m.fecha_apertura && (
                         <Typography variant="caption" color="text.secondary">
-                          ({new Date(m.fecha_apertura).toLocaleDateString("es-AR")})
+                          ({formatDateLocaleAR(m.fecha_apertura)})
                         </Typography>
                       )}
                     </Box>
