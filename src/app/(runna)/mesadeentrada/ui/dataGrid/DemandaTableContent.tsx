@@ -7,6 +7,7 @@ import { DataGrid, type GridPaginationModel } from "@mui/x-data-grid"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useRouter, useSearchParams } from "next/navigation"
 import AsignarModal, { objetivoDemandaToAsignacion } from "@/components/asignarModal"
+import { ActividadesDeOficioModal } from "../ActividadesDeOficio"
 import LegajoSearchBar from "../../../legajo-mesa/components/search/LegajoSearchBar"
 import { useUser } from "@/utils/auth/userZustand"
 
@@ -62,6 +63,8 @@ const DemandaTableContent: React.FC = () => {
   })
   const [isAsignarModalOpen, setIsAsignarModalOpen] = useState(false)
   const [selectedDemandaIdForAssignment, setSelectedDemandaIdForAssignment] = useState<number | null>(null)
+  // Actividades que generó una demanda de oficio (para asignarlas desde la tabla)
+  const [demandaIdActividades, setDemandaIdActividades] = useState<number | null>(null)
   const [demandasData, setDemandasData] = useState<TDemandaPaginated | null>(null)
 
   const [apiFilters, setApiFilters] = useState<DemandaApiFilters>({
@@ -315,6 +318,7 @@ const DemandaTableContent: React.FC = () => {
         onCalificacionChange: handleCalificacionChange,
         onOpenModal: handleOpenModal,
         onOpenAsignarModal: handleOpenAsignarModal,
+        onOpenActividades: setDemandaIdActividades,
         onRecibirDemanda: updateDemandaZona.mutate,
       })
       if (canCustomizeView) return built
@@ -544,6 +548,11 @@ const DemandaTableContent: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+      <ActividadesDeOficioModal
+        demandaId={demandaIdActividades}
+        open={demandaIdActividades !== null}
+        onClose={() => setDemandaIdActividades(null)}
+      />
       <AsignarModal
         open={isAsignarModalOpen}
         onClose={handleCloseAsignarModal}

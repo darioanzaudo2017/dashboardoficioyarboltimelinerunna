@@ -1,5 +1,7 @@
 "use client"
 
+import { ActividadesDeOficioAcceso } from "@/app/(runna)/mesadeentrada/ui/ActividadesDeOficio"
+import { demandaGeneraActividadesDeOficio } from "@/app/(runna)/mesadeentrada/utils/actividadesDeOficio"
 import type React from "react"
 import { useState, useEffect } from "react"
 import { CircularProgress, Typography, IconButton, Box, Alert, Tabs, Tab, Paper, Button, Chip, Tooltip } from "@mui/material"
@@ -424,6 +426,11 @@ export default function DemandaDetail({ params, onClose, isFullPage = false }: D
           >
             La presente demanda aún no ha sido asignada.
           </Alert>
+        )}
+
+        {/* Demandas de oficio: acceso a las actividades que generó (para asignarlas desde acá) */}
+        {demandaGeneraActividadesDeOficio(formData?.objetivo_de_demanda) && params.id && (
+          <ActividadesDeOficioAcceso demandaId={Number(params.id)} />
         )}
 
         {isEvaluacionDisabled && (
