@@ -40,6 +40,7 @@ export const DemandaDetailPane = ({
       <DemandaDetail
         params={{ id: selectedDemandaId.toString() }}
         onClose={onClose}
+        ocultarCerrar
       />
     </Box>
   </Box>
@@ -85,6 +86,7 @@ export const DemandaDetailDrawer = ({
         <DemandaDetail
           params={{ id: selectedDemandaId.toString() }}
           onClose={onClose}
+          ocultarCerrar
         />
       )}
     </Box>

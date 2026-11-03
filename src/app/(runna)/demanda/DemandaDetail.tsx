@@ -5,7 +5,7 @@ import { useState, useEffect } from "react"
 import { CircularProgress, Typography, IconButton, Box, Alert, Tabs, Tab, Paper, Button, Chip } from "@mui/material"
 import CloseIcon from "@mui/icons-material/Close"
 import SendIcon from "@mui/icons-material/Send"
-import ArticleIcon from "@mui/icons-material/Article"
+import OpenInFullIcon from "@mui/icons-material/OpenInFull"
 import GavelIcon from "@mui/icons-material/Gavel"
 import CloudUploadIcon from "@mui/icons-material/CloudUpload"
 import LinkIcon from "@mui/icons-material/Link"
@@ -64,9 +64,11 @@ interface DemandaDetailProps {
   }
   onClose?: () => void
   isFullPage?: boolean
+  /** El contenedor ya tiene su propio botón de cerrar (panel lateral de la bandeja). */
+  ocultarCerrar?: boolean
 }
 
-export default function DemandaDetail({ params, onClose, isFullPage = false }: DemandaDetailProps) {
+export default function DemandaDetail({ params, onClose, isFullPage = false, ocultarCerrar = false }: DemandaDetailProps) {
   const [formData, setFormData] = useState<FormData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -289,14 +291,20 @@ export default function DemandaDetail({ params, onClose, isFullPage = false }: D
             Detalle de la Demanda
           </Typography>
 
-          <Box sx={{ display: "flex", gap: 2 }}>
+          <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
             {!isFullPage && (
-              <IconButton aria-label="Ver en página completa" onClick={handleOpenInFullPage} color="primary">
-                <ArticleIcon />
-              </IconButton>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<OpenInFullIcon />}
+                onClick={handleOpenInFullPage}
+                title="Abrir en una página completa, con más espacio y sin la lista"
+              >
+                Pantalla completa
+              </Button>
             )}
 
-            {!isFullPage && onClose && (
+            {!isFullPage && onClose && !ocultarCerrar && (
               <IconButton
                 aria-label="close"
                 onClick={onClose}

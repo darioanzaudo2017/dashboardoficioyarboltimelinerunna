@@ -40,6 +40,7 @@ export const LegajoDetailPane = ({
       <LegajoDetail
         params={{ id: selectedLegajoId.toString() }}
         onClose={handleCloseModal}
+        ocultarCerrar
       />
     </Box>
   </Box>
@@ -85,6 +86,7 @@ export const LegajoDetailDrawer = ({
         <LegajoDetail
           params={{ id: selectedLegajoId.toString() }}
           onClose={handleCloseModal}
+          ocultarCerrar
         />
       )}
     </Box>
