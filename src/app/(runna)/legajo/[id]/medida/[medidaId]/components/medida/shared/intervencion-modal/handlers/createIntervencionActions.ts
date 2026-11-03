@@ -150,7 +150,16 @@ export function createIntervencionActions({
                         message: 'Subiendo informe obligatorio...',
                         severity: 'info'
                     })
-                    await uploadAdjuntoFile(informeObligatorio, 'INFORME')
+                    const informeSubido = await uploadAdjuntoFile(informeObligatorio, 'INFORME')
+                    if (!informeSubido) {
+                        // No seguir: enviar sin el informe dejaría la intervención aprobable sin su documento obligatorio.
+                        setSnackbar({
+                            open: true,
+                            message: 'No se pudo subir el Informe Obligatorio. La intervención no se envió: intentá adjuntarlo de nuevo.',
+                            severity: 'error'
+                        })
+                        return
+                    }
                 }
 
                 const result = await guardarBorrador()
@@ -212,19 +221,38 @@ export function createIntervencionActions({
                 severity: 'info'
             })
 
+            const esNueva = !intervencion && !intervencionId
+
+            // Intervención ya creada: el informe se sube ahora, para que el borrador no lo pierda.
+            if (!esNueva && informeObligatorio) {
+                const informeSubido = await uploadAdjuntoFile(informeObligatorio, 'INFORME')
+                if (!informeSubido) {
+                    setSnackbar({
+                        open: true,
+                        message: 'No se pudo subir el Informe Obligatorio. El borrador no se guardó: intentá adjuntarlo de nuevo.',
+                        severity: 'error'
+                    })
+                    return
+                }
+            }
+
             const result = await guardarBorrador()
             if (result) {
+                // En una intervención nueva los archivos elegidos recién se suben al enviarla; hay que avisarlo.
+                const archivosSinSubir = esNueva && (!!informeObligatorio || pendingFiles.length > 0)
                 setSnackbar({
                     open: true,
-                    message: 'Borrador guardado exitosamente',
-                    severity: 'success'
+                    message: archivosSinSubir
+                        ? 'Borrador guardado. Los archivos elegidos todavía no se subieron: se adjuntan al enviar la intervención.'
+                        : 'Borrador guardado exitosamente',
+                    severity: archivosSinSubir ? 'warning' : 'success'
                 })
                 if (onSaved) {
                     onSaved()
                 }
                 setTimeout(() => {
                     onClose()
-                }, 1500)
+                }, archivosSinSubir ? 4000 : 1500)
             } else {
                 setSnackbar({
                     open: true,

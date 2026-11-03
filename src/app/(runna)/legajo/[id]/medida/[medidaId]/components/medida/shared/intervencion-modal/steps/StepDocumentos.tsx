@@ -66,14 +66,6 @@ export function StepDocumentos(props: StepDocumentosProps) {
                 handleInformeObligatorioDrop={props.handleInformeObligatorioDrop}
             />
 
-            <ConfiguracionAdicionalSection
-                formData={props.formData}
-                updateField={props.updateField}
-                intervencion={props.intervencion}
-                canEdit={props.canEdit}
-                canAprobarOrRechazar={props.canAprobarOrRechazar}
-            />
-
             <DocumentosAdicionalesSection
                 formData={props.formData}
                 intervencion={props.intervencion}
@@ -89,6 +81,14 @@ export function StepDocumentos(props: StepDocumentosProps) {
                 handleDeleteAdjunto={props.handleDeleteAdjunto}
                 handleDownloadFile={props.handleDownloadFile}
                 formatFileSize={props.formatFileSize}
+            />
+
+            <ConfiguracionAdicionalSection
+                formData={props.formData}
+                updateField={props.updateField}
+                intervencion={props.intervencion}
+                canEdit={props.canEdit}
+                canAprobarOrRechazar={props.canAprobarOrRechazar}
             />
         </Box>
     )

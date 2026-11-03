@@ -33,7 +33,7 @@ export function ConfiguracionAdicionalSection({
             {/* Configuración Adicional Section */}
             <Card elevation={2} sx={{ p: 3, mt: 2 }}>
                 <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>
-                    2. Configuración Adicional
+                    3. Informes ampliatorios y estado
                 </Typography>
 
                 {/* Informes ampliatorios */}

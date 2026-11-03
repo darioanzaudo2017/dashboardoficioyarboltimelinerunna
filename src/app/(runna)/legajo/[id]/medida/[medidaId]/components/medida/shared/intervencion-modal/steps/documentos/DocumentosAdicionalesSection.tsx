@@ -1,3 +1,4 @@
+import { useState } from "react"
 import {
     Avatar,
     Box,
@@ -6,7 +7,9 @@ import {
     CardHeader,
     Chip,
     IconButton,
+    MenuItem,
     Paper,
+    TextField,
     Typography,
 } from "@mui/material"
 import AttachFileIcon from "@mui/icons-material/AttachFile"
@@ -35,6 +38,18 @@ interface DocumentosAdicionalesSectionProps {
     formatFileSize: InformeObligatorioHandlers["formatFileSize"]
 }
 
+/**
+ * Tipos de documento que el servidor distingue: las actas van como ACTA; las notificaciones a padres o familiares
+ * y cualquier otro anexo van como RESPALDO (hoy no tienen tipos propios).
+ */
+const TIPOS_DOCUMENTACION = [
+    { value: "RESPALDO", label: "Notificación u otro anexo" },
+    { value: "ACTA", label: "Acta" },
+] as const
+
+const TEXTO_AYUDA_MPE =
+    "No es obligatoria, pero conviene adjuntarla: notificaciones a padres o familiares, actas y cualquier anexo de información complementaria que ayude a explicar por qué se toma la medida."
+
 export function DocumentosAdicionalesSection({
     formData,
     intervencion,
@@ -51,12 +66,14 @@ export function DocumentosAdicionalesSection({
     handleDownloadFile,
     formatFileSize,
 }: DocumentosAdicionalesSectionProps) {
+    const [tipoDocumento, setTipoDocumento] = useState<string>("RESPALDO")
+
     return (
         <>
             {/* ============================================================ */}
-            {/* DOCUMENTOS ADICIONALES SECTION - Conditional based on informes ampliatorios */}
+            {/* DOCUMENTACIÓN COMPLEMENTARIA - opcional, siempre a la vista */}
             {/* ============================================================ */}
-            {formData.requiere_informes_ampliatorios && (
+            {(
                 <Card variant="outlined" sx={{ mt: 2, borderColor: 'secondary.light', bgcolor: 'rgba(156, 39, 176, 0.02)' }}>
                     <CardHeader
                         avatar={
@@ -67,12 +84,12 @@ export function DocumentosAdicionalesSection({
                         title={
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'secondary.dark' }}>
-                                    3. Documentación Adicional (Opcional)
+                                    2. Documentación complementaria (opcional)
                                 </Typography>
                             </Box>
                         }
                         subheader={tipoMedida === 'MPE'
-                            ? "Actas de puesta en conocimiento y de resguardo, notificaciones a los responsables legales del cuidado personal y otros documentos como informes externos, constancias."
+                            ? TEXTO_AYUDA_MPE
                             : "Adjunte actas, entrevistas, fotos u otros respaldos pertinentes."}
                         sx={{ py: 1.5 }}
                         action={
@@ -88,12 +105,28 @@ export function DocumentosAdicionalesSection({
                         }
                     />
                     <CardContent sx={{ pt: 0 }}>
+                        {canEdit && (
+                            <TextField
+                                select
+                                size="small"
+                                label="Tipo de documento a adjuntar"
+                                value={tipoDocumento}
+                                onChange={(e) => setTipoDocumento(e.target.value)}
+                                sx={{ mb: 2, minWidth: 260 }}
+                            >
+                                {TIPOS_DOCUMENTACION.map((t) => (
+                                    <MenuItem key={t.value} value={t.value}>
+                                        {t.label}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
+                        )}
                         {intervencion ? (
                             // EXISTING INTERVENTION: Show uploaded files and allow more uploads
                             <FileUploadSection
                                 files={additionalMappedAdjuntos}
                                 isLoading={isLoadingAdjuntos}
-                                onUpload={handleFileUpload}
+                                onUpload={(file) => handleFileUpload(file, tipoDocumento)}
                                 onDownload={handleDownloadFile}
                                 onDelete={handleDeleteAdjunto}
                                 allowedTypes=".pdf,.jpg,.jpeg,.png"
@@ -101,8 +134,8 @@ export function DocumentosAdicionalesSection({
                                 disabled={!canEdit}
                                 readOnly={!canEdit}
                                 title=""
-                                uploadButtonLabel="Seleccionar otros archivos"
-                                emptyMessage="No hay documentos adicionales adjuntos."
+                                uploadButtonLabel="Adjuntar documentos"
+                                emptyMessage="Todavía no se adjuntó documentación complementaria."
                                 isUploading={isUploadingAdjunto}
                                 multiple={true}
                             />
@@ -185,7 +218,7 @@ export function DocumentosAdicionalesSection({
                                         }}
                                     />
                                     <Typography variant="body1" sx={{ fontWeight: 600, color: 'secondary.dark' }}>
-                                        Agregar documentos adicionales
+                                        Adjuntar documentación complementaria
                                     </Typography>
                                     <Typography variant="caption" color="text.secondary">
                                         Arrastre aquí o pulse para buscar (PDF, JPG, PNG)
@@ -200,7 +233,7 @@ export function DocumentosAdicionalesSection({
                                             const files = e.target.files
                                             if (files) {
                                                 Array.from(files).forEach(file => {
-                                                    handleAddPendingFile(file, 'RESPALDO')
+                                                    handleAddPendingFile(file, tipoDocumento)
                                                 })
                                                 e.target.value = '' // Reset to allow same file selection
                                             }
