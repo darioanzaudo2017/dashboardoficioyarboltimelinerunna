@@ -18,6 +18,7 @@ import { EditDatosPersonalesDialog } from "./[id]/medida/[medidaId]/components/d
 import { CrearMedidaDialog } from "./[id]/medida/[medidaId]/components/dialogs/crear-medida-dialog"
 import { DatosPersonalesSection } from "./[id]/medida/[medidaId]/components/legajo/datos-personales-section"
 import { LegajoHeader } from "./[id]/medida/[medidaId]/components/legajo/legajo-header"
+import AsignarLegajoModal from "../legajo-mesa/components/asignar-legajo-modal"
 import { getDefaultBreadcrumbs, NavigationBreadcrumbs } from "./[id]/medida/[medidaId]/components/navigation-breadcrumbs"
 // New components
 import { AsignacionesSection } from "./[id]/medida/[medidaId]/components/legajo/asignaciones-section"
@@ -47,6 +48,7 @@ interface LegajoDetailProps {
 
 export default function LegajoDetail({ params, onClose, isFullPage = false, ocultarCerrar = false }: LegajoDetailProps) {
   const [activeTab, setActiveTab] = useState(0)
+  const [asignarOpen, setAsignarOpen] = useState(false)
   // Medida que el usuario eligió en una tarjeta de "Ver plan de trabajo": la pestaña Plan de Trabajo arranca con ella.
   const [planMedidaId, setPlanMedidaId] = useState<number | null>(null)
   // true cuando se llegó al Plan de Trabajo desde una tarjeta del resumen (para ofrecer el botón de volver)
@@ -250,7 +252,17 @@ export default function LegajoDetail({ params, onClose, isFullPage = false, ocul
           </Box>
         )}
 
-        <LegajoHeader legajoData={legajoData} onViewAllPersonalData={handleViewAllPersonalData} />
+        <LegajoHeader
+          legajoData={legajoData}
+          onViewAllPersonalData={handleViewAllPersonalData}
+          onAsignar={() => setAsignarOpen(true)}
+        />
+        <AsignarLegajoModal
+          open={asignarOpen}
+          onClose={() => setAsignarOpen(false)}
+          legajoId={Number(params.id)}
+          onAsignacionComplete={() => void loadLegajoData()}
+        />
 
         <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
           <Button

@@ -18,10 +18,12 @@ import { calculateAge } from "@/utils/dateUtils"
 
 interface LegajoHeaderProps {
   legajoData: LegajoDetailResponse
+  /** Si se pasa, cuando el legajo no tiene un responsable asignado se ofrece un botón para asignarlo. */
+  onAsignar?: () => void
   onViewAllPersonalData: () => void
 }
 
-export const LegajoHeader: React.FC<LegajoHeaderProps> = ({ legajoData, onViewAllPersonalData }) => {
+export const LegajoHeader: React.FC<LegajoHeaderProps> = ({ legajoData, onViewAllPersonalData, onAsignar }) => {
   // Extract needed data from the backend response
   const persona = legajoData.persona
   const legajo = legajoData.legajo
@@ -211,9 +213,14 @@ export const LegajoHeader: React.FC<LegajoHeaderProps> = ({ legajoData, onViewAl
               <Typography variant="body1" sx={{ fontWeight: 600 }}>
                 {asignacion?.user_responsable?.nombre_completo || "Sin asignar"}
               </Typography>
-              <Typography variant="caption" color="text.secondary">
+              <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
                 {asignacion?.zona?.nombre || "Sin zona"}
               </Typography>
+              {onAsignar && !asignacion?.user_responsable && (
+                <Button size="small" variant="outlined" onClick={onAsignar} sx={{ mt: 0.75, textTransform: "none" }}>
+                  Asignar responsable
+                </Button>
+              )}
             </Box>
           </Grid>
 

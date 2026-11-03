@@ -87,7 +87,7 @@ export function StepDetalles({
                                 required
                                 disabled
                                 error={!legajoData?.tecnico_cargo}
-                                helperText={!legajoData?.tecnico_cargo ? 'Asigne un técnico al legajo antes de continuar' : 'Dato tomado de la asignación vigente'}
+                                helperText={!legajoData?.tecnico_cargo ? 'Asigne un técnico al legajo antes de continuar (en el legajo, botón "Asignar responsable")' : 'Dato tomado de la asignación vigente'}
                             />
 
                             <FormControl fullWidth required error={!!validationErrors.tipo_dispositivo_id}>
