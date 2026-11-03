@@ -43,7 +43,11 @@ Se corrigió durante la prueba que el modal no refrescaba tras transferir (la ta
 
 ## Pendiente / notas
 - **No se probó con un usuario técnico:** falta comprobar que alguien que no es admin vea el aviso y las actividades de su zona. Si una transferencia las deja fuera de la zona del usuario, dejarían de verse.
-- Contador en la fila de la Mesa de Entradas (hoy solo aviso en el detalle e ícono): pediría una consulta por fila; mejor si el servidor devuelve la cantidad en el listado de demandas.
+- **Color del ícono según el estado de las actividades: no se hizo, por costo.** El listado de la Mesa de Entradas (`mesa-de-entrada/`) no trae nada de actividades (ni cantidad ni estado),
+  y el servidor no filtra actividades por demanda. Medido en RUNNA test (208 actividades de oficio): traer todas serían 3 llamadas, ~775 KB y ~7 s en cada carga; por legajo serían llamadas chicas
+  (0 a 27 KB, ~0,5 s) pero una por cada fila de oficio visible. La página de Oficios no tiene este problema porque hace una sola búsqueda dirigida (`medidas-all/?search=`) que ya trae las actividades embebidas.
+  **Lo correcto es que el back devuelva, en cada demanda del listado, un resumen de sus actividades** (total, pendientes, vencidas, resueltas); con eso el color y un contador salen sin llamadas extra.
+  Criterio propuesto para el color (mismo que Oficios: resueltas = completada, visado aprobado o cancelada): rojo si hay vencidas, naranja si hay pendientes, azul si hay en curso, verde si todas están resueltas.
 - Mejor aún: que el servidor permita filtrar actividades por demanda (`oficio_origen`), para no recorrer páginas.
 - La medida MPJ no tiene módulo "Plan de trabajo": solo muestra la actividad de Legales en "Control de legalidad". Conviene mostrar el plan completo o avisar.
 - La lista de equipos de destino incluye opciones como "NO USAR! …" y "CSE - CE (NO TRANSFERIR AQUI)".
