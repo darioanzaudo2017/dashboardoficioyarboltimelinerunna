@@ -10,7 +10,24 @@ interface VinculoLike {
   legajo?: unknown
   tipo_vinculo?: unknown
   justificacion?: string | null
+  medida?: unknown
+  legajo_info?: { medidas_activas?: Array<{ estado_vigencia?: string }> }
 }
+
+interface VinculoOptions {
+  /** Oficio de MPE/MPI vigente: si el legajo tiene medidas vigentes, hay que elegir cuál recibe las actividades. */
+  medidaRequerida?: boolean
+}
+
+/** Sólo las medidas vigentes (las cerradas no reciben actividades de un oficio). */
+export const medidasVigentes = <T extends { estado_vigencia?: string }>(medidas: T[] | undefined): T[] =>
+  (medidas ?? []).filter((medida) => medida.estado_vigencia === "VIGENTE")
+
+const faltaMedida = (vinculo: VinculoLike, options: VinculoOptions): boolean =>
+  Boolean(options.medidaRequerida) &&
+  Boolean(vinculo.legajo) &&
+  !vinculo.medida &&
+  medidasVigentes(vinculo.legajo_info?.medidas_activas).length > 0
 
 const bulletList = (items: string[]): string => {
   const visible = items.slice(0, MAX_VISIBLE_ITEMS).map((item) => `• ${item}`)
@@ -29,10 +46,11 @@ export const buildInvalidFieldsMessage = (labels: string[]): string => {
 }
 
 /** Qué le falta a cada vínculo, ej. "Vínculo 2: elegir el legajo, justificación de al menos 20 caracteres (tiene 5)". */
-export const describeVinculoProblems = (vinculos: VinculoLike[]): string[] =>
+export const describeVinculoProblems = (vinculos: VinculoLike[], options: VinculoOptions = {}): string[] =>
   vinculos.flatMap((vinculo, index) => {
     const problems: string[] = []
     if (!vinculo.legajo) problems.push("elegir el legajo")
+    if (faltaMedida(vinculo, options)) problems.push("elegir la medida vigente")
     if (!vinculo.tipo_vinculo) problems.push("elegir el tipo de vínculo")
     const length = (vinculo.justificacion ?? "").trim().length
     if (length < MIN_JUSTIFICACION_VINCULO) {
@@ -43,14 +61,20 @@ export const describeVinculoProblems = (vinculos: VinculoLike[]): string[] =>
 
 export interface VinculoFieldErrors {
   legajo?: string
+  medida?: string
   tipo_vinculo?: string
   justificacion?: string
 }
 
 /** Error de cada campo del vínculo para mostrarlo debajo del campo (en un oficio la justificación se completa sola). */
-export const vinculoFieldErrors = (vinculo: VinculoLike, oficioMode = false): VinculoFieldErrors => {
+export const vinculoFieldErrors = (
+  vinculo: VinculoLike,
+  oficioMode = false,
+  options: VinculoOptions = {},
+): VinculoFieldErrors => {
   const errors: VinculoFieldErrors = {}
   if (!vinculo.legajo) errors.legajo = "Elegí el legajo"
+  if (faltaMedida(vinculo, options)) errors.medida = "Elegí la medida vigente que recibe las actividades"
   if (!vinculo.tipo_vinculo) errors.tipo_vinculo = "Elegí el tipo de vínculo"
   const length = (vinculo.justificacion ?? "").trim().length
   if (!oficioMode && length === 0) errors.justificacion = "La justificación es obligatoria"

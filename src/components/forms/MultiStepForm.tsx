@@ -375,7 +375,7 @@ const MultiStepForm: React.FC<MultiStepFormProps> = ({
 
     // REG-01: Validate vinculos if they exist
     if (data.vinculos && data.vinculos.length > 0) {
-      const vinculoProblems = describeVinculoProblems(data.vinculos)
+      const vinculoProblems = describeVinculoProblems(data.vinculos, { medidaRequerida: formVariant === "OFICIO_JUDICIAL" })
 
       if (vinculoProblems.length > 0) {
         toast.error(buildVinculoProblemsMessage(vinculoProblems), {
