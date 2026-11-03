@@ -68,6 +68,7 @@ Límites conocidos, dependencias del backend, ideas siguientes.
 | 2026-11-03 | `mejora-oficio-orden-medida` | Oficio MPE/MPI vigente: Clasificación junto a los vínculos y medida vigente obligatoria (solo vigentes) — [documento](2026-11-03_oficio-orden-medida.md) |
 | 2026-11-03 | `mejora-derivar-demanda-texto` | Derivar demanda: texto que aclara que el estado cambia solo con uno o más responsables — [documento](2026-11-03_derivar-demanda-texto.md) |
 | 2026-11-03 | `mejora-pantalla-completa` | Demandas y legajos: botón "Pantalla completa" visible y una sola X de cerrar en el panel lateral — [documento](2026-11-03_pantalla-completa-boton.md) |
+| 2026-11-03 | `mejora-link-tutorial` | Barra superior: el ícono del manual abre el tutorial publicado (GitHub Pages) — [documento](2026-11-03_link-tutorial.md) |
 
 ## Orden recomendado para unir las ramas
 
@@ -100,6 +101,7 @@ y GitHub debe conservar esa relación. Los dos conflictos conocidos están marca
 | 21 | `mejora-oficio-orden-medida` | **Va después de la 20** (parte de ella): reordena `OficioJudicialMPEStep.tsx` y toca `VinculosManager.tsx`. |
 | 22 | `mejora-derivar-demanda-texto` | Independiente (solo `asignarModal.tsx`). |
 | 23 | `mejora-pantalla-completa` | Toca `DemandaDetail.tsx` y `legajo-detail.tsx` (se une sin conflicto con la 16 y la 10). |
+| 24 | `mejora-link-tutorial` | Independiente (solo `Navbar.tsx`). |
 
 La rama **`integracion`** ya tiene las 19 unidas (de la 10 en adelante son casi independientes; los conflictos conocidos están marcados en la tabla) (merge commits, tipos sin errores, 59 tests pasando).
 
