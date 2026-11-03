@@ -3,6 +3,7 @@
 import type React from "react"
 import { useState, useEffect, useMemo } from "react"
 import {
+  Alert,
   Box,
   Typography,
   FormControl,
@@ -357,6 +358,12 @@ const AsignarModal: React.FC<AsignarModalProps> = ({ open, onClose, demandaId, o
                     Información de derivación
                   </Typography>
 
+                  <Alert severity="info" sx={{ mb: 0.5 }}>
+                    Podés derivar la demanda a un equipo de trabajo por el motivo que sea. Pero la demanda{" "}
+                    <strong>no cambia de estado hasta que tenga uno o más responsables</strong>: sin una persona a
+                    cargo sigue en «Sin Asignar». Para asignarla, elegí también al menos un usuario responsable.
+                  </Alert>
+
                   <FormControl fullWidth>
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
                       Zona
@@ -490,7 +497,9 @@ const AsignarModal: React.FC<AsignarModalProps> = ({ open, onClose, demandaId, o
                         }
                       />
                       {selectedUsers.length === 0 && !isLoadingUsersForZona && (
-                        <FormHelperText>Seleccione al menos un usuario responsable</FormHelperText>
+                        <FormHelperText>
+                          Elegí un responsable para asignarla; si no, solo se deriva a la zona
+                        </FormHelperText>
                       )}
                       {lastActiveDemandaZona?.user_responsable && (
                         // El servidor solo informa al responsable principal de una asignación previa.
