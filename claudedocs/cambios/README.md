@@ -58,6 +58,9 @@ Límites conocidos, dependencias del backend, ideas siguientes.
 | 2026-11-03 | `mejora-medida-mpe-guia` | Medida MPE (vista nueva): cartel de primer paso, contadores sin repetir y estados legibles — [documento](2026-11-03_medida-mpe-guia.md) |
 | 2026-11-03 | `mejora-actividades-fecha-contadores` | Actividades: fecha sin corrimiento de día y encabezado de la medida que se actualiza — [documento](2026-11-03_actividades-fecha-contadores.md) |
 | 2026-11-03 | `mejora-medida-mpe-dispositivo` | Medida MPE (vista nueva): configuración de dispositivo a la vista y comparación con la vista clásica — [documento](2026-11-03_medida-mpe-dispositivo.md) |
+| 2026-11-03 | `mejora-medida-mpe-cabecera` | Medida (vista nueva): franja compacta con el NNyA, el equipo y el plazo de 90 días — [documento](2026-11-03_medida-mpe-cabecera.md) |
+| 2026-11-03 | `mejora-intervencion-documentacion` | Registro de intervención (paso 3): notificaciones y actas, documentación complementaria y errores de adjuntos visibles — [documento](2026-11-03_intervencion-documentacion.md) |
+| 2026-11-03 | `mejora-oficio-actividades-bandeja` | Demandas de oficio: ver y asignar sus actividades desde la Mesa de Entradas — [documento](2026-11-03_oficio-actividades-bandeja.md) |
 
 ## Orden recomendado para unir las ramas
 
@@ -80,8 +83,11 @@ y GitHub debe conservar esa relación. Los dos conflictos conocidos están marca
 | 11 | `mejora-medida-mpe-guia` | Independiente. Toca `medida-detail.tsx` y la tabla de actividades (`hideStatistics`). |
 | 12 | `mejora-actividades-fecha-contadores` | Independiente. Toca `UnifiedActividadesTable.tsx` (se une sin conflicto con la 11). |
 | 13 | `mejora-medida-mpe-dispositivo` | Independiente. Toca `medida-detail.tsx` (se une sin conflicto con la 11). |
+| 14 | `mejora-medida-mpe-cabecera` | Toca `medida-detail.tsx`. **Conflicto con la 13 en los imports** (conservar `ConfiguracionMPESection` y `MedidaFicha`). |
+| 15 | `mejora-intervencion-documentacion` | Independiente (modal de intervención). |
+| 16 | `mejora-oficio-actividades-bandeja` | Toca `columns.tsx`, `DemandaTableContent.tsx` y `DemandaDetail.tsx`. **Conflicto con la 6** (`mejora-navegacion-evaluacion`) en `columns.tsx` (imports) y en `DemandaTableContent.tsx` (el modal "en evaluación" y `ActividadesDeOficioModal`): conservar los dos lados. |
 
-La rama **`integracion`** ya tiene las 13 unidas (de la 10 en adelante son independientes) (merge commits, tipos sin errores, 59 tests pasando).
+La rama **`integracion`** ya tiene las 16 unidas (de la 10 en adelante son casi independientes; los conflictos conocidos están marcados en la tabla) (merge commits, tipos sin errores, 59 tests pasando).
 
 ## Para el equipo de backend
 
