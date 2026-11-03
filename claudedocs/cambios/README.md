@@ -54,6 +54,7 @@ Límites conocidos, dependencias del backend, ideas siguientes.
 | 2026-10-27 | `mejora-evaluacion-cierre` | Panel de 3 pasos en Evaluación (borrador, informe firmado, solicitud) con confirmaciones — [documento](2026-10-27_evaluacion-cierre.md) |
 | 2026-10-27 | `mejora-evaluacion-errores-firmantes` | Motivo del error del servidor en Evaluación y bucle de firmantes corregido — [documento](2026-10-27_evaluacion-errores-firmantes.md) |
 | 2026-10-29 | `mejora-evaluacion-chequeo-legajo` | Aviso de legajo y medidas vigentes antes de pedir o autorizar una medida — [documento](2026-10-29_evaluacion-chequeo-legajo.md) |
+| 2026-11-03 | `mejora-legajo-resumen-medidas` | Legajo: resumen por medida (tarjetas con avance, equipos y última actividad) y botón para volver desde el plan de trabajo — [documento](2026-10-29_legajo-resumen-medidas.md) |
 
 ## Orden recomendado para unir las ramas
 
@@ -72,8 +73,9 @@ y GitHub debe conservar esa relación. Los dos conflictos conocidos están marca
 | 7 | `mejora-evaluacion-cierre` | Debe ir antes que la 9. |
 | 8 | `mejora-evaluacion-errores-firmantes` | Toca `action-buttons.tsx` y `apiErrorFormatter.ts`. |
 | 9 | `mejora-evaluacion-chequeo-legajo` | **Conflicto en los imports de `action-buttons.tsx`**: conservar los dos lados. Depende de la 7. |
+| 10 | `mejora-legajo-resumen-medidas` | Independiente de las demás (solo toca el legajo). Puede ir en cualquier lugar. |
 
-La rama **`integracion`** ya tiene las 9 unidas en este orden (merge commits, tipos sin errores, 59 tests pasando).
+La rama **`integracion`** ya tiene las 10 unidas (la 10 es independiente) (merge commits, tipos sin errores, 59 tests pasando).
 
 ## Para el equipo de backend
 
