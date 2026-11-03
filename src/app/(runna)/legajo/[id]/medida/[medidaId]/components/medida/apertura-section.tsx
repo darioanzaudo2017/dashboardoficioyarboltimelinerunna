@@ -197,7 +197,7 @@ export const AperturaSection: React.FC<AperturaSectionProps> = ({
               ? `Ver y Aprobar ${etapaName}`
               : lastIntervencionId
                 ? "Ver/Editar Intervención"
-                : "Nueva Intervención"}
+                : `Cargar ${etapaName}`}
           </Button>
 
           {informeObligatorio && (
