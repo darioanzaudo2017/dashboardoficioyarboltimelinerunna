@@ -1,4 +1,3 @@
-import { useState } from "react"
 import {
     Avatar,
     Box,
@@ -7,9 +6,7 @@ import {
     CardHeader,
     Chip,
     IconButton,
-    MenuItem,
     Paper,
-    TextField,
     Typography,
 } from "@mui/material"
 import AttachFileIcon from "@mui/icons-material/AttachFile"
@@ -29,6 +26,8 @@ interface DocumentosAdicionalesSectionProps {
     isUploadingAdjunto: RegistroIntervencion["isUploadingAdjunto"]
     tipoMedida: IntervencionModalProps["tipoMedida"]
     pendingFiles: File[]
+    /** Tipo (ACTA, RESPALDO…) de cada archivo de `pendingFiles`, en el mismo orden. */
+    pendingFileTipos: string[]
     additionalMappedAdjuntos: IntervencionFiles["additionalMappedAdjuntos"]
     handleFileUpload: IntervencionFiles["handleFileUpload"]
     handleAddPendingFile: IntervencionFiles["handleAddPendingFile"]
@@ -38,26 +37,28 @@ interface DocumentosAdicionalesSectionProps {
     formatFileSize: InformeObligatorioHandlers["formatFileSize"]
 }
 
-/**
- * Tipos de documento que el servidor distingue: las actas van como ACTA; las notificaciones a padres o familiares
- * y cualquier otro anexo van como RESPALDO (hoy no tienen tipos propios).
- */
-const TIPOS_DOCUMENTACION = [
-    { value: "RESPALDO", label: "Notificación u otro anexo" },
-    { value: "ACTA", label: "Acta" },
-] as const
+/** Tipo con el que el servidor guarda lo que se adjunta en cada contenedor. */
+const TIPO_NOTIFICACIONES_ACTAS = "ACTA"
+const TIPO_COMPLEMENTARIA = "RESPALDO"
 
-const TEXTO_AYUDA_MPE =
-    "No es obligatoria, pero conviene adjuntarla: notificaciones a padres o familiares, actas y cualquier anexo de información complementaria que ayude a explicar por qué se toma la medida."
+interface ContenedorAdjuntosProps extends DocumentosAdicionalesSectionProps {
+    titulo: string
+    descripcion: string
+    /** Tipo con el que se guardan los archivos de este contenedor. */
+    tipo: string
+    textoDropzone: string
+    textoVacio: string
+    /** Decide si un adjunto (por su tipo) pertenece a este contenedor. */
+    pertenece: (tipoAdjunto: string) => boolean
+}
 
-export function DocumentosAdicionalesSection({
-    formData,
-    intervencion,
+function ContenedorAdjuntos({
     canEdit,
+    intervencion,
     isLoadingAdjuntos,
     isUploadingAdjunto,
-    tipoMedida,
     pendingFiles,
+    pendingFileTipos,
     additionalMappedAdjuntos,
     handleFileUpload,
     handleAddPendingFile,
@@ -65,186 +66,190 @@ export function DocumentosAdicionalesSection({
     handleDeleteAdjunto,
     handleDownloadFile,
     formatFileSize,
-}: DocumentosAdicionalesSectionProps) {
-    const [tipoDocumento, setTipoDocumento] = useState<string>("RESPALDO")
+    titulo,
+    descripcion,
+    tipo,
+    textoDropzone,
+    textoVacio,
+    pertenece,
+}: ContenedorAdjuntosProps) {
+    const guardados = additionalMappedAdjuntos.filter((a) => pertenece(String(a.tipo ?? "")))
+    // Archivos elegidos antes de crear la intervención que van a este contenedor (con su posición en la cola general).
+    const pendientes = pendingFiles
+        .map((file, index) => ({ file, index }))
+        .filter(({ index }) => pertenece(pendingFileTipos[index] ?? TIPO_COMPLEMENTARIA))
+    const cantidad = intervencion ? guardados.length : pendientes.length
 
     return (
-        <>
-            {/* ============================================================ */}
-            {/* DOCUMENTACIÓN COMPLEMENTARIA - opcional, siempre a la vista */}
-            {/* ============================================================ */}
-            {(
-                <Card variant="outlined" sx={{ mt: 2, borderColor: 'secondary.light', bgcolor: 'rgba(156, 39, 176, 0.02)' }}>
-                    <CardHeader
-                        avatar={
-                            <Avatar sx={{ bgcolor: 'secondary.main', width: 32, height: 32 }}>
-                                <AttachFileIcon sx={{ fontSize: 18 }} />
-                            </Avatar>
-                        }
-                        title={
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'secondary.dark' }}>
-                                    2. Documentación complementaria (opcional)
-                                </Typography>
-                            </Box>
-                        }
-                        subheader={tipoMedida === 'MPE'
-                            ? TEXTO_AYUDA_MPE
-                            : "Adjunte actas, entrevistas, fotos u otros respaldos pertinentes."}
-                        sx={{ py: 1.5 }}
-                        action={
-                            (intervencion ? additionalMappedAdjuntos.length : pendingFiles.length) > 0 && (
-                                <Chip
-                                    label={`${intervencion ? additionalMappedAdjuntos.length : pendingFiles.length} archivo${(intervencion ? additionalMappedAdjuntos.length : pendingFiles.length) !== 1 ? 's' : ''}`}
-                                    color="secondary"
-                                    size="small"
-                                    variant="outlined"
-                                    sx={{ fontWeight: 'bold' }}
-                                />
-                            )
-                        }
+        <Card variant="outlined" sx={{ mt: 2, borderColor: 'secondary.light', bgcolor: 'rgba(156, 39, 176, 0.02)' }}>
+            <CardHeader
+                avatar={
+                    <Avatar sx={{ bgcolor: 'secondary.main', width: 32, height: 32 }}>
+                        <AttachFileIcon sx={{ fontSize: 18 }} />
+                    </Avatar>
+                }
+                title={
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'secondary.dark' }}>
+                        {titulo}
+                    </Typography>
+                }
+                subheader={descripcion}
+                sx={{ py: 1.5 }}
+                action={
+                    cantidad > 0 && (
+                        <Chip
+                            label={`${cantidad} archivo${cantidad !== 1 ? 's' : ''}`}
+                            color="secondary"
+                            size="small"
+                            variant="outlined"
+                            sx={{ fontWeight: 'bold' }}
+                        />
+                    )
+                }
+            />
+            <CardContent sx={{ pt: 0 }}>
+                {intervencion ? (
+                    // Intervención ya creada: se ven los archivos guardados y se pueden subir más
+                    <FileUploadSection
+                        files={guardados}
+                        isLoading={isLoadingAdjuntos}
+                        onUpload={(file) => handleFileUpload(file, tipo)}
+                        onDownload={handleDownloadFile}
+                        onDelete={handleDeleteAdjunto}
+                        allowedTypes=".pdf,.jpg,.jpeg,.png"
+                        maxSizeInMB={10}
+                        disabled={!canEdit}
+                        readOnly={!canEdit}
+                        title=""
+                        uploadButtonLabel="Adjuntar documentos"
+                        emptyMessage={textoVacio}
+                        isUploading={isUploadingAdjunto}
+                        multiple={true}
                     />
-                    <CardContent sx={{ pt: 0 }}>
-                        {canEdit && (
-                            <TextField
-                                select
-                                size="small"
-                                label="Tipo de documento a adjuntar"
-                                value={tipoDocumento}
-                                onChange={(e) => setTipoDocumento(e.target.value)}
-                                sx={{ mb: 2, minWidth: 260 }}
-                            >
-                                {TIPOS_DOCUMENTACION.map((t) => (
-                                    <MenuItem key={t.value} value={t.value}>
-                                        {t.label}
-                                    </MenuItem>
-                                ))}
-                            </TextField>
-                        )}
-                        {intervencion ? (
-                            // EXISTING INTERVENTION: Show uploaded files and allow more uploads
-                            <FileUploadSection
-                                files={additionalMappedAdjuntos}
-                                isLoading={isLoadingAdjuntos}
-                                onUpload={(file) => handleFileUpload(file, tipoDocumento)}
-                                onDownload={handleDownloadFile}
-                                onDelete={handleDeleteAdjunto}
-                                allowedTypes=".pdf,.jpg,.jpeg,.png"
-                                maxSizeInMB={10}
-                                disabled={!canEdit}
-                                readOnly={!canEdit}
-                                title=""
-                                uploadButtonLabel="Adjuntar documentos"
-                                emptyMessage="Todavía no se adjuntó documentación complementaria."
-                                isUploading={isUploadingAdjunto}
-                                multiple={true}
-                            />
-                        ) : (
-                            // NEW INTERVENTION: Allow queuing files for upload with creation
-                            <>
-                                {/* Pending files list */}
-                                {pendingFiles.length > 0 && (
-                                    <Box sx={{ mb: 2 }}>
-                                        <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700, color: 'secondary.main' }}>
-                                            Archivos seleccionados ({pendingFiles.length}):
-                                        </Typography>
-                                        {pendingFiles.map((file, index) => (
-                                            <Paper
-                                                key={index}
-                                                variant="outlined"
-                                                sx={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'space-between',
-                                                    p: 1.5,
-                                                    mb: 1,
-                                                    bgcolor: 'background.paper',
-                                                    borderColor: 'secondary.light',
-                                                    borderLeft: 4,
-                                                    borderLeftColor: 'secondary.main'
-                                                }}
-                                            >
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                    <DescriptionIcon sx={{ color: 'secondary.main', fontSize: 20 }} />
-                                                    <Typography variant="body2" sx={{ fontWeight: 600 }}>{file.name}</Typography>
-                                                    <Typography variant="caption" color="text.secondary">
-                                                        ({formatFileSize(file.size)})
-                                                    </Typography>
-                                                </Box>
-                                                <IconButton
-                                                    size="small"
-                                                    color="error"
-                                                    onClick={() => handleRemovePendingFile(index)}
-                                                    title="Quitar archivo"
-                                                >
-                                                    <DeleteIcon fontSize="small" />
-                                                </IconButton>
-                                            </Paper>
-                                        ))}
-                                    </Box>
-                                )}
-
-                                {/* File input */}
-                                <Paper
-                                    variant="outlined"
-                                    component="label"
-                                    sx={{
-                                        border: '2px dashed',
-                                        borderColor: 'secondary.light',
-                                        borderRadius: 2,
-                                        p: 3,
-                                        textAlign: 'center',
-                                        cursor: canEdit ? 'pointer' : 'not-allowed',
-                                        backgroundColor: 'rgba(156, 39, 176, 0.04)',
-                                        transition: 'all 0.2s ease',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        width: '100%',
-                                        gap: 1,
-                                        '&:hover': {
-                                            backgroundColor: canEdit ? 'rgba(156, 39, 176, 0.08)' : 'rgba(156, 39, 176, 0.04)',
-                                            borderColor: 'secondary.main',
-                                        },
-                                    }}
-                                >
-                                    <CloudUploadIcon
+                ) : (
+                    // Intervención nueva: los archivos quedan en cola y se suben al crearla
+                    <>
+                        {pendientes.length > 0 && (
+                            <Box sx={{ mb: 2 }}>
+                                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700, color: 'secondary.main' }}>
+                                    Archivos seleccionados ({pendientes.length}):
+                                </Typography>
+                                {pendientes.map(({ file, index }) => (
+                                    <Paper
+                                        key={index}
+                                        variant="outlined"
                                         sx={{
-                                            fontSize: 40,
-                                            color: 'secondary.main',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between',
+                                            p: 1.5,
                                             mb: 1,
-                                            opacity: 0.7
+                                            bgcolor: 'background.paper',
+                                            borderColor: 'secondary.light',
+                                            borderLeft: 4,
+                                            borderLeftColor: 'secondary.main'
                                         }}
-                                    />
-                                    <Typography variant="body1" sx={{ fontWeight: 600, color: 'secondary.dark' }}>
-                                        Adjuntar documentación complementaria
-                                    </Typography>
-                                    <Typography variant="caption" color="text.secondary">
-                                        Arrastre aquí o pulse para buscar (PDF, JPG, PNG)
-                                    </Typography>
-                                    <input
-                                        type="file"
-                                        hidden
-                                        accept=".pdf,.jpg,.jpeg,.png"
-                                        multiple
-                                        disabled={!canEdit}
-                                        onChange={(e) => {
-                                            const files = e.target.files
-                                            if (files) {
-                                                Array.from(files).forEach(file => {
-                                                    handleAddPendingFile(file, tipoDocumento)
-                                                })
-                                                e.target.value = '' // Reset to allow same file selection
-                                            }
-                                        }}
-                                    />
-                                </Paper>
-                            </>
+                                    >
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            <DescriptionIcon sx={{ color: 'secondary.main', fontSize: 20 }} />
+                                            <Typography variant="body2" sx={{ fontWeight: 600 }}>{file.name}</Typography>
+                                            <Typography variant="caption" color="text.secondary">
+                                                ({formatFileSize(file.size)})
+                                            </Typography>
+                                        </Box>
+                                        <IconButton
+                                            size="small"
+                                            color="error"
+                                            onClick={() => handleRemovePendingFile(index)}
+                                            title="Quitar archivo"
+                                        >
+                                            <DeleteIcon fontSize="small" />
+                                        </IconButton>
+                                    </Paper>
+                                ))}
+                            </Box>
                         )}
-                    </CardContent>
-                </Card>
-            )}
+
+                        <Paper
+                            variant="outlined"
+                            component="label"
+                            sx={{
+                                border: '2px dashed',
+                                borderColor: 'secondary.light',
+                                borderRadius: 2,
+                                p: 3,
+                                textAlign: 'center',
+                                cursor: canEdit ? 'pointer' : 'not-allowed',
+                                backgroundColor: 'rgba(156, 39, 176, 0.04)',
+                                transition: 'all 0.2s ease',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                width: '100%',
+                                gap: 1,
+                                '&:hover': {
+                                    backgroundColor: canEdit ? 'rgba(156, 39, 176, 0.08)' : 'rgba(156, 39, 176, 0.04)',
+                                    borderColor: 'secondary.main',
+                                },
+                            }}
+                        >
+                            <CloudUploadIcon sx={{ fontSize: 40, color: 'secondary.main', mb: 1, opacity: 0.7 }} />
+                            <Typography variant="body1" sx={{ fontWeight: 600, color: 'secondary.dark' }}>
+                                {textoDropzone}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                                Arrastre aquí o pulse para buscar (PDF, JPG, PNG)
+                            </Typography>
+                            <input
+                                type="file"
+                                hidden
+                                accept=".pdf,.jpg,.jpeg,.png"
+                                multiple
+                                disabled={!canEdit}
+                                onChange={(e) => {
+                                    const files = e.target.files
+                                    if (files) {
+                                        Array.from(files).forEach((file) => handleAddPendingFile(file, tipo))
+                                        e.target.value = '' // permite volver a elegir el mismo archivo
+                                    }
+                                }}
+                            />
+                        </Paper>
+                    </>
+                )}
+            </CardContent>
+        </Card>
+    )
+}
+
+/**
+ * Documentación opcional del paso 3, en dos contenedores:
+ *  - Notificaciones y actas (se guardan como ACTA)
+ *  - Documentación complementaria (se guarda como RESPALDO)
+ * Siempre visibles: no dependen de la pregunta de informes ampliatorios.
+ */
+export function DocumentosAdicionalesSection(props: DocumentosAdicionalesSectionProps) {
+    return (
+        <>
+            <ContenedorAdjuntos
+                {...props}
+                titulo="2. Notificaciones y actas (opcional)"
+                descripcion="Notificaciones a padres o familiares y actas (por ejemplo, de puesta en conocimiento y de resguardo)."
+                tipo={TIPO_NOTIFICACIONES_ACTAS}
+                textoDropzone="Adjuntar notificaciones y actas"
+                textoVacio="Todavía no se adjuntaron notificaciones ni actas."
+                pertenece={(t) => t === TIPO_NOTIFICACIONES_ACTAS}
+            />
+            <ContenedorAdjuntos
+                {...props}
+                titulo="3. Documentación complementaria (opcional)"
+                descripcion="Cualquier anexo de información que ayude a explicar por qué se toma la medida: informes externos, constancias, fotos u otros respaldos."
+                tipo={TIPO_COMPLEMENTARIA}
+                textoDropzone="Adjuntar documentación complementaria"
+                textoVacio="Todavía no se adjuntó documentación complementaria."
+                pertenece={(t) => t !== TIPO_NOTIFICACIONES_ACTAS}
+            />
         </>
     )
 }

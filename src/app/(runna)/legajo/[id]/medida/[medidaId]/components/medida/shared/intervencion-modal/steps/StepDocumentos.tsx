@@ -27,6 +27,7 @@ interface StepDocumentosProps {
     hasExistingInforme: boolean
     existingInformeName: string | null
     pendingFiles: File[]
+    pendingFileTipos: string[]
     additionalMappedAdjuntos: IntervencionFiles["additionalMappedAdjuntos"]
     handleFileUpload: IntervencionFiles["handleFileUpload"]
     handleAddPendingFile: IntervencionFiles["handleAddPendingFile"]
@@ -74,6 +75,7 @@ export function StepDocumentos(props: StepDocumentosProps) {
                 isUploadingAdjunto={props.isUploadingAdjunto}
                 tipoMedida={props.tipoMedida}
                 pendingFiles={props.pendingFiles}
+                pendingFileTipos={props.pendingFileTipos}
                 additionalMappedAdjuntos={props.additionalMappedAdjuntos}
                 handleFileUpload={props.handleFileUpload}
                 handleAddPendingFile={props.handleAddPendingFile}
