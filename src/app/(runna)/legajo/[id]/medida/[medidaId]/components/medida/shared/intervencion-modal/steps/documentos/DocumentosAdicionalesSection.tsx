@@ -223,33 +223,43 @@ function ContenedorAdjuntos({
     )
 }
 
-/**
- * Documentación opcional del paso 3, en dos contenedores:
- *  - Notificaciones y actas (se guardan como ACTA)
- *  - Documentación complementaria (se guarda como RESPALDO)
- * Siempre visibles: no dependen de la pregunta de informes ampliatorios.
- */
-export function DocumentosAdicionalesSection(props: DocumentosAdicionalesSectionProps) {
+/** Siempre visible: notificaciones a padres o familiares y actas (se guardan como ACTA). */
+export function NotificacionesActasSection(props: DocumentosAdicionalesSectionProps) {
     return (
-        <>
-            <ContenedorAdjuntos
-                {...props}
-                titulo="2. Notificaciones y actas (opcional)"
-                descripcion="Notificaciones a padres o familiares y actas (por ejemplo, de puesta en conocimiento y de resguardo)."
-                tipo={TIPO_NOTIFICACIONES_ACTAS}
-                textoDropzone="Adjuntar notificaciones y actas"
-                textoVacio="Todavía no se adjuntaron notificaciones ni actas."
-                pertenece={(t) => t === TIPO_NOTIFICACIONES_ACTAS}
-            />
-            <ContenedorAdjuntos
-                {...props}
-                titulo="3. Documentación complementaria (opcional)"
-                descripcion="Cualquier anexo de información que ayude a explicar por qué se toma la medida: informes externos, constancias, fotos u otros respaldos."
-                tipo={TIPO_COMPLEMENTARIA}
-                textoDropzone="Adjuntar documentación complementaria"
-                textoVacio="Todavía no se adjuntó documentación complementaria."
-                pertenece={(t) => t !== TIPO_NOTIFICACIONES_ACTAS}
-            />
-        </>
+        <ContenedorAdjuntos
+            {...props}
+            titulo="2. Notificaciones y actas (opcional)"
+            descripcion="Notificaciones a padres o familiares y actas (por ejemplo, de puesta en conocimiento y de resguardo)."
+            tipo={TIPO_NOTIFICACIONES_ACTAS}
+            textoDropzone="Adjuntar notificaciones y actas"
+            textoVacio="Todavía no se adjuntaron notificaciones ni actas."
+            pertenece={(t) => t === TIPO_NOTIFICACIONES_ACTAS}
+        />
     )
 }
+
+/**
+ * Anexos que ayudan a explicar la toma de la medida (se guardan como RESPALDO).
+ * Se muestra cuando la pregunta de informes ampliatorios está en "Sí" (ver StepDocumentos).
+ */
+export function DocumentacionComplementariaSection(props: DocumentosAdicionalesSectionProps) {
+    return (
+        <ContenedorAdjuntos
+            {...props}
+            titulo="Documentación complementaria"
+            descripcion="Cualquier anexo de información que ayude a explicar por qué se toma la medida: informes externos, constancias, fotos u otros respaldos."
+            tipo={TIPO_COMPLEMENTARIA}
+            textoDropzone="Adjuntar documentación complementaria"
+            textoVacio="Todavía no se adjuntó documentación complementaria."
+            pertenece={(t) => t !== TIPO_NOTIFICACIONES_ACTAS}
+        />
+    )
+}
+
+/** ¿Hay algo cargado (o en cola) que pertenezca a la documentación complementaria? */
+export const hayDocumentacionComplementaria = (
+    adjuntos: DocumentosAdicionalesSectionProps["additionalMappedAdjuntos"],
+    pendingFileTipos: string[],
+): boolean =>
+    adjuntos.some((a) => String(a.tipo ?? "") !== TIPO_NOTIFICACIONES_ACTAS) ||
+    pendingFileTipos.some((t) => t !== TIPO_NOTIFICACIONES_ACTAS)

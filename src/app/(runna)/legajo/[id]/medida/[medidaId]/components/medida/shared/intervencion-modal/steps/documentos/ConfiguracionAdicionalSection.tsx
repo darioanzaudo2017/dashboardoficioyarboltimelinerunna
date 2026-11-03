@@ -11,6 +11,7 @@ import {
     Typography,
 } from "@mui/material"
 import InfoIcon from "@mui/icons-material/Info"
+import type { ReactNode } from "react"
 import type { RegistroIntervencion } from "../../types"
 
 interface ConfiguracionAdicionalSectionProps {
@@ -19,6 +20,8 @@ interface ConfiguracionAdicionalSectionProps {
     intervencion: RegistroIntervencion["intervencion"]
     canEdit: RegistroIntervencion["canEdit"]
     canAprobarOrRechazar: RegistroIntervencion["canAprobarOrRechazar"]
+    /** Se muestra debajo de la pregunta y antes del estado (por ejemplo, el contenedor de documentación complementaria). */
+    children?: ReactNode
 }
 
 export function ConfiguracionAdicionalSection({
@@ -27,13 +30,14 @@ export function ConfiguracionAdicionalSection({
     intervencion,
     canEdit,
     canAprobarOrRechazar,
+    children,
 }: ConfiguracionAdicionalSectionProps) {
     return (
         <>
             {/* Configuración Adicional Section */}
             <Card elevation={2} sx={{ p: 3, mt: 2 }}>
                 <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>
-                    4. Informes ampliatorios y estado
+                    3. Informes ampliatorios
                 </Typography>
 
                 {/* Informes ampliatorios */}
@@ -55,6 +59,8 @@ export function ConfiguracionAdicionalSection({
                         </RadioGroup>
                     </FormControl>
                 </Box>
+
+                {children}
 
                 {/* Estado actual y acciones */}
                 {intervencion && (

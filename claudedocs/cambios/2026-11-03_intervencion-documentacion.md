@@ -12,12 +12,13 @@
    dejando una intervención aprobable sin su informe. Y "Guardar Borrador" decía "guardado" aunque los archivos elegidos no se guardaban.
 
 ## Qué cambió
-- Paso 3 reordenado, con la documentación opcional en **dos contenedores separados**, cada uno con su propio espacio para adjuntar, su contador de archivos y su mensaje de vacío:
+- Paso 3 reordenado. La documentación opcional va en **dos contenedores separados**, cada uno con su propio espacio para adjuntar, su contador de archivos y su mensaje de vacío:
   1. Informe Obligatorio de Apertura (sin cambios)
-  2. **Notificaciones y actas (opcional)**: notificaciones a padres o familiares y actas (de puesta en conocimiento, de resguardo). Se guardan en el servidor como **ACTA**.
-  3. **Documentación complementaria (opcional)**: cualquier anexo que ayude a explicar por qué se toma la medida (informes externos, constancias, fotos u otros respaldos). Se guarda como **RESPALDO**.
-  4. **Informes ampliatorios y estado** (la pregunta Sí/No y el estado de la intervención, como estaban).
-- Los dos contenedores están siempre visibles: ya no dependen de la pregunta "¿Se requieren informes ampliatorios?".
+  2. **Notificaciones y actas (opcional)**: notificaciones a padres o familiares y actas (de puesta en conocimiento, de resguardo). **Siempre visible.** Se guarda en el servidor como **ACTA**.
+  3. **Informes ampliatorios**: la pregunta "¿Se requieren informes ampliatorios?". **Si se marca "Sí", se abre debajo el contenedor "Documentación complementaria"**
+     (cualquier anexo que ayude a explicar por qué se toma la medida: informes externos, constancias, fotos u otros respaldos). Se guarda como **RESPALDO**.
+     Con "No" el contenedor no aparece; si ya hubiera documentación complementaria cargada (o en cola), se mantiene visible para no esconder archivos.
+  Debajo queda el **Estado de la intervención** (estado, observaciones del Jefe Zonal, quién registró y aprobó), como estaba.
 - Si falla subir o quitar un archivo, aparece un cartel con el motivo. Para un error 500 dice que el servidor tuvo un problema (no se muestra la página HTML del error).
 - Si falla la subida del Informe Obligatorio al enviar o al guardar el borrador de una intervención existente, **se corta**: no se guarda ni se envía.
 - "Guardar Borrador" de una intervención nueva avisa que los archivos elegidos todavía no se subieron (se adjuntan al enviar).
@@ -35,11 +36,11 @@
 
 ## Cómo probarlo
 1. Abrir `/legajo/92/medida/166`, etapa Innovación → "Cargar / gestionar paso" → "Ver/Editar Intervención" (rechazada) → paso 3.
-2. Se ven "2. Notificaciones y actas" y "3. Documentación complementaria" sin tener que marcar nada. Adjuntar un archivo en cualquiera: hoy el servidor responde 500 y aparece el cartel con el motivo. En la pestaña de red se ve que el primer contenedor envía `tipo=ACTA`.
+2. Se ve "2. Notificaciones y actas" sin marcar nada; "Documentación complementaria" aparece al marcar "Sí" en "¿Se requieren informes ampliatorios?". Adjuntar un archivo en cualquiera: hoy el servidor responde 500 y aparece el cartel con el motivo. En la pestaña de red se ve que el primer contenedor envía `tipo=ACTA`.
 3. Registro nuevo: "Guardar Borrador" con un archivo elegido muestra el aviso de que todavía no se subió.
 
 ## Verificación
-Tipos sin errores y tests en verde. En el navegador (admin): los dos contenedores se ven sin marcar el "Sí" y el primero envía tipo ACTA, y al adjuntar en una intervención rechazada (MED-2026-166) aparece el cartel
+Tipos sin errores y tests en verde. En el navegador (admin): "Notificaciones y actas" se ve siempre y envía tipo ACTA; "Documentación complementaria" aparece solo con "Sí", entre la pregunta y el estado, y al adjuntar en una intervención rechazada (MED-2026-166) aparece el cartel
 "No se pudo adjuntar el archivo: el servidor tuvo un problema (error 500)". No se pudo probar una subida exitosa porque el servidor falla.
 
 ## Pendiente / notas
@@ -47,4 +48,4 @@ Tipos sin errores y tests en verde. En el navegador (admin): los dos contenedore
 - **Backend:** no valida que exista el Informe Obligatorio al enviar ni al aprobar.
 - **Backend:** el servidor solo distingue ACTA, RESPALDO, MODELO e INFORME. Las notificaciones y las actas comparten el tipo ACTA (no se pueden separar al listarlas); si hace falta distinguirlas, conviene un tipo propio para las notificaciones.
 - Los archivos que ya estuvieran guardados como RESPALDO u otro tipo distinto de ACTA se muestran en "Documentación complementaria".
-- La pregunta "¿Se requieren informes ampliatorios?" se dejó como estaba (el campo se sigue enviando); falta confirmar con el cliente qué hace en el back.
+- La pregunta "¿Se requieren informes ampliatorios?" sigue enviando su valor al back como antes; ahora además abre el contenedor de documentación complementaria.

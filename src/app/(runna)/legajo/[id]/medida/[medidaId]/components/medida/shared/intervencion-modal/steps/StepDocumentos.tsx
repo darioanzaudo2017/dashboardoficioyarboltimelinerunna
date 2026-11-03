@@ -1,7 +1,11 @@
 import { Box } from "@mui/material"
 import { InformeObligatorioSection } from "./documentos/InformeObligatorioSection"
 import { ConfiguracionAdicionalSection } from "./documentos/ConfiguracionAdicionalSection"
-import { DocumentosAdicionalesSection } from "./documentos/DocumentosAdicionalesSection"
+import {
+    DocumentacionComplementariaSection,
+    NotificacionesActasSection,
+    hayDocumentacionComplementaria,
+} from "./documentos/DocumentosAdicionalesSection"
 import type { IntervencionModalProps, RegistroIntervencion } from "../types"
 import type { IntervencionModalState } from "../hooks/useIntervencionModalState"
 import type { IntervencionFiles } from "../hooks/useIntervencionFiles"
@@ -67,7 +71,7 @@ export function StepDocumentos(props: StepDocumentosProps) {
                 handleInformeObligatorioDrop={props.handleInformeObligatorioDrop}
             />
 
-            <DocumentosAdicionalesSection
+            <NotificacionesActasSection
                 formData={props.formData}
                 intervencion={props.intervencion}
                 canEdit={props.canEdit}
@@ -91,7 +95,28 @@ export function StepDocumentos(props: StepDocumentosProps) {
                 intervencion={props.intervencion}
                 canEdit={props.canEdit}
                 canAprobarOrRechazar={props.canAprobarOrRechazar}
-            />
+            >
+                {/* La pregunta de informes ampliatorios habilita este contenedor; si ya hay documentación cargada se mantiene visible. */}
+                {(props.formData.requiere_informes_ampliatorios || hayDocumentacionComplementaria(props.additionalMappedAdjuntos, props.pendingFileTipos)) && (
+                    <DocumentacionComplementariaSection
+                        formData={props.formData}
+                        intervencion={props.intervencion}
+                        canEdit={props.canEdit}
+                        isLoadingAdjuntos={props.isLoadingAdjuntos}
+                        isUploadingAdjunto={props.isUploadingAdjunto}
+                        tipoMedida={props.tipoMedida}
+                        pendingFiles={props.pendingFiles}
+                        pendingFileTipos={props.pendingFileTipos}
+                        additionalMappedAdjuntos={props.additionalMappedAdjuntos}
+                        handleFileUpload={props.handleFileUpload}
+                        handleAddPendingFile={props.handleAddPendingFile}
+                        handleRemovePendingFile={props.handleRemovePendingFile}
+                        handleDeleteAdjunto={props.handleDeleteAdjunto}
+                        handleDownloadFile={props.handleDownloadFile}
+                        formatFileSize={props.formatFileSize}
+                    />
+                )}
+            </ConfiguracionAdicionalSection>
         </Box>
     )
 }
