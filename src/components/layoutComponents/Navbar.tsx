@@ -216,6 +216,7 @@ export default function Header() {
     { href: "/legajo-mesa", label: "Bandeja de legajos", visible: !isAdministracion },
     { href: "/legajo/actividades", label: "Mis actividades", visible: !isAdministracion },
     { href: "/indicadores", label: "Indicadores", visible: true },
+    { href: "/dispositivos", label: "Dispositivos", visible: true },
     { href: "/oficios", label: "Oficios", visible: true },
     { href: "/admin/catalogos", label: "Catálogos", visible: isAdminUser },
   ].filter((item) => item.visible)
