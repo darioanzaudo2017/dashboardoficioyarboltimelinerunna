@@ -611,6 +611,7 @@ const OficioJudicialMPEStep: React.FC<OficioJudicialMPEStepProps> = ({
       </FormSection>
 
       {/* Categoría de Oficio y Tipo de Oficio */}
+      <Box data-section="clasificacion-oficio">
       <FormSection title="Clasificación del Oficio">
         {!selectedTipoOficio && (
           <Alert
@@ -701,6 +702,7 @@ const OficioJudicialMPEStep: React.FC<OficioJudicialMPEStepProps> = ({
           </Grid>
         </Grid>
       </FormSection>
+      </Box>
 
       {/* Archivo adjunto */}
       <FormSection title="Archivos Adjuntos">
