@@ -6,6 +6,7 @@ import { TouchApp, Edit, Warning, Visibility, Assignment, Link as LinkIcon } fro
 import { AdjuntosCell } from "./AdjuntosCell"
 import { StatusChip } from "./StatusChip"
 import { DNI_VER_LEGAJO, formatCalificacionValue, formatUnderscoreText } from "./utils"
+import { demandaGeneraActividadesDeOficio } from "../../utils/actividadesDeOficio"
 
 export interface BuildDemandaColumnsOptions {
   isMobile: boolean
@@ -17,6 +18,8 @@ export interface BuildDemandaColumnsOptions {
   onCalificacionChange: (demandaId: number, newValue: string) => void
   onOpenModal: (demandaId: number) => void
   onOpenAsignarModal: (demandaId: number) => void
+  /** Abre las actividades que generó una demanda de oficio (para asignarlas). */
+  onOpenActividades?: (demandaId: number) => void
   onRecibirDemanda: (args: { id: number; demandaId: number; userId: number }) => void
 }
 
@@ -31,6 +34,7 @@ export const buildDemandaColumns = ({
   onCalificacionChange,
   onOpenModal,
   onOpenAsignarModal,
+  onOpenActividades,
   onRecibirDemanda,
 }: BuildDemandaColumnsOptions): GridColDef[] => {
   const baseColumns: GridColDef[] = [
@@ -334,7 +338,7 @@ export const buildDemandaColumns = ({
   baseColumns.push({
     field: "actions",
     headerName: "Acciones",
-    width: 160,
+    width: 200,
     sortable: false,
     filterable: false,
     hideable: false,
@@ -360,6 +364,21 @@ export const buildDemandaColumns = ({
             <Visibility fontSize="small" />
           </IconButton>
         </Tooltip>
+
+        {onOpenActividades && demandaGeneraActividadesDeOficio(params.row.objetivoDemanda) && (
+          <Tooltip title="Ver y asignar actividades">
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation()
+                onOpenActividades(params.row.id)
+              }}
+              sx={{ color: "info.main" }}
+            >
+              <Assignment fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        )}
 
         {hasAssignPermission && (
           <Tooltip title="Asignar">
