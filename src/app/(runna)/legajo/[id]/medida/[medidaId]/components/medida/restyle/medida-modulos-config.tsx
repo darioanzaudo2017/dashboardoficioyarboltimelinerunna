@@ -60,7 +60,8 @@ function buildPlanModule(
   tipo: TipoMedidaKey,
   medidaApiData?: MedidaDetailResponse,
   planTrabajoId?: number | null,
-  ocultarEstadisticas = false
+  ocultarEstadisticas = false,
+  incluirLegales = false
 ): ModuloDef {
   return {
     key: "plan",
@@ -73,6 +74,7 @@ function buildPlanModule(
           medidaData={buildPlanMedidaData(tipo, medidaApiData)}
           planTrabajoId={planTrabajoId}
           hideStatistics={ocultarEstadisticas}
+          incluirLegales={incluirLegales}
         />
       ) : (
         <Paper sx={{ p: 3, textAlign: "center", color: "text.secondary" }} elevation={0}>
@@ -176,7 +178,7 @@ function buildCalendarioModule(
  * Returns the always-on module set for a medida, by tipo:
  *   - MPI: plan · control de legalidad · historial · informes · calendario
  *   - MPE: plan · control de legalidad · informes · calendario
- *   - MPJ: control de legalidad (incluye etapas) · informes · calendario
+ *   - MPJ: plan (con TODAS las actividades) · control de legalidad (incluye etapas) · informes · calendario
  */
 export function buildMedidaModulos({
   tipo,
@@ -198,7 +200,8 @@ export function buildMedidaModulos({
     modules.push(buildInformesModule(medidaApiData))
     modules.push(buildCalendarioModule(medidaApiData, planTrabajoId))
   } else {
-    // MPJ
+    // MPJ: el plan muestra todas las actividades (técnicas, residenciales y legales); el control de legalidad queda con las de Legales.
+    modules.push(buildPlanModule(tipo, medidaApiData, planTrabajoId, ocultarEstadisticasPlan, true))
     modules.push(buildLegalidadModule(medidaApiData, planTrabajoId, true))
     modules.push(buildInformesModule(medidaApiData))
     modules.push(buildCalendarioModule(medidaApiData, planTrabajoId))
@@ -209,6 +212,6 @@ export function buildMedidaModulos({
 
 /** Sensible default-open keys per tipo for the new dashboard view. */
 export function defaultModulosOpen(tipo: TipoMedidaKey): string[] {
-  if (tipo === "MPJ") return ["legalidad"]
+  if (tipo === "MPJ") return ["plan"]
   return ["plan"]
 }
