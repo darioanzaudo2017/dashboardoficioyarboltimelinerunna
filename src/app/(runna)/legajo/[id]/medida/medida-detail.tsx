@@ -11,6 +11,7 @@ import { MPEHeader } from "./[medidaId]/components/medida/mpe-header"
 import { MPJHeader } from "./[medidaId]/components/medida/mpj-header"
 import { LegajosAdicionalesBanner } from "./[medidaId]/components/medida/legajos-adicionales-banner"
 import { MedidaSummaryCard } from "./[medidaId]/components/medida/restyle/medida-summary-card"
+import { MedidaFicha } from "./[medidaId]/components/medida/restyle/medida-ficha"
 import { MedidaEtapasSection } from "./[medidaId]/components/medida/restyle/medida-etapas-section"
 import { MedidaModulosRow } from "./[medidaId]/components/medida/restyle/medida-modulos-row"
 import { buildMedidaModulos, defaultModulosOpen } from "./[medidaId]/components/medida/restyle/medida-modulos-config"
@@ -481,6 +482,15 @@ export default function MedidaDetail({ params, onClose, isFullPage = false }: Me
 
         {viewMode === "nuevo" && (
           <>
+            {/* Ficha compacta: NNyA, legajo, equipo responsable y plazo de 90 días (solo MPE vigente). */}
+            <MedidaFicha
+              nombre={medidaData.persona?.nombre !== "N/A" ? medidaData.persona?.nombre : undefined}
+              numeroLegajo={medidaData.persona?.numero_legajo}
+              equipoResponsable={medidaData.equipos || undefined}
+              fechaCreacionPlazo={medidaData.tipo === "MPE" ? (medidaData as any).fecha_creacion_raw : undefined}
+              vigente={medidaApiData?.estado_vigencia === "VIGENTE"}
+            />
+
             {/* Restyled summary card (Phase 1): navy header + stat cards + progress,
                 bound to the plan de trabajo activities. Shown for all tipos. */}
             <MedidaSummaryCard
