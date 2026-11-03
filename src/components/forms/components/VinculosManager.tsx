@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
+import React, { useEffect } from "react"
 import {
   Box,
   Button,
@@ -25,11 +25,14 @@ import LegajoSearchAutocomplete, {
   type LegajoOption,
 } from "@/app/(runna)/demanda/ui/components/LegajoSearchAutocomplete"
 import { MIN_CARACTERES_JUSTIFICACION_VINCULO } from "@/app/(runna)/legajo-mesa/types/vinculo-types"
+import { revealClasificacionOficio, vinculoFieldErrors } from "../utils/formValidationFeedback"
 
 interface VinculosManagerProps {
   dropdownData: DropdownData
   readOnly?: boolean
   oficioMode?: boolean
+  /** Oficio de MPE/MPI vigente: preselecciona el tipo de vínculo y avisa si falta lo que dispara las actividades. */
+  guiaOficio?: boolean
 }
 
 const JUSTIFICACION_OFICIO_AUTOMATICA = "Vinculación registrada desde la carga de un oficio judicial."
@@ -38,22 +41,21 @@ export default function VinculosManager({
   dropdownData,
   readOnly = false,
   oficioMode = false,
+  guiaOficio = false,
 }: VinculosManagerProps) {
   const theme = useTheme()
-  const { watch, setValue } = useFormContext<FormData>()
+  const {
+    watch,
+    setValue,
+    formState: { submitCount },
+  } = useFormContext<FormData>()
   const tipoVinculoOptions = Array.isArray(dropdownData.tipos_vinculo) ? dropdownData.tipos_vinculo : []
   const tipoVinculoOficio = tipoVinculoOptions.find((tipo) => tipo.codigo === "OFICIO_JUDICIAL")
 
   const vinculos = watch("vinculos") || []
-  const [expandedVinculos, setExpandedVinculos] = useState<Set<number>>(new Set())
-
-  // Validation errors per vinculo
-  const [vinculoErrors, setVinculoErrors] = useState<Record<number, {
-    legajo?: string
-    medida?: string
-    tipo_vinculo?: string
-    justificacion?: string
-  }>>({})
+  const tipoOficioElegido = watch("tipo_oficio")
+  // Los errores aparecen recién al intentar guardar y se van solos a medida que se completa cada campo.
+  const mostrarErrores = submitCount > 0
 
   useEffect(() => {
     if (!oficioMode || !tipoVinculoOficio) return
@@ -75,8 +77,8 @@ export default function VinculosManager({
     const newVinculo: VinculoFormData = {
       legajo: null,
       medida: null,
-      tipo_vinculo: oficioMode ? (tipoVinculoOficio?.id || null) : null,
-      justificacion: oficioMode ? JUSTIFICACION_OFICIO_AUTOMATICA : "",
+      tipo_vinculo: oficioMode || guiaOficio ? (tipoVinculoOficio?.id || null) : null,
+      justificacion: oficioMode || guiaOficio ? JUSTIFICACION_OFICIO_AUTOMATICA : "",
     }
 
     setValue("vinculos", [...vinculos, newVinculo])
@@ -85,11 +87,6 @@ export default function VinculosManager({
   const handleRemoveVinculo = (index: number) => {
     const newVinculos = vinculos.filter((_, i) => i !== index)
     setValue("vinculos", newVinculos)
-
-    // Clear errors for this vinculo
-    const newErrors = { ...vinculoErrors }
-    delete newErrors[index]
-    setVinculoErrors(newErrors)
   }
 
   const handleUpdateVinculo = (index: number, field: keyof VinculoFormData, value: any) => {
@@ -99,15 +96,6 @@ export default function VinculosManager({
       [field]: value,
     }
     setValue("vinculos", newVinculos)
-
-    // Clear error for this field
-    if (vinculoErrors[index]) {
-      const newErrors = { ...vinculoErrors }
-      const errorsCopy = { ...newErrors[index] }
-      delete errorsCopy[field as keyof typeof errorsCopy]
-      newErrors[index] = errorsCopy
-      setVinculoErrors(newErrors)
-    }
   }
 
   const handleLegajoSelect = (index: number, legajoOption: LegajoOption | null) => {
@@ -137,44 +125,6 @@ export default function VinculosManager({
     setValue("vinculos", newVinculos)
   }
 
-  const validateVinculo = (vinculo: VinculoFormData, index: number): boolean => {
-    const errors: typeof vinculoErrors[0] = {}
-
-    if (!vinculo.legajo) {
-      errors.legajo = "Debe seleccionar un legajo"
-    }
-
-    if (!vinculo.tipo_vinculo) {
-      errors.tipo_vinculo = "Debe seleccionar un tipo de vínculo"
-    }
-
-    if (!oficioMode && !vinculo.justificacion.trim()) {
-      errors.justificacion = "La justificación es obligatoria"
-    } else if (!oficioMode && vinculo.justificacion.trim().length < MIN_CARACTERES_JUSTIFICACION_VINCULO) {
-      errors.justificacion = `Mínimo ${MIN_CARACTERES_JUSTIFICACION_VINCULO} caracteres`
-    }
-
-    if (Object.keys(errors).length > 0) {
-      setVinculoErrors((prev) => ({ ...prev, [index]: errors }))
-      return false
-    }
-
-    return true
-  }
-
-  const validateAllVinculos = (): boolean => {
-    if (vinculos.length === 0) return true // No vinculos is valid
-
-    let allValid = true
-    vinculos.forEach((vinculo, index) => {
-      if (!validateVinculo(vinculo, index)) {
-        allValid = false
-      }
-    })
-
-    return allValid
-  }
-
   if (readOnly && vinculos.length === 0) {
     return null
   }
@@ -199,7 +149,16 @@ export default function VinculosManager({
         )}
       </Box>
 
-      {vinculos.length === 0 && !readOnly && (
+      {vinculos.length === 0 && !readOnly && guiaOficio && tipoOficioElegido && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          <Typography variant="body2">
+            Ya elegiste el Tipo de Oficio. Para que se agreguen las actividades, agregá el vínculo con el legajo y la
+            medida vigente.
+          </Typography>
+        </Alert>
+      )}
+
+      {vinculos.length === 0 && !readOnly && !(guiaOficio && tipoOficioElegido) && (
         <Alert severity="info" sx={{ mb: 2 }}>
           <Typography variant="body2">
             Puede agregar vínculos durante el registro de la demanda. Los vínculos permiten relacionar
@@ -211,7 +170,7 @@ export default function VinculosManager({
       {vinculos.length > 0 && (
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
           {vinculos.map((vinculo, index) => {
-            const errors = vinculoErrors[index] || {}
+            const errors = mostrarErrores ? vinculoFieldErrors(vinculo, oficioMode) : {}
 
             return (
               <Card
@@ -280,9 +239,7 @@ export default function VinculosManager({
                         onChange={(e) =>
                           handleUpdateVinculo(index, "medida", e.target.value ? Number(e.target.value) : null)
                         }
-                        error={Boolean(errors.medida)}
                         helperText={
-                          errors.medida ||
                           (vinculo.legajo_info.medidas_activas.length === 0
                             ? "Este legajo no tiene medidas activas"
                             : oficioMode
@@ -324,7 +281,12 @@ export default function VinculosManager({
                         handleUpdateVinculo(index, "tipo_vinculo", e.target.value ? Number(e.target.value) : null)
                       }
                       error={Boolean(errors.tipo_vinculo)}
-                      helperText={errors.tipo_vinculo}
+                      helperText={
+                        errors.tipo_vinculo ||
+                        (guiaOficio && vinculo.tipo_vinculo && vinculo.tipo_vinculo === tipoVinculoOficio?.id
+                          ? "Para un oficio judicial se elige solo; no hace falta cambiarlo."
+                          : undefined)
+                      }
                       disabled={readOnly || tipoVinculoOptions.length === 0}
                     >
                       {tipoVinculoOptions.map((tipo) => (
@@ -385,6 +347,25 @@ export default function VinculosManager({
                       )}
                     </Box>}
 
+                    {guiaOficio && !readOnly && vinculo.legajo && !tipoOficioElegido && (
+                      <Alert
+                        severity="warning"
+                        action={
+                          <Button color="inherit" size="small" onClick={revealClasificacionOficio}>
+                            Elegir tipo
+                          </Button>
+                        }
+                      >
+                        Falta el <strong>Tipo de Oficio</strong>: sin él, al guardar no se agregan actividades a la
+                        medida. Se elige en &quot;Clasificación del Oficio&quot;, más abajo.
+                      </Alert>
+                    )}
+                    {guiaOficio && !readOnly && vinculo.legajo && tipoOficioElegido && !vinculo.medida && (
+                      <Alert severity="info">
+                        Elegí también la <strong>medida vigente</strong>: es la que recibe las actividades del oficio.
+                      </Alert>
+                    )}
+
                     {oficioMode && (
                       <Alert severity="info">
                         El vínculo se registra automáticamente como oficio judicial. La justificación no requiere carga manual.
@@ -421,7 +402,7 @@ export default function VinculosManager({
       )}
 
       {/* Global validation warning */}
-      {!readOnly && vinculos.length > 0 && Object.keys(vinculoErrors).length > 0 && (
+      {!readOnly && mostrarErrores && vinculos.some((v) => Object.keys(vinculoFieldErrors(v, oficioMode)).length > 0) && (
         <Alert severity="warning" sx={{ mt: 2 }}>
           <Typography variant="body2">
             Por favor, complete todos los campos obligatorios en los vínculos antes de guardar la demanda.

@@ -7,6 +7,7 @@ import { submitCleanFormData } from "./submitCleanFormData"
 import { debugFormDataStructure, debugPatchData, logApiSubmission, validateFormDataStructure } from "./debugFormData"
 import type { DemandaCreatedResponse } from "@/app/(runna)/nuevoingreso/types/demanda-response"
 import { logger } from "@/utils/logger"
+import { mensajeDemandaGuardada } from "./mensajeGuardado"
 
 // Track if a submission is in progress to prevent duplicates
 let isSubmissionInProgress = false
@@ -99,10 +100,10 @@ export const submitFormData = async (formData: DemandaFormData, id?: string): Pr
     let response: unknown
     if (id) {
       // Update (PATCH) the existing Demanda
-      response = await update("registro-demanda-form", Number(id), dataToSend, true, "Demanda actualizada con éxito")
+      response = await update("registro-demanda-form", Number(id), dataToSend, true, mensajeDemandaGuardada(formData, true))
     } else {
       // Create (POST) a new Demanda
-      response = await create("registro-demanda-form", dataToSend, true, "Demanda creada con éxito")
+      response = await create("registro-demanda-form", dataToSend, true, mensajeDemandaGuardada(formData, false))
     }
 
     logger.log("Server response:", response)

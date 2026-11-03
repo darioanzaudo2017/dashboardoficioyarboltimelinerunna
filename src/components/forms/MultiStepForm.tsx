@@ -365,6 +365,10 @@ const MultiStepForm: React.FC<MultiStepFormProps> = ({
           style: { whiteSpace: "pre-line" },
         })
         revealVinculosSection()
+        // Los errores por campo aparecen tras este envío; se espera a que se dibujen para llevar el foco al primero.
+        window.setTimeout(() => {
+          focusFirstInvalidField(document.querySelector<HTMLElement>('[data-section="vinculos"]') ?? document)
+        }, 250)
         return
       }
     }
@@ -567,7 +571,11 @@ const MultiStepForm: React.FC<MultiStepFormProps> = ({
               collapsible={true}
               defaultExpanded={formVariant === "OFICIO_JUDICIAL"}
             >
-              <VinculosManager dropdownData={dropdownData} readOnly={isReadOnly} />
+              <VinculosManager
+                dropdownData={dropdownData}
+                readOnly={isReadOnly}
+                guiaOficio={formVariant === "OFICIO_JUDICIAL"}
+              />
             </FormSection>
           </Box>
         )}

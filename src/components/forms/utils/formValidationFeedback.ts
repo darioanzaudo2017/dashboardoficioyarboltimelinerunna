@@ -41,6 +41,25 @@ export const describeVinculoProblems = (vinculos: VinculoLike[]): string[] =>
     return problems.length ? [`Vínculo ${index + 1}: ${problems.join(", ")}`] : []
   })
 
+export interface VinculoFieldErrors {
+  legajo?: string
+  tipo_vinculo?: string
+  justificacion?: string
+}
+
+/** Error de cada campo del vínculo para mostrarlo debajo del campo (en un oficio la justificación se completa sola). */
+export const vinculoFieldErrors = (vinculo: VinculoLike, oficioMode = false): VinculoFieldErrors => {
+  const errors: VinculoFieldErrors = {}
+  if (!vinculo.legajo) errors.legajo = "Elegí el legajo"
+  if (!vinculo.tipo_vinculo) errors.tipo_vinculo = "Elegí el tipo de vínculo"
+  const length = (vinculo.justificacion ?? "").trim().length
+  if (!oficioMode && length === 0) errors.justificacion = "La justificación es obligatoria"
+  else if (!oficioMode && length < MIN_JUSTIFICACION_VINCULO) {
+    errors.justificacion = `Mínimo ${MIN_JUSTIFICACION_VINCULO} caracteres (tiene ${length})`
+  }
+  return errors
+}
+
 export const buildVinculoProblemsMessage = (problems: string[]): string =>
   `Revisá los vínculos con legajos antes de guardar:\n${bulletList(problems)}`
 
@@ -83,4 +102,11 @@ export const revealVinculosSection = (): void => {
   const collapsedHeader = section.querySelector<HTMLElement>('[aria-expanded="false"]')
   collapsedHeader?.click()
   section.scrollIntoView({ behavior: "smooth", block: "start" })
+}
+
+/** Lleva la pantalla a "Clasificación del Oficio" (categoría y tipo de oficio). */
+export const revealClasificacionOficio = (): void => {
+  document
+    .querySelector<HTMLElement>('[data-section="clasificacion-oficio"]')
+    ?.scrollIntoView({ behavior: "smooth", block: "center" })
 }
