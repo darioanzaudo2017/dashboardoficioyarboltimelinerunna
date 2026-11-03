@@ -64,6 +64,8 @@ import type { MedioNotificacion, InformeJuridicoBasicResponse } from "../../type
 import type { EstadoEtapa } from "@/app/(runna)/legajo-mesa/types/medida-api"
 import type { CrearYEnviarInformeJuridicoRequest } from "../../types/informe-juridico-api"
 import { SectionCard } from "./shared/section-card"
+import { AdjuntosDelTecnico } from "../informe-juridico/adjuntos-del-tecnico"
+import type { IntervencionResponse } from "../../types/intervencion-api"
 import { logger } from "@/utils/logger"
 
 // ============================================================================
@@ -91,6 +93,11 @@ interface InformeJuridicoSectionProps {
    * GET /api/medidas/{id}/etapa/{tipo_etapa}/
    */
   initialData?: InformeJuridicoBasicResponse[]
+  /**
+   * Intervenciones de la etapa: de la más reciente se muestran los documentos que cargó el técnico
+   * (informe obligatorio y adjuntos) para que Equipo Legal los tenga a mano.
+   */
+  intervenciones?: IntervencionResponse[]
 }
 
 // ============================================================================
@@ -172,6 +179,7 @@ export const InformeJuridicoSection: React.FC<InformeJuridicoSectionProps> = ({
   onInformeEnviado,
   etapaId,
   initialData,
+  intervenciones,
 }) => {
   // ============================================================================
   // STATE
@@ -644,6 +652,8 @@ export const InformeJuridicoSection: React.FC<InformeJuridicoSectionProps> = ({
 
   return (
     <Box>
+      <AdjuntosDelTecnico medidaId={medidaId} intervenciones={intervenciones} />
+
       {hasInforme ? renderInforme() : renderEmpty()}
 
       {/* Create and Send Dialog (Unified Flow) */}

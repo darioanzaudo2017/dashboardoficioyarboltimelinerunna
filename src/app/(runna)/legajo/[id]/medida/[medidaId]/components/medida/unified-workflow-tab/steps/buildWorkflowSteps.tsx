@@ -248,6 +248,7 @@ export const buildWorkflowSteps = ({
               onInformeEnviado={refreshWorkflowData}
               etapaId={etapaDetail?.etapa.id}
               initialData={etapaDetail?.etapa.documentos.informes_juridicos}
+              intervenciones={etapaDetail?.etapa.documentos.intervenciones ?? []}
             />
           </WorkflowStepContent>
         ),
