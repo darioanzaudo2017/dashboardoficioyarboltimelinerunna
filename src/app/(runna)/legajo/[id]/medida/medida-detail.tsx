@@ -11,6 +11,7 @@ import { MPEHeader } from "./[medidaId]/components/medida/mpe-header"
 import { MPJHeader } from "./[medidaId]/components/medida/mpj-header"
 import { LegajosAdicionalesBanner } from "./[medidaId]/components/medida/legajos-adicionales-banner"
 import { MedidaSummaryCard } from "./[medidaId]/components/medida/restyle/medida-summary-card"
+import { ConfiguracionMPESection } from "./[medidaId]/components/medida/configuracion-mpe-section"
 import { MedidaEtapasSection } from "./[medidaId]/components/medida/restyle/medida-etapas-section"
 import { MedidaModulosRow } from "./[medidaId]/components/medida/restyle/medida-modulos-row"
 import { buildMedidaModulos, defaultModulosOpen } from "./[medidaId]/components/medida/restyle/medida-modulos-config"
@@ -493,6 +494,17 @@ export default function MedidaDetail({ params, onClose, isFullPage = false }: Me
               planTrabajoId={medidaApiData?.plan_trabajo_id ?? undefined}
               legajoId={legajoIdNum ?? undefined}
             />
+
+            {/* Dispositivo MPE: dónde (programa, institución o familia) está alojado el NNyA. Mismo bloque que la vista clásica. */}
+            {medidaData.tipo === "MPE" && medidaApiData?.id && (
+              <Box sx={{ mb: 3 }}>
+                <ConfiguracionMPESection
+                  medidaId={medidaApiData.id}
+                  configuracion={medidaApiData.configuracion_dispositivo_mpe}
+                  onConfigUpdated={refetchMedida}
+                />
+              </Box>
+            )}
 
             {/* Restyled etapas section (Phase 2): collapsible rows grouped by
                 workflow phase. Expanding a phase mounts the SAME interactive
