@@ -49,6 +49,7 @@ import MPJStageStepper from "./mpj-stage-stepper"
 import MPICeseCompletion from "./mpi-cese-completion"
 import MPEPostCeseSection from "./mpe-post-cese-section"
 import EstadoStepper from "./estado-stepper"
+import { estadoLegible } from "../../utils/estado-legible"
 
 // ============================================================================
 // STYLED COMPONENTS
@@ -249,13 +250,13 @@ const StepStatusChip: React.FC<StepStatusChipProps> = ({ estado, status }) => {
   const getChipProps = () => {
     if (status === "completed") {
       return {
-        label: estado || "Completado",
+        label: estadoLegible(estado) || "Completado",
         color: "success" as const,
       }
     }
     if (status === "current") {
       return {
-        label: estado || "En Progreso",
+        label: estadoLegible(estado) || "En Progreso",
         color: "primary" as const,
       }
     }

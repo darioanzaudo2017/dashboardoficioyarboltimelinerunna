@@ -45,6 +45,7 @@ export const UnifiedActividadesTable: React.FC<UnifiedActividadesTableProps> = (
   onActividadesUpdate,
   title,
   showWrapper = true,
+  hideStatistics = false,
 }) => {
   const router = useRouter()
   const params = useParams()
@@ -341,15 +342,16 @@ export const UnifiedActividadesTable: React.FC<UnifiedActividadesTableProps> = (
   // RENDER HELPERS
   // ============================================================================
 
-  const renderStatistics = () => (
-    <ActividadesStatisticsPanel
-      variant={variant}
-      features={features}
-      filteredActividades={filteredActividades}
-      statistics={statistics}
-      totalCount={totalCount}
-    />
-  )
+  const renderStatistics = () =>
+    hideStatistics ? null : (
+      <ActividadesStatisticsPanel
+        variant={variant}
+        features={features}
+        filteredActividades={filteredActividades}
+        statistics={statistics}
+        totalCount={totalCount}
+      />
+    )
 
   const renderFilters = () => {
     // Advanced Filters - now shown for ALL variants

@@ -29,6 +29,8 @@ import {
   IconButton,
   Button,
   Skeleton,
+  Alert,
+  AlertTitle,
 } from "@mui/material"
 import CheckIcon from "@mui/icons-material/Check"
 import CloseIcon from "@mui/icons-material/Close"
@@ -42,6 +44,7 @@ import { useEtapaDetail } from "../../../hooks/useEtapaDetail"
 import { tipoEtapaToWorkflowPhase, workflowPhaseToTipoEtapa } from "../../../utils/workflow-tipo-mapper"
 import type { WorkflowPhase } from "../../../types/workflow"
 import type { TipoEtapa } from "../../../types/estado-etapa"
+import { estadoLegible } from "../../../utils/estado-legible"
 import type { MedidaDetailResponse } from "../../../types/medida-api"
 
 /** Minimal shape consumed from `MedidaDetailResponse.historial_etapas`. */
@@ -309,7 +312,7 @@ const EtapaDetailPanel: React.FC<EtapaDetailPanelProps> = ({
           ) : (
             <Chip
               label={
-                !exists ? "No iniciada" : estadoDisplay || estado || (isCurrent ? "En curso" : "Registrada")
+                !exists ? "No iniciada" : estadoLegible(estado, estadoDisplay) || (isCurrent ? "En curso" : "Registrada")
               }
               size="small"
               sx={{
@@ -637,9 +640,28 @@ export const MedidaEtapasSection: React.FC<MedidaEtapasSectionProps> = ({
     return latest?.estado || workflowMedidaData?.estado || ""
   }
 
+  // Primer paso de la medida: mientras la intervención de la etapa actual no se registre, no hay nada más para hacer.
+  const faseActual = phases.find((p) => phaseIsCurrent(p))
+  const falta1erPaso =
+    !!faseActual && !isClosed && !!workflowMedidaData?.id && fallbackEstadoFor(faseActual) === "PENDIENTE_REGISTRO_INTERVENCION"
+
   return (
     <Paper elevation={0} sx={paperSx}>
       <SectionHeader />
+      {falta1erPaso && faseActual && (
+        <Alert
+          severity="info"
+          sx={{ mb: 2 }}
+          action={
+            <Button color="inherit" size="small" variant="outlined" onClick={() => setModalPhase(faseActual)} sx={{ textTransform: "none", fontWeight: 600 }}>
+              Registrar intervención
+            </Button>
+          }
+        >
+          <AlertTitle sx={{ fontSize: 13 }}>Primer paso: registrar la intervención de {PHASE_LABEL[faseActual]}</AlertTitle>
+          Todavía no se registró. Hasta entonces la medida no avanza a los pasos siguientes (aprobación, aval, informe jurídico y ratificación).
+        </Alert>
+      )}
       <Box sx={{ display: "flex", flexDirection: "column", gap: "6px" }}>
         {phases.map((phase) => (
           <PhaseRow

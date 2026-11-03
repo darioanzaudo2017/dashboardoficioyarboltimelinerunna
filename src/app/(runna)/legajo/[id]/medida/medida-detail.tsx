@@ -527,6 +527,7 @@ export default function MedidaDetail({ params, onClose, isFullPage = false }: Me
                 tipo: medidaData.tipo,
                 medidaApiData: medidaApiData || undefined,
                 planTrabajoId: medidaApiData?.plan_trabajo_id,
+                ocultarEstadisticasPlan: true,
               })}
               defaultOpen={defaultModulosOpen(medidaData.tipo)}
             />

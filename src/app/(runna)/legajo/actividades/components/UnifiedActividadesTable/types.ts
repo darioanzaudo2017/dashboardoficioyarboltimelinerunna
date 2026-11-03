@@ -33,4 +33,6 @@ export interface UnifiedActividadesTableProps {
   title?: string
   /** Whether to show the section wrapper (SectionCard for legajo, Paper for others) */
   showWrapper?: boolean
+  /** Oculta los contadores y la barra de progreso (cuando la pantalla ya los muestra más arriba) */
+  hideStatistics?: boolean
 }

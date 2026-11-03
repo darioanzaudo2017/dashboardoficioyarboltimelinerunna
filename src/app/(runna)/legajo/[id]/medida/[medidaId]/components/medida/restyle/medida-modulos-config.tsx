@@ -25,6 +25,8 @@ interface BuildMedidaModulosArgs {
   tipo: TipoMedidaKey
   medidaApiData?: MedidaDetailResponse
   planTrabajoId?: number | null
+  /** La vista nueva ya muestra contadores y progreso arriba: no repetirlos dentro del plan de trabajo. */
+  ocultarEstadisticasPlan?: boolean
 }
 
 /** Normalizes the numero_medida field (string | { display } | undefined). */
@@ -57,7 +59,8 @@ function buildPlanMedidaData(tipo: TipoMedidaKey, medidaApiData: MedidaDetailRes
 function buildPlanModule(
   tipo: TipoMedidaKey,
   medidaApiData?: MedidaDetailResponse,
-  planTrabajoId?: number | null
+  planTrabajoId?: number | null,
+  ocultarEstadisticas = false
 ): ModuloDef {
   return {
     key: "plan",
@@ -66,7 +69,11 @@ function buildPlanModule(
     variant: "blue",
     content:
       planTrabajoId && medidaApiData ? (
-        <PlanTrabajoTab medidaData={buildPlanMedidaData(tipo, medidaApiData)} planTrabajoId={planTrabajoId} />
+        <PlanTrabajoTab
+          medidaData={buildPlanMedidaData(tipo, medidaApiData)}
+          planTrabajoId={planTrabajoId}
+          hideStatistics={ocultarEstadisticas}
+        />
       ) : (
         <Paper sx={{ p: 3, textAlign: "center", color: "text.secondary" }} elevation={0}>
           No hay Plan de Trabajo asociado a esta medida.
@@ -175,17 +182,18 @@ export function buildMedidaModulos({
   tipo,
   medidaApiData,
   planTrabajoId,
+  ocultarEstadisticasPlan = false,
 }: BuildMedidaModulosArgs): ModuloDef[] {
   const modules: (ModuloDef | null)[] = []
 
   if (tipo === "MPI") {
-    modules.push(buildPlanModule(tipo, medidaApiData, planTrabajoId))
+    modules.push(buildPlanModule(tipo, medidaApiData, planTrabajoId, ocultarEstadisticasPlan))
     modules.push(buildLegalidadModule(medidaApiData, planTrabajoId))
     modules.push(buildHistorialModule(medidaApiData))
     modules.push(buildInformesModule(medidaApiData))
     modules.push(buildCalendarioModule(medidaApiData, planTrabajoId))
   } else if (tipo === "MPE") {
-    modules.push(buildPlanModule(tipo, medidaApiData, planTrabajoId))
+    modules.push(buildPlanModule(tipo, medidaApiData, planTrabajoId, ocultarEstadisticasPlan))
     modules.push(buildLegalidadModule(medidaApiData, planTrabajoId))
     modules.push(buildInformesModule(medidaApiData))
     modules.push(buildCalendarioModule(medidaApiData, planTrabajoId))

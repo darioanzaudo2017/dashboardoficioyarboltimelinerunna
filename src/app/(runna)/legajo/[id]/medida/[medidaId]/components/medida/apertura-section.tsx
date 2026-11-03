@@ -11,6 +11,8 @@ import { useState, useEffect } from "react"
 import { getAdjuntos } from "../../api/intervenciones-api-service"
 import type { IntervencionResponse, AdjuntoIntervencion } from "../../types/intervencion-api"
 import { logger } from "@/utils/logger"
+import { formatDateLocaleAR } from "@/utils/dateUtils"
+import { estadoLegible } from "../../utils/estado-legible"
 
 interface AperturaSectionProps {
   data: {
@@ -155,14 +157,16 @@ export const AperturaSection: React.FC<AperturaSectionProps> = ({
         isCompleted={isCompleted}
       >
         <Typography variant="body2" sx={{ mb: 1 }}>
-          <strong>Fecha:</strong> {data.fecha}
+          <strong>Fecha:</strong> {data.fecha ? formatDateLocaleAR(data.fecha) : "No especificada"}
         </Typography>
-        <Typography variant="body2" sx={{ mb: 1 }}>
-          <strong>Estado:</strong> {data.estado || "No especificado"}
+        <Typography variant="body2" sx={{ mb: data.equipo ? 1 : 3 }}>
+          <strong>Estado:</strong> {estadoLegible(data.estado) || "No especificado"}
         </Typography>
-        <Typography variant="body2" sx={{ mb: 3 }}>
-          <strong>Equipo:</strong> {data.equipo || "No especificado"}
-        </Typography>
+        {data.equipo && (
+          <Typography variant="body2" sx={{ mb: 3 }}>
+            <strong>Equipo:</strong> {data.equipo}
+          </Typography>
+        )}
 
         <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
           <Button
