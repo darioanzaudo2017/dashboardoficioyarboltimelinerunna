@@ -19,6 +19,7 @@ import {
   Typography,
   Grid,
   Alert,
+  AlertTitle,
   Skeleton,
   Autocomplete,
   TextField,
@@ -38,6 +39,7 @@ import { parseDateSafely, formatDateSafely } from "../utils/dateUtils"
 
 // Components
 import CircuitoSelector from "./components/CircuitoSelector"
+import { esCategoriaDeCese, TEXTO_OFICIO_DE_CESE, TITULO_OFICIO_DE_CESE } from "./utils/oficioDeCese"
 import CategoriaInfoSection from "./components/CategoriaInfoSection"
 import OrganoJudicialSection from "./components/OrganoJudicialSection"
 import ExpedienteSection from "./components/ExpedienteSection"
@@ -143,6 +145,7 @@ const CargaOficiosForm: React.FC<CargaOficiosFormInternalProps> = ({
   // Watch form values
   const watchedCategoria = watch("categoria_informacion_judicial")
   const watchedCircuito = watch("tipo_medida_evaluado")
+  const esOficioDeCese = esCategoriaDeCese(categorias.find((c) => c.id === watchedCategoria)?.nombre)
   const watchedAdjuntos = watch("adjuntos") || []
 
   // Esta carga abre medidas penales juveniles: el circuito queda en MPJ y no hace falta elegirlo.
@@ -373,6 +376,15 @@ const CargaOficiosForm: React.FC<CargaOficiosFormInternalProps> = ({
               )}
             />
           </Grid>
+
+          {esOficioDeCese && (
+            <Grid item xs={12}>
+              <Alert severity="info">
+                <AlertTitle sx={{ fontSize: 14 }}>{TITULO_OFICIO_DE_CESE}</AlertTitle>
+                {TEXTO_OFICIO_DE_CESE}
+              </Alert>
+            </Grid>
+          )}
         </Grid>
       </FormSection>
 
