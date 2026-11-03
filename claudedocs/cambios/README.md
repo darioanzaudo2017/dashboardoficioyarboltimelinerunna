@@ -55,6 +55,9 @@ Límites conocidos, dependencias del backend, ideas siguientes.
 | 2026-10-27 | `mejora-evaluacion-errores-firmantes` | Motivo del error del servidor en Evaluación y bucle de firmantes corregido — [documento](2026-10-27_evaluacion-errores-firmantes.md) |
 | 2026-10-29 | `mejora-evaluacion-chequeo-legajo` | Aviso de legajo y medidas vigentes antes de pedir o autorizar una medida — [documento](2026-10-29_evaluacion-chequeo-legajo.md) |
 | 2026-11-03 | `mejora-legajo-resumen-medidas` | Legajo: resumen por medida (tarjetas con avance, equipos y última actividad) y botón para volver desde el plan de trabajo — [documento](2026-10-29_legajo-resumen-medidas.md) |
+| 2026-11-03 | `mejora-medida-mpe-guia` | Medida MPE (vista nueva): cartel de primer paso, contadores sin repetir y estados legibles — [documento](2026-11-03_medida-mpe-guia.md) |
+| 2026-11-03 | `mejora-actividades-fecha-contadores` | Actividades: fecha sin corrimiento de día y encabezado de la medida que se actualiza — [documento](2026-11-03_actividades-fecha-contadores.md) |
+| 2026-11-03 | `mejora-medida-mpe-dispositivo` | Medida MPE (vista nueva): configuración de dispositivo a la vista y comparación con la vista clásica — [documento](2026-11-03_medida-mpe-dispositivo.md) |
 
 ## Orden recomendado para unir las ramas
 
@@ -74,8 +77,11 @@ y GitHub debe conservar esa relación. Los dos conflictos conocidos están marca
 | 8 | `mejora-evaluacion-errores-firmantes` | Toca `action-buttons.tsx` y `apiErrorFormatter.ts`. |
 | 9 | `mejora-evaluacion-chequeo-legajo` | **Conflicto en los imports de `action-buttons.tsx`**: conservar los dos lados. Depende de la 7. |
 | 10 | `mejora-legajo-resumen-medidas` | Independiente de las demás (solo toca el legajo). Puede ir en cualquier lugar. |
+| 11 | `mejora-medida-mpe-guia` | Independiente. Toca `medida-detail.tsx` y la tabla de actividades (`hideStatistics`). |
+| 12 | `mejora-actividades-fecha-contadores` | Independiente. Toca `UnifiedActividadesTable.tsx` (se une sin conflicto con la 11). |
+| 13 | `mejora-medida-mpe-dispositivo` | Independiente. Toca `medida-detail.tsx` (se une sin conflicto con la 11). |
 
-La rama **`integracion`** ya tiene las 10 unidas (la 10 es independiente) (merge commits, tipos sin errores, 59 tests pasando).
+La rama **`integracion`** ya tiene las 13 unidas (de la 10 en adelante son independientes) (merge commits, tipos sin errores, 59 tests pasando).
 
 ## Para el equipo de backend
 
