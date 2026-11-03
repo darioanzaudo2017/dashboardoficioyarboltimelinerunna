@@ -103,6 +103,161 @@ const OficioJudicialMPEStep: React.FC<OficioJudicialMPEStepProps> = ({
 
   return (
     <Box sx={{ maxWidth: "900px", mx: "auto" }}>
+      {/* Lo que dispara las actividades queda junto a los vínculos (que se muestran arriba de este paso) */}
+      {/* Categoría de Oficio y Tipo de Oficio */}
+      <Box data-section="clasificacion-oficio">
+      <FormSection title="Clasificación del Oficio">
+        {!selectedTipoOficio && (
+          <Alert
+            severity="info"
+            icon={<InfoOutlinedIcon />}
+            sx={{ mb: 2 }}
+          >
+            <AlertTitle sx={{ fontWeight: 600, mb: 0.5 }}>
+              Opcional, pero recomendado
+            </AlertTitle>
+            <Typography variant="body2">
+              Sin <strong>Tipo de Oficio</strong>, cuando legales vincule esta demanda
+              al legajo/medida vigente <strong>no se crearán actividades automáticamente</strong>;
+              habrá que cargarlas a mano. Si sabés el tipo, completalo ahora.
+            </Typography>
+          </Alert>
+        )}
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={6}>
+            <Controller
+              name="categoria_informacion_judicial"
+              control={control}
+              render={({ field, fieldState: { error } }) => (
+                <FormControl fullWidth error={!!error}>
+                  <Autocomplete
+                    disabled={readOnly}
+                    options={dropdownData.categoria_informacion_judicial || []}
+                    getOptionLabel={(option: any) => option.nombre || ""}
+                    value={
+                      (dropdownData.categoria_informacion_judicial || []).find(
+                        (item: any) => item.id === field.value
+                      ) || null
+                    }
+                    onChange={(_, newValue) => {
+                      field.onChange(newValue ? newValue.id : null)
+                      setValue("tipo_oficio", undefined)
+                    }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Categoría de Oficio"
+                        error={!!error}
+                        helperText={
+                          error?.message || "Seleccione la categoría para filtrar tipos"
+                        }
+                      />
+                    )}
+                  />
+                </FormControl>
+              )}
+            />
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Controller
+              name="tipo_oficio"
+              control={control}
+              render={({ field, fieldState: { error } }) => (
+                <FormControl fullWidth error={!!error}>
+                  <Autocomplete
+                    disabled={readOnly}
+                    options={filteredTipoOficio}
+                    getOptionLabel={(option: any) => option.nombre || ""}
+                    value={
+                      filteredTipoOficio.find(
+                        (item: any) => item.id === field.value
+                      ) || null
+                    }
+                    onChange={(_, newValue) =>
+                      field.onChange(newValue ? newValue.id : null)
+                    }
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Tipo de Oficio"
+                        error={!!error}
+                        helperText={
+                          error?.message ||
+                          (!selectedCategoria
+                            ? "Seleccione primero una categoría"
+                            : "Necesario para crear actividades automáticamente al vincular")
+                        }
+                      />
+                    )}
+                  />
+                </FormControl>
+              )}
+            />
+          </Grid>
+        </Grid>
+      </FormSection>
+      </Box>
+
+      {/* SAC / Expediente / Oficio web */}
+      <FormSection title="Datos del Expediente">
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={6}>
+            <Controller
+              name="nro_sac"
+              control={control}
+              render={({ field, fieldState: { error } }) => (
+                <TextField
+                  {...field}
+                  value={field.value || ""}
+                  label="SAC"
+                  fullWidth
+                  disabled={readOnly}
+                  error={!!error}
+                  helperText={error?.message}
+                  InputProps={{ readOnly }}
+                />
+              )}
+            />
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Controller
+              name="numero_expediente"
+              control={control}
+              render={({ field, fieldState: { error } }) => (
+                <TextField
+                  {...field}
+                  value={field.value || ""}
+                  label="Número de Expediente"
+                  fullWidth
+                  disabled={readOnly}
+                  error={!!error}
+                  helperText={error?.message}
+                  InputProps={{ readOnly }}
+                />
+              )}
+            />
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Controller
+              name="nro_oficio_web"
+              control={control}
+              render={({ field, fieldState: { error } }) => (
+                <TextField
+                  {...field}
+                  value={field.value || ""}
+                  label="Número de Oficio Web"
+                  fullWidth
+                  disabled={readOnly}
+                  error={!!error}
+                  helperText={error?.message}
+                  InputProps={{ readOnly }}
+                />
+              )}
+            />
+          </Grid>
+        </Grid>
+      </FormSection>
+
       {/* Datos del oficio */}
       <FormSection title="Datos del Oficio">
         <Grid container spacing={3}>
@@ -549,160 +704,6 @@ const OficioJudicialMPEStep: React.FC<OficioJudicialMPEStepProps> = ({
           </Grid>
         </Grid>
       </FormSection>
-
-      {/* SAC / Expediente / Oficio web */}
-      <FormSection title="Datos del Expediente">
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
-            <Controller
-              name="nro_sac"
-              control={control}
-              render={({ field, fieldState: { error } }) => (
-                <TextField
-                  {...field}
-                  value={field.value || ""}
-                  label="SAC"
-                  fullWidth
-                  disabled={readOnly}
-                  error={!!error}
-                  helperText={error?.message}
-                  InputProps={{ readOnly }}
-                />
-              )}
-            />
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Controller
-              name="numero_expediente"
-              control={control}
-              render={({ field, fieldState: { error } }) => (
-                <TextField
-                  {...field}
-                  value={field.value || ""}
-                  label="Número de Expediente"
-                  fullWidth
-                  disabled={readOnly}
-                  error={!!error}
-                  helperText={error?.message}
-                  InputProps={{ readOnly }}
-                />
-              )}
-            />
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Controller
-              name="nro_oficio_web"
-              control={control}
-              render={({ field, fieldState: { error } }) => (
-                <TextField
-                  {...field}
-                  value={field.value || ""}
-                  label="Número de Oficio Web"
-                  fullWidth
-                  disabled={readOnly}
-                  error={!!error}
-                  helperText={error?.message}
-                  InputProps={{ readOnly }}
-                />
-              )}
-            />
-          </Grid>
-        </Grid>
-      </FormSection>
-
-      {/* Categoría de Oficio y Tipo de Oficio */}
-      <Box data-section="clasificacion-oficio">
-      <FormSection title="Clasificación del Oficio">
-        {!selectedTipoOficio && (
-          <Alert
-            severity="info"
-            icon={<InfoOutlinedIcon />}
-            sx={{ mb: 2 }}
-          >
-            <AlertTitle sx={{ fontWeight: 600, mb: 0.5 }}>
-              Opcional, pero recomendado
-            </AlertTitle>
-            <Typography variant="body2">
-              Sin <strong>Tipo de Oficio</strong>, cuando legales vincule esta demanda
-              al legajo/medida vigente <strong>no se crearán actividades automáticamente</strong>;
-              habrá que cargarlas a mano. Si sabés el tipo, completalo ahora.
-            </Typography>
-          </Alert>
-        )}
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
-            <Controller
-              name="categoria_informacion_judicial"
-              control={control}
-              render={({ field, fieldState: { error } }) => (
-                <FormControl fullWidth error={!!error}>
-                  <Autocomplete
-                    disabled={readOnly}
-                    options={dropdownData.categoria_informacion_judicial || []}
-                    getOptionLabel={(option: any) => option.nombre || ""}
-                    value={
-                      (dropdownData.categoria_informacion_judicial || []).find(
-                        (item: any) => item.id === field.value
-                      ) || null
-                    }
-                    onChange={(_, newValue) => {
-                      field.onChange(newValue ? newValue.id : null)
-                      setValue("tipo_oficio", undefined)
-                    }}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label="Categoría de Oficio"
-                        error={!!error}
-                        helperText={
-                          error?.message || "Seleccione la categoría para filtrar tipos"
-                        }
-                      />
-                    )}
-                  />
-                </FormControl>
-              )}
-            />
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Controller
-              name="tipo_oficio"
-              control={control}
-              render={({ field, fieldState: { error } }) => (
-                <FormControl fullWidth error={!!error}>
-                  <Autocomplete
-                    disabled={readOnly}
-                    options={filteredTipoOficio}
-                    getOptionLabel={(option: any) => option.nombre || ""}
-                    value={
-                      filteredTipoOficio.find(
-                        (item: any) => item.id === field.value
-                      ) || null
-                    }
-                    onChange={(_, newValue) =>
-                      field.onChange(newValue ? newValue.id : null)
-                    }
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label="Tipo de Oficio"
-                        error={!!error}
-                        helperText={
-                          error?.message ||
-                          (!selectedCategoria
-                            ? "Seleccione primero una categoría"
-                            : "Necesario para crear actividades automáticamente al vincular")
-                        }
-                      />
-                    )}
-                  />
-                </FormControl>
-              )}
-            />
-          </Grid>
-        </Grid>
-      </FormSection>
-      </Box>
 
       {/* Archivo adjunto */}
       <FormSection title="Archivos Adjuntos">

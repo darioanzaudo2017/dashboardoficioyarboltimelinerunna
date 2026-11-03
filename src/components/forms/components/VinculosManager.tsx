@@ -25,7 +25,7 @@ import LegajoSearchAutocomplete, {
   type LegajoOption,
 } from "@/app/(runna)/demanda/ui/components/LegajoSearchAutocomplete"
 import { MIN_CARACTERES_JUSTIFICACION_VINCULO } from "@/app/(runna)/legajo-mesa/types/vinculo-types"
-import { revealClasificacionOficio, vinculoFieldErrors } from "../utils/formValidationFeedback"
+import { medidasVigentes, revealClasificacionOficio, vinculoFieldErrors } from "../utils/formValidationFeedback"
 
 interface VinculosManagerProps {
   dropdownData: DropdownData
@@ -102,10 +102,12 @@ export default function VinculosManager({
     const newVinculos = [...vinculos]
 
     if (legajoOption) {
+      // En un oficio, si el legajo tiene una sola medida vigente es la que recibe las actividades.
+      const vigentes = guiaOficio ? medidasVigentes(legajoOption.medidas_activas) : []
       newVinculos[index] = {
         ...newVinculos[index],
         legajo: legajoOption.id,
-        medida: null, // Reset medida when legajo changes
+        medida: vigentes.length === 1 ? vigentes[0].id : null, // Reset medida when legajo changes
         legajo_info: {
           id: legajoOption.id,
           numero: legajoOption.numero,
@@ -170,7 +172,12 @@ export default function VinculosManager({
       {vinculos.length > 0 && (
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
           {vinculos.map((vinculo, index) => {
-            const errors = mostrarErrores ? vinculoFieldErrors(vinculo, oficioMode) : {}
+            const errors = mostrarErrores ? vinculoFieldErrors(vinculo, oficioMode, { medidaRequerida: guiaOficio }) : {}
+            const medidasDisponibles = guiaOficio
+              ? (vinculo.legajo_info?.medidas_activas ?? []).filter(
+                  (medida) => medida.estado_vigencia === "VIGENTE" || medida.id === vinculo.medida,
+                )
+              : vinculo.legajo_info?.medidas_activas ?? []
 
             return (
               <Card
@@ -234,28 +241,41 @@ export default function VinculosManager({
                       <TextField
                         select
                         fullWidth
-                        label={oficioMode ? "Medida inicial/provisoria asociada" : "Medida (Opcional)"}
+                        label={
+                          oficioMode
+                            ? "Medida inicial/provisoria asociada"
+                            : guiaOficio && medidasDisponibles.length > 0
+                              ? "Medida vigente *"
+                              : "Medida (Opcional)"
+                        }
                         value={vinculo.medida || ""}
                         onChange={(e) =>
                           handleUpdateVinculo(index, "medida", e.target.value ? Number(e.target.value) : null)
                         }
+                        error={Boolean(errors.medida)}
                         helperText={
-                          (vinculo.legajo_info.medidas_activas.length === 0
-                            ? "Este legajo no tiene medidas activas"
-                            : oficioMode
+                          errors.medida ||
+                          (medidasDisponibles.length === 0
+                            ? guiaOficio
+                              ? "Este legajo no tiene medidas vigentes"
+                              : "Este legajo no tiene medidas activas"
+                            : guiaOficio && medidasDisponibles.length > 1
+                              ? `Este legajo tiene ${medidasDisponibles.length} medidas vigentes: elegí a cuál corresponde el oficio.`
+                              : oficioMode
                               ? "Seleccione la medida o el SAC asociado; si es una apertura MPJ, el sistema puede crearla."
-                              : "Seleccione una medida específica (opcional)")
+                              : guiaOficio
+                                ? "Es la medida que recibe las actividades del oficio."
+                                : "Seleccione una medida específica (opcional)")
                         }
                         disabled={
                           readOnly ||
-                          !vinculo.legajo_info.medidas_activas ||
-                          vinculo.legajo_info.medidas_activas.length === 0
+                          medidasDisponibles.length === 0
                         }
                       >
                         <MenuItem value="">
-                          <em>Sin medida específica</em>
+                          <em>{guiaOficio ? "Elegí una medida" : "Sin medida específica"}</em>
                         </MenuItem>
-                        {vinculo.legajo_info.medidas_activas.map((medida) => (
+                        {medidasDisponibles.map((medida) => (
                           <MenuItem key={medida.id} value={medida.id}>
                             <Box>
                               <Typography variant="body2" fontWeight={500}>
