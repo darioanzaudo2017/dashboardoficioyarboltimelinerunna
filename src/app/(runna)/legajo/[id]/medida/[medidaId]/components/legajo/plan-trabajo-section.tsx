@@ -43,6 +43,8 @@ const ACTOR_CHIP_OPTIONS: { value: ActorFilter; label: string }[] = [
 interface PlanTrabajoSectionProps {
   legajoData: LegajoDetailResponse
   onRefresh?: () => void
+  /** Medida con la que arranca el selector (por ejemplo, la que se eligió en el resumen del legajo). */
+  initialMedidaId?: number | null
 }
 
 // ============================================================================
@@ -74,6 +76,7 @@ function formatMedidaLabel(m: MedidaInfo): string {
 export const PlanTrabajoSection: React.FC<PlanTrabajoSectionProps> = ({
   legajoData,
   onRefresh,
+  initialMedidaId = null,
 }) => {
   const { user } = useUser()
   const [actorFilter, setActorFilter] = useState<ActorFilter>("")
@@ -109,7 +112,7 @@ export const PlanTrabajoSection: React.FC<PlanTrabajoSectionProps> = ({
     return vigente?.id ?? todasLasMedidas[0]?.id ?? null
   }, [todasLasMedidas])
 
-  const [selectedMedidaId, setSelectedMedidaId] = useState<number | null>(null)
+  const [selectedMedidaId, setSelectedMedidaId] = useState<number | null>(initialMedidaId)
 
   // Medida efectiva: usa el estado local si fue seleccionada, sino el default
   const medidaId = selectedMedidaId ?? defaultMedidaId

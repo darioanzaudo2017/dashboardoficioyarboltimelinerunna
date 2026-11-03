@@ -3,6 +3,7 @@ import { useState } from "react"
 import type React from "react"
 
 import { CircularProgress, Typography, IconButton, Box, Alert, Button, Tabs, Tab, AlertTitle } from "@mui/material"
+import ArrowBackIcon from "@mui/icons-material/ArrowBack"
 import CloseIcon from "@mui/icons-material/Close"
 import ArticleIcon from "@mui/icons-material/Article"
 import RefreshIcon from "@mui/icons-material/Refresh"
@@ -44,6 +45,10 @@ interface LegajoDetailProps {
 
 export default function LegajoDetail({ params, onClose, isFullPage = false }: LegajoDetailProps) {
   const [activeTab, setActiveTab] = useState(0)
+  // Medida que el usuario eligió en una tarjeta de "Ver plan de trabajo": la pestaña Plan de Trabajo arranca con ella.
+  const [planMedidaId, setPlanMedidaId] = useState<number | null>(null)
+  // true cuando se llegó al Plan de Trabajo desde una tarjeta del resumen (para ofrecer el botón de volver)
+  const [planDesdeResumen, setPlanDesdeResumen] = useState(false)
   const [openEditDatosDialog, setOpenEditDatosDialog] = useState(false)
   const [openCrearMedidaDialog, setOpenCrearMedidaDialog] = useState(false)
   const [openPersonaCompletaModal, setOpenPersonaCompletaModal] = useState(false)
@@ -105,6 +110,7 @@ export default function LegajoDetail({ params, onClose, isFullPage = false }: Le
   }
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setPlanDesdeResumen(false)
     setActiveTab(newValue)
   }
 
@@ -285,6 +291,11 @@ export default function LegajoDetail({ params, onClose, isFullPage = false }: Le
               onAddMedida={() => setOpenCrearMedidaDialog(true)}
               showAddButton={isAdmin || legajoData.permisos_usuario?.puede_tomar_medidas || false}
               refreshTrigger={medidasRefreshTrigger}
+              onVerPlanTrabajo={(medidaId) => {
+                setPlanMedidaId(medidaId)
+                setPlanDesdeResumen(true)
+                setActiveTab(5)
+              }}
             />
           </Box>
         )}
@@ -322,7 +333,19 @@ export default function LegajoDetail({ params, onClose, isFullPage = false }: Le
         {/* TAB 5: Plan de Trabajo */}
         {activeTab === 5 && (
           <>
-            <PlanTrabajoSection legajoData={legajoData} />
+            {planDesdeResumen && (
+              <Button
+                size="small"
+                startIcon={<ArrowBackIcon />}
+                onClick={() => {
+                  setPlanDesdeResumen(false)
+                  setActiveTab(0)
+                }}
+              >
+                Volver al resumen de medidas
+              </Button>
+            )}
+            <PlanTrabajoSection legajoData={legajoData} initialMedidaId={planMedidaId} />
           </>
         )}
 
