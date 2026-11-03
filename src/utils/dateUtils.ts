@@ -20,7 +20,9 @@ export const getCurrentDateISO = (): string => {
   return new Date().toISOString().split("T")[0]
 }
 
-const ISO_DATE_ONLY_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/
+// Fecha sola ("2026-11-03") o fecha a medianoche UTC ("2026-11-03T00:00:00Z"): el servidor manda así las fechas
+// de calendario (ej. fecha de cierre de una medida), y en Argentina (UTC-3) se verían un día antes.
+const ISO_DATE_ONLY_PATTERN = /^(\d{4})-(\d{2})-(\d{2})(?:T00:00:00(?:\.0+)?(?:Z|\+00:00))?$/
 
 /**
  * Date-only values represent calendar dates, not UTC instants. Parsing them with

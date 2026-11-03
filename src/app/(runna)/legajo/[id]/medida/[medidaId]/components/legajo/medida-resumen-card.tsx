@@ -11,6 +11,7 @@ import { extractArray } from "@/hooks/useApiQuery"
 import { globalActividadService } from "@/app/(runna)/legajo/actividades/services/globalActividadService"
 import type { MedidaBasicResponse } from "@/app/(runna)/legajo-mesa/types/medida-api"
 import { resumirActividades, type ActividadDestacada, type ActividadParaResumen } from "./medida-resumen"
+import { formatDateLocaleAR, toDateObject } from "@/utils/dateUtils"
 
 interface MedidaResumenCardProps {
   medida: MedidaBasicResponse
@@ -30,10 +31,11 @@ const textoDe = (valor: any, vacio = ""): string => {
   return vacio
 }
 
+// Las fechas sin hora (ej. fecha de cierre) no pueden pasar por new Date(): se corren un día en Argentina.
 const formatFecha = (iso: string | null | undefined): string => {
   if (!iso) return "—"
-  const d = new Date(iso)
-  return Number.isNaN(d.getTime()) ? "—" : d.toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" })
+  const d = toDateObject(iso)
+  return Number.isNaN(d.getTime()) ? "—" : formatDateLocaleAR(d)
 }
 
 const Destacada: React.FC<{ icono: React.ReactNode; rotulo: string; dato: ActividadDestacada | null; vacio: string }> = ({
