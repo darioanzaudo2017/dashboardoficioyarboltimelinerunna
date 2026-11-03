@@ -195,9 +195,16 @@ export const UnifiedActividadesTable: React.FC<UnifiedActividadesTableProps> = (
       globalRefetch()
     } else if (variant === "medida") {
       medidaRefetch()
+      // Otros bloques de la pantalla (contadores y progreso del encabezado de la medida) leen las mismas actividades con otra consulta
+      queryClient.invalidateQueries({
+        predicate: (query) => {
+          const key = query.queryKey[0]
+          return typeof key === "string" && key.startsWith("actividades-plan")
+        },
+      })
     }
     onRefresh?.()
-  }, [variant, globalRefetch, medidaRefetch, onRefresh])
+  }, [variant, globalRefetch, medidaRefetch, onRefresh, queryClient])
 
   const handleViewDetail = useCallback((actividad: TActividadPlanTrabajo) => {
     // Sprint 2: Auto-mark as read when viewing detail (all variants)

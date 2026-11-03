@@ -22,6 +22,7 @@ import {
   type LegajosAlcanceLegajoPrimario,
 } from './shared/LegajosAlcanceSelector'
 import type { LegajoAdicionalMedida } from '@/app/(runna)/legajo-mesa/types/medida-api'
+import { toDateObject } from '@/utils/dateUtils'
 
 /**
  * PLTM V4.1: Hybrid System Schema Factory for editing
@@ -113,7 +114,7 @@ export const EditActividadModal: React.FC<EditActividadModalProps> = ({
     defaultValues: {
       tipo_actividad: actividad.tipo_actividad || actividad.derecho_principal,
       subtipo_actividad: actividad.subtipo_actividad || 0,
-      fecha_planificacion: new Date(actividad.fecha_planificacion),
+      fecha_planificacion: toDateObject(actividad.fecha_planificacion),
       descripcion: actividad.descripcion || '',
       responsable_principal: actividad.responsable_principal,
       responsables_secundarios: actividad.responsables_secundarios || [],
@@ -173,7 +174,7 @@ export const EditActividadModal: React.FC<EditActividadModalProps> = ({
       reset({
         tipo_actividad: actividad.tipo_actividad || actividad.derecho_principal,
         subtipo_actividad: actividad.subtipo_actividad,
-        fecha_planificacion: new Date(actividad.fecha_planificacion),
+        fecha_planificacion: toDateObject(actividad.fecha_planificacion),
         descripcion: actividad.descripcion || '',
         responsable_principal: actividad.responsable_principal,
         responsables_secundarios: actividad.responsables_secundarios || [],
