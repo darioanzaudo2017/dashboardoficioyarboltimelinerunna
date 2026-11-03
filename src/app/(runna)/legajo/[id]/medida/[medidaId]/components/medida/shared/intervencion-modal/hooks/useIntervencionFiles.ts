@@ -30,8 +30,8 @@ export function useIntervencionFiles({
     /**
      * Handle file upload for existing intervention
      */
-    const handleFileUpload = useCallback(async (file: File) => {
-        await uploadAdjuntoFile(file, 'RESPALDO')
+    const handleFileUpload = useCallback(async (file: File, tipo: string = 'RESPALDO') => {
+        await uploadAdjuntoFile(file, tipo)
     }, [uploadAdjuntoFile])
 
     /**

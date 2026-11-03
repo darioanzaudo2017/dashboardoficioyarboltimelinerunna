@@ -307,6 +307,7 @@ export const IntervencionModal: React.FC<IntervencionModalProps> = ({
                         hasExistingInforme={hasExistingInforme}
                         existingInformeName={existingInformeName}
                         pendingFiles={pendingFiles}
+                        pendingFileTipos={pendingFileTipos}
                         additionalMappedAdjuntos={additionalMappedAdjuntos}
                         handleFileUpload={handleFileUpload}
                         handleAddPendingFile={handleAddPendingFile}

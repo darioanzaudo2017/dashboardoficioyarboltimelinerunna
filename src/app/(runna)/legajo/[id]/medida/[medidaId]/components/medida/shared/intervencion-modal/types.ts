@@ -28,5 +28,5 @@ export type RegistroIntervencion = ReturnType<typeof useRegistroIntervencion>
 export interface SnackbarState {
     open: boolean
     message: string
-    severity: 'success' | 'error' | 'info'
+    severity: 'success' | 'error' | 'info' | 'warning'
 }
