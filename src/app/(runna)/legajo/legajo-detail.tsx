@@ -5,7 +5,7 @@ import type React from "react"
 import { CircularProgress, Typography, IconButton, Box, Alert, Button, Tabs, Tab, AlertTitle } from "@mui/material"
 import ArrowBackIcon from "@mui/icons-material/ArrowBack"
 import CloseIcon from "@mui/icons-material/Close"
-import ArticleIcon from "@mui/icons-material/Article"
+import OpenInFullIcon from "@mui/icons-material/OpenInFull"
 import RefreshIcon from "@mui/icons-material/Refresh"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
 import AccountTreeIcon from "@mui/icons-material/AccountTree"
@@ -41,9 +41,11 @@ interface LegajoDetailProps {
   }
   onClose?: () => void
   isFullPage?: boolean
+  /** El contenedor ya tiene su propio botón de cerrar (panel lateral de la bandeja). */
+  ocultarCerrar?: boolean
 }
 
-export default function LegajoDetail({ params, onClose, isFullPage = false }: LegajoDetailProps) {
+export default function LegajoDetail({ params, onClose, isFullPage = false, ocultarCerrar = false }: LegajoDetailProps) {
   const [activeTab, setActiveTab] = useState(0)
   // Medida que el usuario eligió en una tarjeta de "Ver plan de trabajo": la pestaña Plan de Trabajo arranca con ella.
   const [planMedidaId, setPlanMedidaId] = useState<number | null>(null)
@@ -220,11 +222,17 @@ export default function LegajoDetail({ params, onClose, isFullPage = false }: Le
         }}
       >
         {!isFullPage ? (
-          <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
-            <IconButton aria-label="Ver en página completa" onClick={handleOpenInFullPage} color="primary">
-              <ArticleIcon />
-            </IconButton>
-            {onClose && (
+          <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 1, mb: 2 }}>
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<OpenInFullIcon />}
+              onClick={handleOpenInFullPage}
+              title="Abrir en una página completa, con más espacio y sin la lista"
+            >
+              Pantalla completa
+            </Button>
+            {onClose && !ocultarCerrar && (
               <IconButton
                 aria-label="close"
                 onClick={onClose}
