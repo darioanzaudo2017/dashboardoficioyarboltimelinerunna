@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useMemo, useCallback } from "react"
+import React, { useMemo, useCallback, useEffect } from "react"
 import { Box, Paper, Typography, Grid, Skeleton } from "@mui/material"
 import AssignmentIcon from "@mui/icons-material/Assignment"
 import { useQueryClient } from "@tanstack/react-query"
@@ -189,6 +189,16 @@ export const UnifiedActividadesTable: React.FC<UnifiedActividadesTableProps> = (
   // ============================================================================
   // HANDLERS
   // ============================================================================
+
+  // Si la lista se refresca (por ejemplo tras cambiar el estado desde el detalle), el detalle abierto toma la actividad nueva:
+  // antes seguía mostrando el estado anterior hasta cerrar y volver a abrir.
+  useEffect(() => {
+    setSelectedActividad((anterior) => {
+      if (!anterior) return anterior
+      const actualizada = actividades.find((a) => a.id === anterior.id)
+      return actualizada && actualizada !== anterior ? actualizada : anterior
+    })
+  }, [actividades, setSelectedActividad])
 
   const handleRefresh = useCallback(() => {
     if (variant === "global") {

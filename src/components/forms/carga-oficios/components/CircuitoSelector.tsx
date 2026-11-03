@@ -20,6 +20,7 @@ import type { CircuitoType, CircuitoSelectorProps } from "../types/carga-oficios
 import { CIRCUITO_OPTIONS } from "../types/carga-oficios.types"
 
 const CircuitoSelector: React.FC<CircuitoSelectorProps> = ({
+  opciones = CIRCUITO_OPTIONS,
   value,
   onChange,
   disabled = false,
@@ -76,7 +77,7 @@ const CircuitoSelector: React.FC<CircuitoSelectorProps> = ({
           },
         }}
       >
-        {CIRCUITO_OPTIONS.map((option) => (
+        {opciones.map((option) => (
           <Tooltip
             key={option.key}
             title={option.description}

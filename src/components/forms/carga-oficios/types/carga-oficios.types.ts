@@ -46,6 +46,9 @@ export const CIRCUITO_OPTIONS: CircuitoOption[] = [
   },
 ]
 
+/** La carga de oficios penal juvenil abre medidas MPJ: es el único circuito que se ofrece. */
+export const CIRCUITO_OPTIONS_OFICIOS: CircuitoOption[] = CIRCUITO_OPTIONS.filter((option) => option.key === 'MPJ')
+
 // =============================================================================
 // Judicial Organization Types (for CARGA_OFICIOS filtering)
 // =============================================================================
@@ -245,6 +248,8 @@ export interface CargaOficiosDropdownData {
 // =============================================================================
 
 export interface CircuitoSelectorProps {
+  /** Opciones a mostrar; por defecto las tres. La carga de oficios penal juvenil solo ofrece MPJ. */
+  opciones?: CircuitoOption[]
   value: CircuitoType | null
   onChange: (value: CircuitoType) => void
   disabled?: boolean

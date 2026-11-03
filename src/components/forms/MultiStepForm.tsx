@@ -40,7 +40,7 @@ import { fetchDropdownData } from "./utils/fetchFormCase"
 import VinculosManager from "./components/VinculosManager"
 import FormSection from "./components/form-section"
 import { logger } from "@/utils/logger"
-import { describeApiError } from "@/utils/apiErrorFormatter"
+import { describeApiError, esProblemaDelServidor } from "@/utils/apiErrorFormatter"
 import { showErrorToast } from "@/utils/showErrorToast"
 import {
   buildInvalidFieldsMessage,
@@ -229,7 +229,10 @@ const MultiStepForm: React.FC<MultiStepFormProps> = ({
     },
     onError: (error) => {
       logger.error("Error submitting form:", error)
-      const { message, details } = describeApiError(error, "No se pudo guardar la demanda. Corregí lo siguiente:")
+      const { message, details } = describeApiError(
+        error,
+        esProblemaDelServidor(error) ? "No se pudo guardar la demanda:" : "No se pudo guardar la demanda. Corregí lo siguiente:",
+      )
       showErrorToast(message, details)
     },
   })

@@ -1,5 +1,6 @@
 "use client"
 
+import { mensajeErrorDeArchivos } from "@/utils/apiErrorFormatter"
 import { useState, useCallback, useEffect } from 'react'
 import type { UnifiedTimelineItem, TComentarioActividad, TAdjuntoActividad, THistorialActividad } from '../types/actividades'
 import { actividadService } from '../services/actividadService'
@@ -148,7 +149,7 @@ export const useUnifiedActivity = (actividadId: number): UseUnifiedActivityRetur
 
       await loadItems() // Reload to get fresh data
     } catch (err: any) {
-      throw new Error(err.response?.data?.error || 'Error al subir archivos')
+      throw new Error(mensajeErrorDeArchivos(err, 'Error al subir archivos'))
     }
   }, [actividadId, loadItems])
 

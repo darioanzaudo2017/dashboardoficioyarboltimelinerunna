@@ -51,7 +51,7 @@ import { useAdjuntosManager } from "./hooks/useAdjuntosManager"
 
 // Types
 import type { CargaOficiosFormData } from "./types/carga-oficios.types"
-import { TIPOS_ORGANISMO_JUDICIAL_IDS } from "./types/carga-oficios.types"
+import { CIRCUITO_OPTIONS, CIRCUITO_OPTIONS_OFICIOS, TIPOS_ORGANISMO_JUDICIAL_IDS } from "./types/carga-oficios.types"
 import type { DropdownData } from "../types/formTypes"
 
 /**
@@ -142,7 +142,14 @@ const CargaOficiosForm: React.FC<CargaOficiosFormInternalProps> = ({
 
   // Watch form values
   const watchedCategoria = watch("categoria_informacion_judicial")
+  const watchedCircuito = watch("tipo_medida_evaluado")
   const watchedAdjuntos = watch("adjuntos") || []
+
+  // Esta carga abre medidas penales juveniles: el circuito queda en MPJ y no hace falta elegirlo.
+  // (Si se edita un oficio viejo con otro circuito, se respeta y se muestran las tres opciones.)
+  useEffect(() => {
+    if (!readOnly && !watchedCircuito) setValue("tipo_medida_evaluado", "MPJ", { shouldValidate: true })
+  }, [readOnly, watchedCircuito, setValue])
 
   // Track previous categoria to detect changes
   const prevCategoriaRef = useRef(watchedCategoria)
@@ -232,11 +239,15 @@ const CargaOficiosForm: React.FC<CargaOficiosFormInternalProps> = ({
               rules={{ required: "El circuito es obligatorio" }}
               render={({ field, fieldState: { error } }) => (
                 <CircuitoSelector
+                  opciones={field.value && field.value !== "MPJ" ? CIRCUITO_OPTIONS : CIRCUITO_OPTIONS_OFICIOS}
                   value={field.value}
                   onChange={(value) => field.onChange(value)}
                   disabled={readOnly}
                   error={!!error}
-                  helperText={error?.message}
+                  helperText={
+                    error?.message ??
+                    (readOnly ? undefined : "Esta carga es de oficios penales juveniles. Los de MPE o MPI vigente se cargan con la otra opción.")
+                  }
                 />
               )}
             />
@@ -295,11 +306,19 @@ const CargaOficiosForm: React.FC<CargaOficiosFormInternalProps> = ({
 
           {/* Categoría y Tipo de Oficio juntos en la siguiente fila */}
           <Grid item xs={12} md={6}>
-            <CategoriaInfoSection
-              categorias={categorias}
-              selectedCategoria={watchedCategoria}
-              onCategoriaChange={(value) => setValue("categoria_informacion_judicial", value)}
-              readOnly={readOnly}
+            <Controller
+              name="categoria_informacion_judicial"
+              control={control}
+              rules={{ required: "La categoría de información es obligatoria" }}
+              render={({ field, fieldState: { error } }) => (
+                <CategoriaInfoSection
+                  categorias={categorias}
+                  selectedCategoria={watchedCategoria}
+                  onCategoriaChange={(value) => field.onChange(value)}
+                  readOnly={readOnly}
+                  errors={{ categoria: error?.message }}
+                />
+              )}
             />
           </Grid>
 
