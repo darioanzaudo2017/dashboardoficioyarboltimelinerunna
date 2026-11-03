@@ -359,9 +359,9 @@ const AsignarModal: React.FC<AsignarModalProps> = ({ open, onClose, demandaId, o
                   </Typography>
 
                   <Alert severity="info" sx={{ mb: 0.5 }}>
-                    <strong>Derivar</strong> envía la demanda a una zona; <strong>asignar</strong> la deja a cargo de
-                    una persona. Para asignarla, elegí también un usuario responsable. Sin responsable queda derivada
-                    pero sigue en «Sin Asignar» hasta que se elija un responsable.
+                    Podés derivar la demanda a un equipo de trabajo por el motivo que sea. Pero la demanda{" "}
+                    <strong>no cambia de estado hasta que tenga uno o más responsables</strong>: sin una persona a
+                    cargo sigue en «Sin Asignar». Para asignarla, elegí también al menos un usuario responsable.
                   </Alert>
 
                   <FormControl fullWidth>

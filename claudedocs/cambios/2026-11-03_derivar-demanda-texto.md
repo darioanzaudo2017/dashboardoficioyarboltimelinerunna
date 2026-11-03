@@ -3,10 +3,10 @@
 **Rama:** `mejora-derivar-demanda-texto`  **Fecha:** 2026-11-03
 
 ## Problema
-En Mesa de Entradas, el botón "Asignar" abre "Derivar Demanda". Si se elige solo la zona, la demanda se deriva pero **sigue "Sin Asignar"** (correcto: derivar a una zona no deja a nadie a cargo). Pero el modal no lo explica y parece que "Asignar" no hizo nada.
+En Mesa de Entradas, el botón "Asignar" abre "Derivar Demanda". Si se elige solo la zona, la demanda se deriva pero **sigue "Sin Asignar"** (correcto: se puede derivar a un equipo por cualquier motivo, pero el estado solo cambia cuando hay una o más personas responsables). Pero el modal no lo explica y parece que "Asignar" no hizo nada.
 
 ## Qué cambió
-- Un cartel informativo arriba del modal: "**Derivar** envía la demanda a una zona; **asignar** la deja a cargo de una persona. Para asignarla, elegí también un usuario responsable. Sin responsable queda derivada pero sigue en «Sin Asignar» hasta que se elija un responsable."
+- Un cartel informativo arriba del modal: "Podés derivar la demanda a un equipo de trabajo por el motivo que sea. Pero la demanda **no cambia de estado hasta que tenga uno o más responsables**: sin una persona a cargo sigue en «Sin Asignar». Para asignarla, elegí también al menos un usuario responsable."
 - El texto de ayuda bajo "Usuarios responsables" pasa de "Seleccione al menos un usuario responsable" a "Elegí un responsable para asignarla; si no, solo se deriva a la zona" (antes sonaba obligatorio y no lo es).
 - El aviso al terminar ya existía y no se tocó: "derivada a la zona, todavía sin responsable…".
 
