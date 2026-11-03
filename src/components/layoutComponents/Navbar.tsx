@@ -15,6 +15,9 @@ import { get } from "@/app/api/apiService"
 import { usePathname } from "next/navigation"
 import { logger } from "@/utils/logger"
 
+// Manual de capacitación (tutorial publicado). Se puede cambiar sin tocar el código con NEXT_PUBLIC_TUTORIAL_URL.
+const TUTORIAL_URL = process.env.NEXT_PUBLIC_TUTORIAL_URL || "https://darioanzaudo2017.github.io/capacitacion_tutorial_runna/"
+
 interface NotificationSummaryItem {
   id: string
   tipo: "ACTIVIDAD" | "MEDIDA"
@@ -302,7 +305,7 @@ export default function Header() {
                 </Link>
               ))}
               <a
-                href="https://capacitacion-tutorial-runna-umber.vercel.app/"
+                href={TUTORIAL_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="rounded-lg px-4 py-3 text-sm font-semibold text-white no-underline transition-colors hover:bg-white/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white flex items-center gap-2"
@@ -317,7 +320,7 @@ export default function Header() {
 
         {/* Tutorial */}
         <a
-          href="https://capacitacion-tutorial-runna-umber.vercel.app/"
+          href={TUTORIAL_URL}
           target="_blank"
           rel="noopener noreferrer"
           title="Manual de capacitación"
