@@ -146,3 +146,24 @@ export const describeApiError = (error: any, fallbackTitle = "No se pudo complet
     details,
   }
 }
+
+/**
+ * ¿El problema es del servidor (error 5xx o el almacenamiento de archivos sin permiso) y no algo que la persona pueda corregir?
+ * Sirve para no decirle "corregí lo siguiente" cuando no hay nada para corregir.
+ */
+export const esProblemaDelServidor = (error: any): boolean => {
+  const status = error?.response?.status
+  if (typeof status === "number" && status >= 500) return true
+  const raw = JSON.stringify(error?.response?.data ?? "")
+  return /HeadObject|S3|storage/i.test(raw) && /403|forbidden/i.test(raw)
+}
+
+/** Texto para el aviso cuando falla subir o guardar archivos: dice el motivo real y no muestra una página HTML de error. */
+export const mensajeErrorDeArchivos = (error: any, porDefecto: string): string => {
+  if (esProblemaDelServidor(error)) {
+    return "El servidor tuvo un problema al guardar los archivos. Probá de nuevo en unos minutos; si sigue, avisá a soporte."
+  }
+  const data = error?.response?.data
+  const texto = typeof data?.error === "string" ? data.error : typeof data?.detail === "string" ? data.detail : null
+  return texto && !/^\s*<(!doctype|html)/i.test(texto) ? texto : porDefecto
+}

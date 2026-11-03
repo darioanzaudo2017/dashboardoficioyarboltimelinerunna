@@ -141,6 +141,7 @@ export const ActividadDetailModal: React.FC<ActividadDetailModalProps> = ({
           actions.cambiarEstado(actividad.id, { nuevo_estado: nuevoEstado, motivo })
         }
         loading={actions.loading}
+        onIrAActividad={() => setCurrentTab(1)}
       />
 
       {/* JZ Approval (before Legal) */}

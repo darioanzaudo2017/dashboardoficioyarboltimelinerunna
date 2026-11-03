@@ -58,6 +58,8 @@ interface CambiarEstadoSectionProps {
   onSuccess: () => void
   onCambiarEstado: (nuevoEstado: TActividadPlanTrabajo['estado'], motivo?: string) => Promise<unknown>
   loading: boolean
+  /** Lleva a la pestaña donde se adjuntan archivos (evidencia); si no se pasa, no se ofrece el botón. */
+  onIrAActividad?: () => void
 }
 
 export const CambiarEstadoSection: React.FC<CambiarEstadoSectionProps> = ({
@@ -65,7 +67,8 @@ export const CambiarEstadoSection: React.FC<CambiarEstadoSectionProps> = ({
   canChangeEstado,
   onSuccess,
   onCambiarEstado,
-  loading
+  loading,
+  onIrAActividad
 }) => {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [nuevoEstado, setNuevoEstado] = useState<TActividadPlanTrabajo['estado'] | ''>('')
@@ -73,6 +76,14 @@ export const CambiarEstadoSection: React.FC<CambiarEstadoSectionProps> = ({
   const [error, setError] = useState<string | null>(null)
 
   const estadoActual = actividad.estado
+
+  // Las actividades que vienen de un pedido de informe u oficio no se pueden completar sin evidencia adjunta.
+  const requiereEvidencia = actividad.origen === 'DEMANDA_PI' || actividad.origen === 'DEMANDA_OFICIO'
+  const sinAdjuntos = (actividad.adjuntos?.length ?? 0) === 0
+  // El visado puede estar configurado en el subtipo o en el tipo de actividad.
+  const requiereVisado = !!(
+    actividad.subtipo_actividad_info?.requiere_visado_legales || actividad.tipo_actividad_info?.requiere_visado_legales
+  )
   const transicionesPermitidas = TRANSICIONES_PERMITIDAS[estadoActual] || []
 
   const handleOpenDialog = () => {
@@ -115,7 +126,11 @@ export const CambiarEstadoSection: React.FC<CambiarEstadoSectionProps> = ({
       handleCloseDialog()
       onSuccess()
     } else {
-      setError('Error al cambiar el estado. Verifique los requisitos (ej: evidencia obligatoria)')
+      setError(
+        nuevoEstado === 'COMPLETADA' && requiereEvidencia
+          ? 'No se pudo completar la actividad: necesita al menos un adjunto (evidencia). Subilo en la pestaña «Actividad» y volvé a intentarlo.'
+          : 'Error al cambiar el estado. Verifique los requisitos (ej: evidencia obligatoria)'
+      )
     }
   }
 
@@ -189,15 +204,33 @@ export const CambiarEstadoSection: React.FC<CambiarEstadoSectionProps> = ({
             )}
 
             {/* Warnings */}
-            {nuevoEstado === 'COMPLETADA' && actividad.subtipo_actividad_info?.requiere_visado_legales && (
+            {nuevoEstado === 'COMPLETADA' && requiereVisado && (
               <Alert severity="info">
                 Esta actividad requiere visado. Al completarla, pasará a &quot;Pendiente Visado JZ&quot; para revisión del Jefe Zonal, y luego al equipo Legal para visado final.
               </Alert>
             )}
 
-            {nuevoEstado === 'COMPLETADA' && (actividad.origen === 'DEMANDA_PI' || actividad.origen === 'DEMANDA_OFICIO') && (
-              <Alert severity="warning">
-                Actividades de PI/Oficio requieren al menos un adjunto (evidencia) para completarse.
+            {nuevoEstado === 'COMPLETADA' && requiereEvidencia && (
+              <Alert
+                severity="warning"
+                action={
+                  sinAdjuntos && onIrAActividad ? (
+                    <Button
+                      color="inherit"
+                      size="small"
+                      onClick={() => {
+                        handleCloseDialog()
+                        onIrAActividad()
+                      }}
+                    >
+                      Ir a Actividad
+                    </Button>
+                  ) : undefined
+                }
+              >
+                {sinAdjuntos
+                  ? 'Esta actividad todavía no tiene ningún adjunto. Para completarla hace falta al menos uno (evidencia): subilo en la pestaña «Actividad».'
+                  : 'Actividades de PI/Oficio requieren al menos un adjunto (evidencia) para completarse.'}
               </Alert>
             )}
 

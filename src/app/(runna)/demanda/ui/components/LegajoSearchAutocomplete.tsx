@@ -14,6 +14,7 @@ import FolderIcon from "@mui/icons-material/Folder"
 import { debounce } from "lodash"
 import { get } from "@/app/api/apiService"
 import { logger } from "@/utils/logger"
+import { dnisRepetidos } from "./legajosConMismoDni"
 
 export interface MedidaActiva {
   id: number
@@ -42,6 +43,8 @@ export interface LegajoOption {
   numero: string
   displayText: string
   subtitle: string
+  /** true si otro legajo del mismo resultado tiene el mismo DNI (posible niño/a con dos legajos). */
+  dniRepetido?: boolean
   medidas_activas?: MedidaActiva[]
 }
 
@@ -87,6 +90,8 @@ export default function LegajoSearchAutocomplete({
         page_size: 20, // Limit results
       })
 
+      const repetidos = dnisRepetidos(response.results.map((legajo) => ({ dni: legajo.nnya?.dni })))
+
       // Transform legajos to options
       const legajoOptions: LegajoOption[] = response.results
         .filter((legajo) => {
@@ -101,6 +106,7 @@ export default function LegajoSearchAutocomplete({
           numero: legajo.numero,
           displayText: `${legajo.numero} - ${legajo.nnya.nombre} ${legajo.nnya.apellido}`,
           subtitle: legajo.nnya.dni ? `DNI: ${legajo.nnya.dni}` : "Sin DNI",
+          dniRepetido: legajo.nnya.dni ? repetidos.has(String(legajo.nnya.dni).trim()) : false,
           medidas_activas: legajo.medidas_activas || [],
         }))
 
@@ -184,6 +190,11 @@ export default function LegajoSearchAutocomplete({
               <Typography variant="caption" color="text.secondary">
                 {option.subtitle}
               </Typography>
+              {option.dniRepetido && (
+                <Typography variant="caption" color="warning.main" sx={{ display: "block", fontWeight: 600 }}>
+                  Hay otro legajo con este mismo DNI: revisá cuál corresponde antes de vincular.
+                </Typography>
+              )}
             </Box>
           </Box>
         </Box>
