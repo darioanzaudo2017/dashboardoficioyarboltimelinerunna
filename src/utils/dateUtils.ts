@@ -26,7 +26,7 @@ const ISO_DATE_ONLY_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/
  * Date-only values represent calendar dates, not UTC instants. Parsing them with
  * `new Date("YYYY-MM-DD")` moves the date to the previous day in Argentina.
  */
-const toDateObject = (date: Date | string): Date => {
+export const toDateObject = (date: Date | string): Date => {
   if (date instanceof Date) {
     return date
   }
