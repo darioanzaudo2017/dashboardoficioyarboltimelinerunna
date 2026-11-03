@@ -37,10 +37,12 @@ Origen de los datos: la medida ya trae etapa, fechas y duración; las actividade
 1. Abrir un legajo con varias medidas, por ejemplo `/legajo/45` (`LEG-2026-0045`) o `/legajo/60` (`LEG-2026-0060`, con dos MPE vigentes: muestra la advertencia).
 2. Pestaña General: tarjetas por medida. "Tabla" vuelve a la vista anterior.
 3. "Ver plan de trabajo" en una tarjeta: abre Plan de Trabajo con esa medida elegida y los mismos números.
+   Arriba aparece "← Volver al resumen de medidas", que lleva de nuevo a General. Si se entra por la pestaña Plan de Trabajo, el botón no aparece.
 
 Verificado en el navegador con `LEG-2026-0045` y `LEG-2026-0060` (admin): tarjetas, advertencia de duplicadas, selector Tabla/Resumen y navegación al plan de trabajo.
 
 ## Límites y pendientes
+- La pestaña activa del legajo es un estado interno (no está en la URL): el botón "atrás" del navegador sale del legajo. Mejora aparte: `?tab=` en la URL.
 - **Una consulta por medida** al abrir General. Con muchas medidas conviene que el backend devuelva los contadores por medida en el detalle del legajo.
 - Falta, para ser más útil: última actividad **por equipo** y una **línea de tiempo** del legajo; ambas necesitan datos que hoy el front no tiene
   (el Historial de cambios se pide con `include_history: false`).
