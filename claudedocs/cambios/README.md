@@ -71,6 +71,9 @@ Límites conocidos, dependencias del backend, ideas siguientes.
 | 2026-11-03 | `mejora-link-tutorial` | Barra superior: el ícono del manual abre el tutorial publicado (GitHub Pages) — [documento](2026-11-03_link-tutorial.md) |
 | 2026-11-03 | `mejora-boton-cargar-apertura` | Apertura: el botón "Nueva Intervención" pasa a "Cargar Apertura" — [documento](2026-11-03_boton-cargar-apertura.md) |
 | 2026-11-03 | `mejora-fecha-cierre-medida` | Fecha de cierre de la medida: ya no se ve un día antes (el back la manda a medianoche UTC) — [documento](2026-11-03_fecha-cierre-medida.md) |
+| 2026-11-03 | `mejora-informe-juridico-adjuntos-tecnico` | Informe jurídico: Equipo Legal ve los documentos que cargó el técnico (informe obligatorio y adjuntos) — [documento](2026-11-03_informe-juridico-adjuntos-tecnico.md) |
+| 2026-11-03 | `mejora-pagina-ninos-por-dispositivo` | Página nueva "Dispositivos": cantidad de niños por tipo de dispositivo e institución o familia — [documento](2026-11-03_pagina-ninos-por-dispositivo.md) |
+| 2026-11-03 | `mejora-legajo-boton-asignar` | Legajo: botón "Asignar responsable" cuando no tiene técnico asignado — [documento](2026-11-03_legajo-boton-asignar.md) |
 
 ## Orden recomendado para unir las ramas
 
@@ -106,6 +109,9 @@ y GitHub debe conservar esa relación. Los dos conflictos conocidos están marca
 | 24 | `mejora-link-tutorial` | Independiente (solo `Navbar.tsx`). |
 | 25 | `mejora-boton-cargar-apertura` | Independiente (solo `apertura-section.tsx`). |
 | 26 | `mejora-fecha-cierre-medida` | Toca `dateUtils.ts` (se une sin conflicto con la 12, que usa `toDateObject`). |
+| 27 | `mejora-informe-juridico-adjuntos-tecnico` | Toca `informe-juridico-section.tsx` y `buildWorkflowSteps.tsx`. |
+| 28 | `mejora-pagina-ninos-por-dispositivo` | Toca `Navbar.tsx` (se une sin conflicto con la 24, `mejora-link-tutorial`). |
+| 29 | `mejora-legajo-boton-asignar` | Toca `legajo-detail.tsx` y `legajo-header.tsx` (se une sin conflicto con la 23). |
 
 La rama **`integracion`** ya tiene las 19 unidas (de la 10 en adelante son casi independientes; los conflictos conocidos están marcados en la tabla) (merge commits, tipos sin errores, 59 tests pasando).
 
