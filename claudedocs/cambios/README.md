@@ -64,6 +64,9 @@ Límites conocidos, dependencias del backend, ideas siguientes.
 | 2026-11-03 | `mejora-medida-mpj-plan-completo` | Medida MPJ: el plan de trabajo muestra todas las actividades (no solo las de Legales) — [documento](2026-11-03_medida-mpj-plan-completo.md) |
 | 2026-11-03 | `mejora-oficio-avisos-errores` | Oficio judicial: circuito solo MPJ, avisos y errores más claros (evidencia, visado, DNI repetido, detalle que se actualiza) — [documento](2026-11-03_oficio-avisos-errores.md) |
 | 2026-11-03 | `mejora-oficio-cese-aviso` | Carga de oficios: texto que explica que el cese lo dispone el juzgado y que la medida elegida se cierra al guardar — [documento](2026-11-03_oficio-cese-aviso.md) |
+| 2026-11-03 | `mejora-oficio-vinculo-guia` | Oficio MPE/MPI vigente: tipo de vínculo preseleccionado, errores en el campo, avisos dentro del vínculo y mensaje de guardado claro — [documento](2026-11-03_oficio-vinculo-guia.md) |
+| 2026-11-03 | `mejora-oficio-orden-medida` | Oficio MPE/MPI vigente: Clasificación junto a los vínculos y medida vigente obligatoria (solo vigentes) — [documento](2026-11-03_oficio-orden-medida.md) |
+| 2026-11-03 | `mejora-derivar-demanda-texto` | Derivar demanda: texto que aclara que el estado cambia solo con uno o más responsables — [documento](2026-11-03_derivar-demanda-texto.md) |
 
 ## Orden recomendado para unir las ramas
 
@@ -92,6 +95,9 @@ y GitHub debe conservar esa relación. Los dos conflictos conocidos están marca
 | 17 | `mejora-medida-mpj-plan-completo` | Toca `medida-modulos-config.tsx` y `plan-trabajo-tab.tsx`. **Conflicto con la 11** (`mejora-medida-mpe-guia`): el plan acepta a la vez `ocultarEstadisticas` (11) e `incluirLegales` (17); en la MPJ llamar `buildPlanModule(..., ocultarEstadisticasPlan, true)`. |
 | 18 | `mejora-oficio-avisos-errores` | Toca `MultiStepForm.tsx` (**conflicto en los imports con la 5**, `mejora-borrador-paso`: conservar `esProblemaDelServidor` y `resolveResumeStep`), `apiErrorFormatter.ts`, `UnifiedActividadesTable.tsx` y el modal de cambio de estado. |
 | 19 | `mejora-oficio-cese-aviso` | Toca `CargaOficiosForm.tsx`. **Conflicto con la 18** (dos líneas contiguas: `watchedCircuito` de la 18 y `esOficioDeCese` de la 19): conservar las dos. |
+| 20 | `mejora-oficio-vinculo-guia` | Toca `MultiStepForm.tsx` (se une solo) y `VinculosManager.tsx`. |
+| 21 | `mejora-oficio-orden-medida` | **Va después de la 20** (parte de ella): reordena `OficioJudicialMPEStep.tsx` y toca `VinculosManager.tsx`. |
+| 22 | `mejora-derivar-demanda-texto` | Independiente (solo `asignarModal.tsx`). |
 
 La rama **`integracion`** ya tiene las 19 unidas (de la 10 en adelante son casi independientes; los conflictos conocidos están marcados en la tabla) (merge commits, tipos sin errores, 59 tests pasando).
 
