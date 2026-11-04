@@ -83,3 +83,38 @@ Se recorrió el circuito completo con la demanda `#333` (legajo `LEG-2026-0179`,
 
 ### Lo que sí funcionó sin archivos (circuito de apertura)
 Asignar demanda → Constatación → Evaluación → solicitud → autorización del Director (`PUT /api/evaluaciones/333/autorizar/` → 200, crea `LEG-2026-0179` + MPE vigente) → intervención enviada → aprobación del Jefe Zonal («Pendiente nota aval») → Nota de Aval del Director de Zona («Pendiente informe jurídico»).
+
+---
+
+## Actualización (2026-11-04, noche): almacenamiento arreglado y circuito completo hasta el cese
+
+### El almacenamiento (punto 1) ya funciona
+- Las URL firmadas de descarga responden `200` (antes `403 SignatureDoesNotMatch`), por ejemplo la intervención 113 de `MED-2026-226`.
+- Las subidas funcionan desde la pantalla y por API: informe jurídico (`201`), Resolución Judicial de la ratificación, informe obligatorio de la intervención de cese y documento de la aprobación del Director.
+- **Se puede dar por resuelto el punto 1.** Sigue vigente el punto 2 (el servidor acepta una intervención sin Informe Obligatorio).
+
+### Circuito de apertura completo
+`MED-2026-253` pasó por aprobación del Jefe Zonal, nota de aval, informe jurídico y ratificación judicial («Ratificada», ciclo MED-01 → MED-05) con archivos reales.
+
+### Circuito de cese de MPE
+Cese iniciado → intervención → aprobación → nota de aval → informe jurídico. **La medida se cierra al enviar el informe jurídico de cese** (`estado_vigencia: Cerrada`, `fecha_cierre` del día) y se abre una etapa `POST_CESE`. Antes de ese envío seguía vigente y sin fecha de cierre.
+
+### Nuevos hallazgos
+
+#### 10. El cese de MPE exige dispositivo que el formulario no pide (alta)
+- `POST /api/medidas/{id}/intervenciones/crear-y-enviar/` de una etapa de **Cese** de MPE responde `400`:
+  `{"error":"CAMPOS_INCOMPLETOS","detalle":"Faltan campos obligatorios para crear y enviar","campos_faltantes":["tipo_dispositivo_id"]}`. Con `tipo_dispositivo_id` responde lo mismo para `subtipo_dispositivo_id`.
+- El formulario de cese no pide dispositivo (solo apertura e innovación) y la medida ya tiene uno configurado. Con ambos campos el servidor acepta (`201`, `INT-MED-2026-000112`).
+- `x-railway-request-id` del primer rechazo: `LGgLVHOqQB-obnPA-_9nXA`.
+- **Pedido:** no exigir el dispositivo en la intervención de cese, o tomarlo de la medida. Si se prefiere exigirlo, avisar y el front lo manda.
+
+#### 11. Etapa de cese que no avanza de estado en el historial (media)
+- Después de cerrada la medida, `historial_etapas` sigue mostrando la etapa `MPE - CESE` en `PENDIENTE_INFORME_JURIDICO`, aunque el informe ya se envió. Conviene que quede en un estado final.
+
+#### 12. Qué pasa con la etapa de cese y la ratificación (consulta)
+- En el cese de MPE no aparece paso de ratificación judicial: el informe jurídico cierra la medida. ¿Es lo esperado? (El tutorial lo describía con ratificación.)
+
+### Pruebas hechas directo contra la API (no desde la pantalla)
+Se documentan para que no se confundan con uso normal. Medida `MED-2026-253` (legajo 179, datos de prueba):
+- `POST informe-juridico/crear-y-enviar/` (`201`, informe `86`) para comprobar el almacenamiento.
+- `POST intervenciones/crear-y-enviar/` de cese con dispositivo (`201`, `INT-MED-2026-000112`) para poder seguir tras el punto 10.
