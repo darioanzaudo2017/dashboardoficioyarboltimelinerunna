@@ -66,6 +66,7 @@ import type { CrearYEnviarInformeJuridicoRequest } from "../../types/informe-jur
 import { SectionCard } from "./shared/section-card"
 import { AdjuntosDelTecnico } from "../informe-juridico/adjuntos-del-tecnico"
 import type { IntervencionResponse } from "../../types/intervencion-api"
+import { toDateObject } from "@/utils/dateUtils"
 import { logger } from "@/utils/logger"
 
 // ============================================================================
@@ -142,7 +143,7 @@ const isPendingInformeJuridico = (estadoActual?: string): boolean => {
  * Format date in Spanish
  */
 const formatDate = (dateString: string) => {
-  const date = new Date(dateString)
+  const date = toDateObject(dateString)
   return new Intl.DateTimeFormat("es-AR", {
     day: "2-digit",
     month: "long",

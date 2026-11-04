@@ -36,6 +36,7 @@ import CloudUploadIcon from "@mui/icons-material/CloudUpload"
 import DeleteIcon from "@mui/icons-material/Delete"
 import WarningIcon from "@mui/icons-material/Warning"
 import BaseDialog from "@/components/shared/BaseDialog"
+import { toDateObject } from "@/utils/dateUtils"
 import { FileUploadSection, type FileItem } from "@/components/shared/FileUploadSection"
 import { useCompletarInforme, useDescargarPlantilla, usePlantillaInfo } from "../../hooks/useInformesSeguimiento"
 import { ADJUNTO_INFORME_SEGUIMIENTO_CONFIG } from "../../types/informe-seguimiento-api"
@@ -79,7 +80,7 @@ type CompletarInformeFormData = z.infer<typeof completarInformeSchema>
 
 const formatDate = (dateString: string): string => {
   try {
-    const date = new Date(dateString)
+    const date = toDateObject(dateString)
     return date.toLocaleDateString('es-AR', {
       day: '2-digit',
       month: '2-digit',
