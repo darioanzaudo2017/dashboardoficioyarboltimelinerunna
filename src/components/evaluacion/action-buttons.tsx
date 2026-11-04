@@ -576,9 +576,15 @@ export default function ActionButtons({
   // Qué falta para poder pedir cada autorización. Se muestra debajo de los botones
   // para que no haya que adivinar por qué están deshabilitados.
   const faltaInforme = nombresInformes.length === 0
-  const faltantesArchivo = faltaInforme ? ["subir el informe firmado"] : []
+  // El servidor no acepta la solicitud del técnico sin su justificación (campo interno, no va al informe).
+  const faltaJustificacion = !normalizeApiText(justificacionTecnico ?? "")
+  const faltantesArchivo = [
+    ...(faltaInforme ? ["subir el informe firmado"] : []),
+    ...(faltaJustificacion ? ["completar la justificación del técnico"] : []),
+  ]
   const faltantesMedida = [
     ...(faltaInforme ? ["subir el informe firmado"] : []),
+    ...(faltaJustificacion ? ["completar la justificación del técnico"] : []),
     ...(selectedChildrenIds.length === 0 ? ["elegir al menos un NNyA"] : []),
     ...(!tipoMedidaEvaluado ? ["elegir el tipo de medida"] : []),
   ]
