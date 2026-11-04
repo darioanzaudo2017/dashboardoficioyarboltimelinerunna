@@ -61,3 +61,25 @@ Salen de recorrer el front en RUNNA test (usuario `admin`) mientras se actualiza
 
 ## Datos de prueba mencionados
 `MED-2026-226` (legajo 164, con adjuntos, en informe jurídico), `MED-2026-251` y `MED-2026-249` (legajo 176), `MED-2026-252` (cerrada por cese), demandas `#328` a `#332` (oficios), `#324` (pasada a Evaluación para el tutorial).
+
+---
+
+## Actualización (2026-11-04, tarde): error exacto de los adjuntos y qué pasa sin archivo
+
+Se recorrió el circuito completo con la demanda `#333` (legajo `LEG-2026-0179`, medida `MED-2026-253`). **Todas las subidas de archivos fallan igual**; sin archivo, el servidor acepta.
+
+| Endpoint | Con archivo | Sin archivo |
+|---|---|---|
+| `POST /api/evaluaciones/` (campo `uploaded_files`) | **500** Server Error (HTML, sin detalle). `x-railway-request-id: nNqeCvoWR0e3YM6DnPRhug` | **201** (evaluación `158` creada, la demanda pasó a Pendiente de Autorización) |
+| `POST /api/medidas/253/intervenciones/crear-y-enviar/` (`archivos[]` + `tipos[]=INFORME`) | **500** Server Error. `x-railway-request-id: SBupLZrlSweM-CcH9fVATg` | **201** (`INT-MED-2026-000111`, estado "Enviado a Aprobación") |
+| `POST /api/medidas/253/informe-juridico/crear-y-enviar/` (`informe_oficial`) | **500** Server Error | **400** `El informe oficial es obligatorio` (validación correcta) |
+
+- La respuesta de los 500 es la página HTML genérica de Django (`<h1>Server Error (500)</h1>`), sin mensaje: parece una excepción sin capturar al guardar el archivo (coincide con el `403 HeadObject` / `SignatureDoesNotMatch` del almacenamiento). Conviene revisar el log del servidor con esos `request-id`.
+- **Consecuencia:** hoy no se puede completar el informe jurídico (obligatorio en el servidor), así que ninguna apertura puede llegar a la ratificación.
+- Confirma el punto 2: **una intervención se puede enviar y aprobar sin Informe Obligatorio** (solo lo exige la pantalla).
+
+### Campos obligatorios que el servidor valida pero no estaban a la vista del front
+- `justificacion_tecnico` (en `evaluaciones/` al pedir la medida) y `justificacion_director` (al autorizar o no autorizar: `El campo justificacion_director es obligatorio`). El front los pedía solo ante una discrepancia del Director, por lo que el flujo normal no avanzaba. Ya se corrigió en el front; conviene confirmar que ambos deben ser obligatorios desde el primer pedido.
+
+### Lo que sí funcionó sin archivos (circuito de apertura)
+Asignar demanda → Constatación → Evaluación → solicitud → autorización del Director (`PUT /api/evaluaciones/333/autorizar/` → 200, crea `LEG-2026-0179` + MPE vigente) → intervención enviada → aprobación del Jefe Zonal («Pendiente nota aval») → Nota de Aval del Director de Zona («Pendiente informe jurídico»).
