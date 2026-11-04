@@ -589,6 +589,9 @@ export default function ActionButtons({
     ...(!tipoMedidaEvaluado ? ["elegir el tipo de medida"] : []),
   ]
 
+  // El servidor exige la justificación del director para autorizar o no autorizar.
+  const faltaJustificacionDirector = !normalizeApiText(justificacionDirector ?? "")
+
   const textoInformes = nombresInformes.length > 0 ? ` Se adjunta: ${nombresInformes.join(", ")}.` : ""
 
   // NNyA sobre los que se crea legajo/medida: al autorizar, los que registró el técnico en la solicitud;
@@ -894,13 +897,18 @@ export default function ActionButtons({
       </Box>
       {!isAdmin && archivosSlot}
       <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
-        <Button variant="contained" color="primary" onClick={() => pedirConfirmacion("autorizar")} disabled={isSubmitting}>
+        <Button variant="contained" color="primary" onClick={() => pedirConfirmacion("autorizar")} disabled={isSubmitting || faltaJustificacionDirector}>
           Autorizar
         </Button>
-        <Button variant="contained" color="error" onClick={() => pedirConfirmacion("no autorizar")} disabled={isSubmitting}>
+        <Button variant="contained" color="error" onClick={() => pedirConfirmacion("no autorizar")} disabled={isSubmitting || faltaJustificacionDirector}>
           No autorizar
         </Button>
       </Box>
+      {faltaJustificacionDirector && (
+        <Typography variant="caption" color="text.secondary">
+          Falta: completar la justificación del director.
+        </Typography>
+      )}
     </Paper>
   )
 

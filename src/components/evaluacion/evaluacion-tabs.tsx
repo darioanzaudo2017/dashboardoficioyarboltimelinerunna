@@ -235,6 +235,29 @@ export default function EvaluacionTabs({ data }: EvaluacionTabsProps) {
 
       {/* El servidor exige la justificación del técnico en la primera solicitud. Con discrepancia del director
           se edita dentro de "Justificaciones internas" (más abajo); si no, se pide acá para no trabar el pedido. */}
+      {/* Lo mismo para el director: el servidor exige su justificación para autorizar o no autorizar. */}
+      {!hayDiscrepanciaDirector && data.SolicitudTecnico && isDirector && (
+        <Box sx={{ mb: 2 }}>
+          <Paper sx={{ p: 3 }}>
+            <Typography variant="h6" sx={{ fontWeight: "bold", color: "#0EA5E9", mb: 0.5 }}>
+              JUSTIFICACIÓN DEL DIRECTOR
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              Obligatoria para autorizar o no autorizar la solicitud. Es de uso interno: no aparece en el informe.
+            </Typography>
+            <TextField
+              value={justificacionDirector}
+              onChange={(e) => setJustificacionDirector(e.target.value)}
+              multiline
+              rows={3}
+              fullWidth
+              variant="outlined"
+              placeholder="Ingrese la justificación del director"
+            />
+          </Paper>
+        </Box>
+      )}
+
       {!hayDiscrepanciaDirector && (
         <Box sx={{ mb: 2 }}>
           <Paper sx={{ p: 3 }}>
