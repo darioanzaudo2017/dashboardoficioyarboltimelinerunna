@@ -259,11 +259,10 @@ export const enviarInformeJuridico = async (
     logger.log(`Enviando informe jurídico for medida ${medidaId}`)
 
     // POST to custom action endpoint (urls.py line 243: {'post': 'enviar_informe'})
+    // Sin toast acá: lo muestra el hook que llama (useInformeJuridico)
     const response = await create<EnviarInformeJuridicoResponse>(
       `medidas/${medidaId}/informe-juridico/enviar/`,
-      {},
-      true,
-      'Informe jurídico enviado exitosamente'
+      {}
     )
 
     logger.log("Informe jurídico enviado successfully:", response)
@@ -366,8 +365,7 @@ export const crearYEnviarInformeJuridico = async (
       `medidas/${medidaId}/informe-juridico/crear-y-enviar/`,
       formData
     )
-    toast.success('Informe jurídico creado y enviado exitosamente')
-
+    // El aviso al usuario lo da useInformeJuridico (un solo toast por acción).
     logger.log('[crearYEnviarInformeJuridico] Success:', response)
 
     return response
@@ -617,10 +615,9 @@ export const enviarInformeJuridicoAJuzgado = async (
   try {
     const response = await create<EnviarInformeAJuzgadoResponse>(
       `medidas/${medidaId}/informe-juridico/enviar-a-juzgado/`,
-      { adjuntos_adicionales: adjuntosAdicionales } as unknown as Partial<EnviarInformeAJuzgadoResponse>,
-      true,
-      'Informe jurídico enviado al juzgado'
+      { adjuntos_adicionales: adjuntosAdicionales } as unknown as Partial<EnviarInformeAJuzgadoResponse>
     )
+    // El toast (con destinatario y cantidad de archivos) lo muestra EnviarInformeJuzgadoDialog
 
     return response
   } catch (error: any) {
