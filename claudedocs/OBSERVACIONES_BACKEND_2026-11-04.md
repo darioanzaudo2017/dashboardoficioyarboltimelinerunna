@@ -118,3 +118,30 @@ Cese iniciado → intervención → aprobación → nota de aval → informe jur
 Se documentan para que no se confundan con uso normal. Medida `MED-2026-253` (legajo 179, datos de prueba):
 - `POST informe-juridico/crear-y-enviar/` (`201`, informe `86`) para comprobar el almacenamiento.
 - `POST intervenciones/crear-y-enviar/` de cese con dispositivo (`201`, `INT-MED-2026-000112`) para poder seguir tras el punto 10.
+
+---
+
+## Actualización (2026-11-04, noche II): recorrido de MPI y medida compartida
+
+### Circuito de MPI (funciona como se espera)
+`MED-2026-255` (legajo 180, medida compartida con el legajo 174): intervención de apertura → aprobación del Jefe Zonal → la apertura queda completa («Pendiente de informe de cierre», Seguimiento «Completado») → informe de cierre → **medida «Cerrada»** (`fecha_cierre` del día, `tipo_cese: Archivo de MPI cesada`). No pasa por aval, informe jurídico ni ratificación; el panel de la etapa los marca «no aplica». La MPI **no** exige dispositivo (a diferencia del cese de MPE, punto 10).
+
+### Nuevos hallazgos
+
+#### 13. `legajos_adicionales[].nnya.nombre_completo` trae el texto interno del objeto (media)
+- En una medida compartida, `GET /api/medidas/255/?legajo_id=180` devuelve para el otro NNyA:
+  `"nombre_completo": "delegano niño - 1001 - 2017-09-07 - None - 566723366 - VALIDO - MASCULINO - None - False - True"` (id `333`, `dni` `566723366`).
+- Es el `__str__` del modelo, no el nombre. La pantalla lo muestra tal cual en el chip «Esta medida también cubre a…».
+- **Pedido:** devolver `nombre` y `apellido` por separado (o un `nombre_completo` real, «Apellido, Nombre»).
+
+#### 14. Adjuntos de la evaluación sin nombre, tamaño ni fecha (baja)
+- `latest_evaluacion.adjuntos` de `registro-demanda-form/{id}/full-detail/` trae solo `{ "archivo": "<url firmada>" }`.
+- Las intervenciones sí traen `nombre_original`, `tamaño_bytes` y `fecha_subida`.
+- **Pedido:** agregar esos campos para mostrar el archivo completo. El front ya no rompe sin ellos (rama `mejora-evaluacion-archivo-nombre-fecha`).
+
+#### 15. Estados de etapa de MPI como código interno (baja)
+- `etapa_actual.estado` de una MPI llega como `PENDIENTE_DE_INFORME_DE_CIERRE` / `INFORME_DE_CIERRE_REDACTADO`, sin `estado_display` (la MPE sí lo trae, p. ej. «(4) Pendiente de informe jurídico»). La pantalla mostraba el código crudo.
+- **Pedido:** devolver `estado_display` también en las etapas de MPI. (En el repositorio original ya hay una rama del front que traduce esos códigos: `fix/codigos-crudos-etiquetas`.)
+
+### Pruebas directo contra la API (no desde la pantalla)
+Ninguna en este tramo: la MPI, la evaluación (incluida la subida del informe firmado) y el cierre se hicieron desde la pantalla.
