@@ -25,6 +25,7 @@ import SaveIcon from "@mui/icons-material/Save"
 // Import atomic components
 import { WizardModal, type WizardStep } from "../wizard-modal"
 import { RejectionDialog } from "../rejection-dialog"
+import { RechazoObservacionAlert } from "../rechazo-observacion-alert"
 
 // Import business logic hook
 import { useRegistroIntervencion } from "../../../../hooks/useRegistroIntervencion"
@@ -334,10 +335,18 @@ export const IntervencionModal: React.FC<IntervencionModalProps> = ({
     // WIZARD STEPS CONFIGURATION
     // ============================================================================
 
+    // El motivo del rechazo se muestra arriba en todos los pasos: el técnico lo necesita antes de corregir
+    const withRechazo = (content: React.ReactNode) => (
+        <>
+            <RechazoObservacionAlert intervencion={intervencion} sx={{ mb: 2 }} />
+            {content}
+        </>
+    )
+
     const wizardSteps: WizardStep[] = [
-        { label: 'Información Básica', content: getStepContent(0) },
-        { label: 'Detalles de Intervención', content: getStepContent(1) },
-        { label: 'Documentos y Configuración', content: getStepContent(2) },
+        { label: 'Información Básica', content: withRechazo(getStepContent(0)) },
+        { label: 'Detalles de Intervención', content: withRechazo(getStepContent(1)) },
+        { label: 'Documentos y Configuración', content: withRechazo(getStepContent(2)) },
     ]
 
     // Dynamic title based on tipoMedida and workflowPhase
@@ -417,7 +426,7 @@ export const IntervencionModal: React.FC<IntervencionModalProps> = ({
                 onConfirm={handleRechazarConfirm}
                 title="Rechazar Intervención"
                 description="Ingrese las observaciones o motivos del rechazo. Esta información será enviada al equipo técnico."
-                observacionesLabel="Observaciones *"
+                observacionesLabel="Observaciones"
                 observacionesPlaceholder="Describa los motivos del rechazo..."
                 confirmButtonLabel="Confirmar Rechazo"
                 cancelButtonLabel="Cancelar"
