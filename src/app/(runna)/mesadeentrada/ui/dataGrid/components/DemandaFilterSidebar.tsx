@@ -45,9 +45,12 @@ const ESTADO_OPTIONS: { value: EstadoDemanda; label: string; dotColor: string }[
   { value: "ADMITIDA", label: "Admitida", dotColor: "secondary.main" },
 ]
 
+// Valores de TDemanda.objetivo_de_demanda. "Constatación" es un estado, no un
+// objetivo: como objetivo no matcheaba ninguna demanda.
 const OBJETIVO_OPTIONS: { value: ObjetivoDemanda; label: string }[] = [
-  { value: "CONSTATACION", label: "Constatación" },
+  { value: "PROTECCION", label: "Protección" },
   { value: "PETICION_DE_INFORME", label: "Petición de Informe" },
+  { value: "CARGA_OFICIOS", label: "Carga de Oficios" },
 ]
 
 const ENVIO_OPTIONS: { value: EnvioRespuesta; label: string }[] = [

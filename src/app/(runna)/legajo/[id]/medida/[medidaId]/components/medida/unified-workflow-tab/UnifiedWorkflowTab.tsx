@@ -51,6 +51,7 @@ import { useWorkflowState } from "./hooks/useWorkflowState"
 import { loadEtapaDetail } from "./data/loadEtapaDetail"
 import { buildWorkflowSteps } from "./steps/buildWorkflowSteps"
 import { EtapaNotFoundView } from "./parts/EtapaNotFoundView"
+import { getMpiStepsCompletion } from "../../../utils/mpi-steps"
 import { EtapaHistorialSelector } from "./parts/EtapaHistorialSelector"
 import { IniciarOtraEtapaBanner } from "./parts/IniciarOtraEtapaBanner"
 import { WorkflowV2View } from "./parts/WorkflowV2View"
@@ -209,8 +210,11 @@ export const UnifiedWorkflowTab: React.FC<UnifiedWorkflowTabProps> = ({
   const totalSteps = isMPI ? 3 : 4
 
   // MPI specific completion logic
-  const mpiStep2Completed = step1Completed // Follow-up is accessible once approved
-  const mpiStep3Completed = estadoActual === "CERRADA" || estadoActual === "INFORME_DE_CIERRE_REDACTADO"
+  // El Seguimiento sigue en curso mientras corre el plan de trabajo: no se
+  // completa al aprobar el registro sino al registrar el informe de cierre.
+  const mpiSteps = getMpiStepsCompletion(estadoActual)
+  const mpiStep2Completed = mpiSteps.seguimientoCompletado
+  const mpiStep3Completed = mpiSteps.cierreCompletado
 
   const completedSteps = isMPI
     ? [step1Completed, mpiStep2Completed, mpiStep3Completed]

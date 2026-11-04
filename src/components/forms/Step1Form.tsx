@@ -315,6 +315,7 @@ const Step1Form: React.FC<{
         searchData.localizacion = {
           calle: watchedLocalizacion.calle,
           localidad: Number(watchedLocalizacion.localidad),
+          casa_nro: Number(watchedLocalizacion.casa_nro) || undefined,
         }
       }
 

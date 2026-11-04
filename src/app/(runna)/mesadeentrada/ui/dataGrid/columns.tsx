@@ -4,6 +4,7 @@ import { Box, Button, Chip, IconButton, Tooltip, Typography } from "@mui/materia
 import type { GridColDef } from "@mui/x-data-grid"
 import { TouchApp, Edit, Warning, Visibility, Assignment, Link as LinkIcon } from "@mui/icons-material"
 import { AdjuntosCell } from "./AdjuntosCell"
+import { getCalificacionLabel } from "./utils"
 import { StatusChip } from "./StatusChip"
 import { DNI_VER_LEGAJO, formatCalificacionValue, formatUnderscoreText } from "./utils"
 import { formatObjetivoDemanda } from "@/utils/demandaLabels"
@@ -188,7 +189,7 @@ export const buildDemandaColumns = ({
             </select>
           ) : (
             <Typography variant="body2" color="text.secondary">
-              {formatCalificacionValue(params.value)}
+              {getCalificacionLabel(params.value, params.row.calificacion_choices)}
             </Typography>
           )}
         </Box>

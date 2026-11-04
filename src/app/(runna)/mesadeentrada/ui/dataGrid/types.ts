@@ -29,7 +29,7 @@ export interface DemandaFilterState {
     | "ARCHIVADA"
     | "ADMITIDA"
     | null
-  objetivo_de_demanda: "CONSTATACION" | "PETICION_DE_INFORME" | null
+  objetivo_de_demanda: "PROTECCION" | "PETICION_DE_INFORME" | "CARGA_OFICIOS" | null
 }
 
 /** Filtros efectivamente enviados al backend (incluye la búsqueda inline). */
