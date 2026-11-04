@@ -83,6 +83,7 @@ Límites conocidos, dependencias del backend, ideas siguientes.
 | 2026-11-04 | `mejora-aviso-visado-subtipo` | Actividad: el aviso de visado al completar solo aparece si el subtipo lo exige — [documento](2026-11-04_aviso-visado-actividad.md) |
 | 2026-11-04 | `mejora-fecha-detalle-actividad` | Detalle de actividad: la fecha planificada ya no sale un día antes — [documento](2026-11-04_fecha-detalle-actividad.md) |
 | 2026-11-04 | `traer-original-toasts` | Un solo aviso por acción en intervención, informe jurídico y ratificación (traído del repositorio original) — [documento](2026-11-04_traida-original-toasts.md) |
+| 2026-11-04 | `mejora-campos-texto-crecen` | Intervención: los campos de texto largos crecen al escribir — [documento](2026-11-04_campos-texto-crecen.md) |
 
 ## Orden recomendado para unir las ramas
 
@@ -130,6 +131,7 @@ y GitHub debe conservar esa relación. Los dos conflictos conocidos están marca
 | 36 | `mejora-aviso-visado-subtipo` | Toca solo `CambiarEstadoSection.tsx`; archivos nuevos aparte. |
 | 37 | `mejora-fecha-detalle-actividad` | Toca solo `EditableFields.tsx`. |
 | 38 | `traer-original-toasts` | Rama del original (`santiago6124`); se une sin conflicto, verificado con simulación de merge. |
+| 39 | `mejora-campos-texto-crecen` | Toca solo `StepDetalles.tsx`. |
 
 La rama **`integracion`** ya tiene las 19 unidas (de la 10 en adelante son casi independientes; los conflictos conocidos están marcados en la tabla) (merge commits, tipos sin errores, 59 tests pasando).
 

@@ -216,7 +216,8 @@ export function StepDetalles({
                     <TextField
                         label="Intervención específica"
                         multiline
-                        rows={1}
+                        minRows={2}
+                        maxRows={12}
                         fullWidth
                         value={formData.intervencion_especifica}
                         onChange={(e) => updateField('intervencion_especifica', e.target.value)}
@@ -230,7 +231,8 @@ export function StepDetalles({
                     <TextField
                         label={workflowPhase === 'cese' ? "Descripción detallada del cese" : "Descripción detallada"}
                         multiline
-                        rows={1}
+                        minRows={2}
+                        maxRows={12}
                         fullWidth
                         value={formData.descripcion_detallada}
                         onChange={(e) => updateField('descripcion_detallada', e.target.value)}
@@ -244,7 +246,8 @@ export function StepDetalles({
                     <TextField
                         label={workflowPhase === 'cese' ? "Motivo de Cese" : "Motivo de vulneraciones"}
                         multiline
-                        rows={1}
+                        minRows={2}
+                        maxRows={12}
                         fullWidth
                         value={formData.motivo_vulneraciones}
                         onChange={(e) => updateField('motivo_vulneraciones', e.target.value)}
