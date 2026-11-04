@@ -107,6 +107,10 @@ Cese iniciado → intervención → aprobación → nota de aval → informe jur
 - El formulario de cese no pide dispositivo (solo apertura e innovación) y la medida ya tiene uno configurado. Con ambos campos el servidor acepta (`201`, `INT-MED-2026-000112`).
 - `x-railway-request-id` del primer rechazo: `LGgLVHOqQB-obnPA-_9nXA`.
 - **Pedido:** no exigir el dispositivo en la intervención de cese, o tomarlo de la medida. Si se prefiere exigirlo, avisar y el front lo manda.
+- **DECISIÓN PENDIENTE (a definir con el usuario y el equipo de backend).** Hoy el cese de MPE **no se puede enviar desde la pantalla**. Dos salidas:
+  - **A. El backend deja de exigir el dispositivo en el cese** (el cese no depende del dispositivo; es lo recomendado). El front no cambia.
+  - **B. El front manda el dispositivo que la medida ya tiene configurado** (tipo y subtipo de la última intervención aprobada). Es un cambio chico, pero depende de que la medida tenga un dispositivo cargado; si no lo tiene, el cese seguiría bloqueado.
+  - Mientras no se decida, el cese de MPE solo se completó por API (ver «Pruebas hechas directo contra la API»). El cese de MPI y el de MPJ no tienen este problema.
 
 #### 11. Etapa de cese que no avanza de estado en el historial (media)
 - Después de cerrada la medida, `historial_etapas` sigue mostrando la etapa `MPE - CESE` en `PENDIENTE_INFORME_JURIDICO`, aunque el informe ya se envió. Conviene que quede en un estado final.
