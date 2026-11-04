@@ -48,6 +48,7 @@ import type {
   RatificacionJudicial,
 } from "../../types/ratificacion-judicial-api"
 import { DecisionJudicial } from "../../types/ratificacion-judicial-api"
+import { toDateObject } from "@/utils/dateUtils"
 import { logger } from "@/utils/logger"
 
 // ============================================================================
@@ -94,7 +95,7 @@ const isPendingRatificacionJudicial = (estadoActual?: string): boolean => {
 }
 
 const formatDate = (dateString: string) => {
-  const date = new Date(dateString)
+  const date = toDateObject(dateString)
   return new Intl.DateTimeFormat("es-AR", {
     day: "2-digit",
     month: "long",
