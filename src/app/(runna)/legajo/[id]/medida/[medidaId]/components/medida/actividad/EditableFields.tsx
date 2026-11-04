@@ -13,6 +13,7 @@ import CalendarTodayIcon from '@mui/icons-material/CalendarToday'
 import PersonIcon from '@mui/icons-material/Person'
 import DescriptionIcon from '@mui/icons-material/Description'
 import type { TActividadPlanTrabajo } from '../../../types/actividades'
+import { toDateObject } from '@/utils/dateUtils'
 
 interface EditableFieldsProps {
   actividad: TActividadPlanTrabajo
@@ -43,7 +44,8 @@ export const EditableFields: React.FC<EditableFieldsProps> = ({
   const formatFecha = (fecha: string | null | undefined) => {
     if (!fecha) return 'No especificada'
     try {
-      return new Date(fecha).toLocaleDateString('es-ES', {
+      // toDateObject evita el corrimiento de un día: "2026-11-04" se leería como medianoche UTC (3 de noviembre en Argentina)
+      return toDateObject(fecha).toLocaleDateString('es-ES', {
         day: '2-digit',
         month: 'long',
         year: 'numeric'
