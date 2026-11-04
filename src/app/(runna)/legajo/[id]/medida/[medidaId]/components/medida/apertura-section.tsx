@@ -6,6 +6,7 @@ import DescriptionIcon from "@mui/icons-material/Description"
 import AssignmentIcon from "@mui/icons-material/Assignment"
 import PostAddIcon from "@mui/icons-material/PostAdd"
 import { SectionCard } from "./section-card"
+import { RechazoObservacionAlert } from "./shared/rechazo-observacion-alert"
 import { RegistroIntervencionModal } from "./registro-intervencion-modal"
 import { useState, useEffect } from "react"
 import { getAdjuntos } from "../../api/intervenciones-api-service"
@@ -167,6 +168,8 @@ export const AperturaSection: React.FC<AperturaSectionProps> = ({
             <strong>Equipo:</strong> {data.equipo}
           </Typography>
         )}
+
+        <RechazoObservacionAlert intervencion={intervenciones[0]} sx={{ mb: 2 }} />
 
         <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
           <Button

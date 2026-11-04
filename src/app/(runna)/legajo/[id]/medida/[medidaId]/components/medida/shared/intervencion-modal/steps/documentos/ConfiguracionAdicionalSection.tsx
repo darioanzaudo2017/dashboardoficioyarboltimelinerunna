@@ -13,6 +13,7 @@ import {
 import InfoIcon from "@mui/icons-material/Info"
 import type { ReactNode } from "react"
 import type { RegistroIntervencion } from "../../types"
+import { observacionDeRechazo } from "../../../../../../utils/observacion-rechazo"
 
 interface ConfiguracionAdicionalSectionProps {
     formData: RegistroIntervencion["formData"]
@@ -88,7 +89,8 @@ export function ConfiguracionAdicionalSection({
                                 )}
                             </Box>
 
-                            {intervencion.observaciones_jz && (
+                            {/* Si la intervención volvió rechazada, el aviso ya se muestra arriba del modal */}
+                            {intervencion.observaciones_jz && !observacionDeRechazo(intervencion) && (
                                 <Alert severity="warning" sx={{ mb: 2 }}>
                                     <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
                                         Observaciones del Jefe Zonal:
