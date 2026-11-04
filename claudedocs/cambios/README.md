@@ -74,6 +74,7 @@ Límites conocidos, dependencias del backend, ideas siguientes.
 | 2026-11-03 | `mejora-informe-juridico-adjuntos-tecnico` | Informe jurídico: Equipo Legal ve los documentos que cargó el técnico (informe obligatorio y adjuntos) — [documento](2026-11-03_informe-juridico-adjuntos-tecnico.md) |
 | 2026-11-03 | `mejora-pagina-ninos-por-dispositivo` | Página nueva "Dispositivos": cantidad de niños por tipo de dispositivo e institución o familia — [documento](2026-11-03_pagina-ninos-por-dispositivo.md) |
 | 2026-11-03 | `mejora-legajo-boton-asignar` | Legajo: botón "Asignar responsable" cuando no tiene técnico asignado — [documento](2026-11-03_legajo-boton-asignar.md) |
+| 2026-11-04 | `mejora-evaluacion-justificacion-tecnico` | Evaluación: la justificación del técnico se pide antes de enviar la solicitud (el servidor la exige) — [documento](2026-11-04_evaluacion-justificacion-tecnico.md) |
 
 ## Orden recomendado para unir las ramas
 
@@ -112,6 +113,7 @@ y GitHub debe conservar esa relación. Los dos conflictos conocidos están marca
 | 27 | `mejora-informe-juridico-adjuntos-tecnico` | Toca `informe-juridico-section.tsx` y `buildWorkflowSteps.tsx`. |
 | 28 | `mejora-pagina-ninos-por-dispositivo` | Toca `Navbar.tsx` (se une sin conflicto con la 24, `mejora-link-tutorial`). |
 | 29 | `mejora-legajo-boton-asignar` | Toca `legajo-detail.tsx` y `legajo-header.tsx` (se une sin conflicto con la 23). |
+| 30 | `mejora-evaluacion-justificacion-tecnico` | Toca `evaluacion-tabs.tsx` y `action-buttons.tsx` (se une sin conflicto). |
 
 La rama **`integracion`** ya tiene las 19 unidas (de la 10 en adelante son casi independientes; los conflictos conocidos están marcados en la tabla) (merge commits, tipos sin errores, 59 tests pasando).
 
