@@ -43,6 +43,21 @@ export const formatFileSize = (bytes: number, decimals: number = 2): string => {
 }
 
 /**
+ * Nombre de un archivo a partir de su URL, sin los parámetros de la firma ("?X-Amz-...").
+ *
+ * @example
+ * nombreDeArchivoDesdeUrl("https://host/a/informe%20final.pdf?X-Amz-Signature=abc") // "informe final.pdf"
+ */
+export const nombreDeArchivoDesdeUrl = (url: string, porDefecto = "archivo"): string => {
+  const nombre = url.split("?")[0].split("/").pop() || porDefecto
+  try {
+    return decodeURIComponent(nombre)
+  } catch {
+    return nombre
+  }
+}
+
+/**
  * Get file extension from filename
  *
  * @param filename - Full filename with extension

@@ -77,6 +77,7 @@ Límites conocidos, dependencias del backend, ideas siguientes.
 | 2026-11-04 | `mejora-evaluacion-justificacion-tecnico` | Evaluación: la justificación del técnico se pide antes de enviar la solicitud (el servidor la exige) — [documento](2026-11-04_evaluacion-justificacion-tecnico.md) |
 | 2026-11-04 | `mejora-evaluacion-justificacion-director` | Evaluación: la justificación del director se pide antes de autorizar o no autorizar (el servidor la exige) — [documento](2026-11-04_evaluacion-justificacion-director.md) |
 | 2026-11-04 | `mejora-fechas-ratificacion-informe` | Ratificación judicial e informe jurídico: las fechas de calendario ya no se ven un día antes — [documento](2026-11-04_fechas-ratificacion-informe.md) |
+| 2026-11-04 | `mejora-evaluacion-archivo-nombre-fecha` | Evaluación: el archivo cargado ya no muestra la URL firmada, un "0" ni "Invalid Date" — [documento](2026-11-04_evaluacion-archivo-nombre-fecha.md) |
 
 ## Orden recomendado para unir las ramas
 
@@ -118,6 +119,7 @@ y GitHub debe conservar esa relación. Los dos conflictos conocidos están marca
 | 30 | `mejora-evaluacion-justificacion-tecnico` | Toca `evaluacion-tabs.tsx` y `action-buttons.tsx` (se une sin conflicto). |
 | 31 | `mejora-evaluacion-justificacion-director` | Va después de la 30 (mismos archivos); se une sin conflicto. |
 | 32 | `mejora-fechas-ratificacion-informe` | Toca tres componentes de la medida y usa `toDateObject` (ver la 26); se une sin conflicto. |
+| 33 | `mejora-evaluacion-archivo-nombre-fecha` | Toca `file-management.tsx` y `fileUtils.ts` (se une sin conflicto). |
 
 La rama **`integracion`** ya tiene las 19 unidas (de la 10 en adelante son casi independientes; los conflictos conocidos están marcados en la tabla) (merge commits, tipos sin errores, 59 tests pasando).
 
