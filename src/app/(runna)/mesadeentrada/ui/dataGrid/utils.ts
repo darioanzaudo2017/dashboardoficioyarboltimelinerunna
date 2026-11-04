@@ -18,6 +18,20 @@ export const formatCalificacionValue = (value: string | undefined | null) => {
   return value || "Seleccionar"
 }
 
+/**
+ * Etiqueta de la calificación para mostrar en modo lectura. Usa las choices que
+ * manda el back (`[codigo, etiqueta]`) en lugar del código crudo
+ * (p. ej. "Pertinente de Constatación Urgente" y no "PERTINENTE_CONSTATACION_URGENTE").
+ */
+export const getCalificacionLabel = (value: string | undefined | null, choices?: unknown): string => {
+  if (!value) return "-"
+  if (Array.isArray(choices)) {
+    const choice = choices.find((c) => Array.isArray(c) && c[0] === value)
+    if (choice && typeof choice[1] === "string") return choice[1]
+  }
+  return formatUnderscoreText(value)
+}
+
 export const getStatusColor = (estado: string) => {
   switch (estado) {
     case "SIN_ASIGNAR":

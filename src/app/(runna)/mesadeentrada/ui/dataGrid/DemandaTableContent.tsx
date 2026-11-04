@@ -55,7 +55,7 @@ const DemandaTableContent: React.FC = () => {
   const [filterState, setFilterState] = useState<{
     envio_de_respuesta: "NO_NECESARIO" | "PENDIENTE" | "ENVIADO" | null;
     estado_demanda: "SIN_ASIGNAR" | "CONSTATACION" | "EVALUACION" | "PENDIENTE_AUTORIZACION" | "ARCHIVADA" | "ADMITIDA" | null;
-    objetivo_de_demanda: "CONSTATACION" | "PETICION_DE_INFORME" | null;
+    objetivo_de_demanda: "PROTECCION" | "PETICION_DE_INFORME" | "CARGA_OFICIOS" | null;
   }>({
     envio_de_respuesta: null,
     estado_demanda: null,
@@ -188,7 +188,7 @@ const DemandaTableContent: React.FC = () => {
   const handleFilterChange = (newFilters: {
     envio_de_respuesta: "NO_NECESARIO" | "PENDIENTE" | "ENVIADO" | null;
     estado_demanda: "SIN_ASIGNAR" | "CONSTATACION" | "EVALUACION" | "PENDIENTE_AUTORIZACION" | "ARCHIVADA" | "ADMITIDA" | null;
-    objetivo_de_demanda: "CONSTATACION" | "PETICION_DE_INFORME" | null;
+    objetivo_de_demanda: "PROTECCION" | "PETICION_DE_INFORME" | "CARGA_OFICIOS" | null;
   }) => {
     setApiFilters((prev) => ({
       ...prev,

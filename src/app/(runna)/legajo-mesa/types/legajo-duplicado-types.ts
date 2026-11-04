@@ -208,6 +208,9 @@ export interface VincularDemandaRequest {
   /** ID de la demanda en registro */
   demanda_id: number
 
+  /** NNyA de la demanda que es el duplicado (opcional: si falta, el backend elige el de mayor coincidencia) */
+  persona_id?: number
+
   /** Si se deben actualizar los datos del NNyA con nueva info */
   actualizar_datos_nnya?: boolean
 
@@ -222,6 +225,8 @@ export interface VincularDemandaResponse {
   vinculacion_exitosa: boolean
   legajo_id: number
   demanda_id: number
+  /** Persona cargada en la demanda que se reemplazó por el NNyA del legajo y quedó dada de baja */
+  persona_reemplazada_id: number
   nnya_actualizado: boolean
   campos_actualizados: string[]
   notificaciones_enviadas: Array<{
@@ -271,9 +276,10 @@ export interface CrearConDuplicadoRequest {
  * Respuesta de creación forzada
  */
 export interface CrearConDuplicadoResponse {
+  /** Siempre false: el backend solo audita; el legajo se crea al admitir la demanda. */
   legajo_creado: boolean
-  legajo_id: number
-  legajo_numero: string
+  legajo_id: number | null
+  legajo_numero: string | null
   skip_duplicate_check: boolean
   auditoria: {
     usuario_id: number

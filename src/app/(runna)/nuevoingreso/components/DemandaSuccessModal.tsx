@@ -68,9 +68,8 @@ export const DemandaSuccessModal: React.FC<DemandaSuccessModalProps> = ({
   const nnyaCount = getNnyaCount(data)
   const adultosCount = getAdultosCount(data)
   const hasPlanTrabajo = localActividades.length > 0
-  const incorporatedCount = vinculos_legajo?.length
-    ? Math.max(0, (data.demanda_personas?.length ?? 0) - personas.length)
-    : 0
+  // El backend marca con origen a las personas que sumó desde un legajo vinculado.
+  const incorporatedCount = personas.filter((persona) => persona.origen === "legajo_vinculado").length
 
   // Get first medida and legajo for navigation
   const firstMedida = medidas_creadas?.[0]

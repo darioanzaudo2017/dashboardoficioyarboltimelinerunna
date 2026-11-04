@@ -63,9 +63,14 @@ describe("reglas de campos numéricos", () => {
     expect(dniFieldRules.validate(2147483647)).toBe(true)
   })
 
-  it("rechaza lo que el backend no puede guardar, con una pista según el campo", () => {
-    expect(phoneFieldRules.validate("3511234567")).toContain("sin código de área")
-    expect(dniFieldRules.validate("3511234567")).toContain("2.147.483.647")
+  it("acepta celulares con característica (el backend ya guarda 64 bits)", () => {
+    expect(phoneFieldRules.validate("3511234567")).toBe(true)
+    expect(phoneFieldRules.validate(5493511234567)).toBe(true)
+  })
+
+  it("rechaza números que no entran sin perder precisión, con una pista según el campo", () => {
+    expect(phoneFieldRules.validate("12345678901234567890")).toContain("teléfono no tenga dígitos de más")
+    expect(dniFieldRules.validate("12345678901234567890")).toContain("DNI no tenga dígitos de más")
   })
 
   it("rechaza decimales y negativos", () => {

@@ -40,6 +40,9 @@ export interface DemandaCreatedResponse {
     nombre: string
     apellido: string
     dni: number | null
+    /** "formulario" = cargada en esta demanda; "legajo_vinculado" = sumada desde un legajo vinculado. */
+    origen?: "formulario" | "legajo_vinculado" | "existente"
+    legajo_numero?: string | null
   }>
   demanda_personas: Array<{
     id: number
