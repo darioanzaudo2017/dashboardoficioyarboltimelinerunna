@@ -4,6 +4,7 @@ import {
   formatFileSize,
   getFileExtension,
   isAllowedExtension,
+  nombreDeArchivoDesdeUrl,
 } from "@/utils/fileUtils"
 
 describe("fileUtils", () => {
@@ -27,5 +28,16 @@ describe("fileUtils", () => {
     expect(formatFileSize(512)).toBe("512 B")
     expect(formatFileSize(1536, 1)).toBe("1.5 KB")
     expect(formatFileSize(1024 * 1024)).toBe("1.00 MB")
+  })
+
+  it("toma el nombre de la URL sin los parámetros de la firma", () => {
+    const firmada = "https://t3.storageapi.dev/bucket/evaluaciones/prueba.pdf?X-Amz-Algorithm=AWS4&X-Amz-Signature=abc123"
+    expect(nombreDeArchivoDesdeUrl(firmada)).toBe("prueba.pdf")
+  })
+
+  it("decodifica el nombre y usa uno por defecto si la URL no tiene", () => {
+    expect(nombreDeArchivoDesdeUrl("/media/a/informe%20final.pdf")).toBe("informe final.pdf")
+    expect(nombreDeArchivoDesdeUrl("/media/a/100%.pdf")).toBe("100%.pdf")
+    expect(nombreDeArchivoDesdeUrl("", "archivo_1")).toBe("archivo_1")
   })
 })

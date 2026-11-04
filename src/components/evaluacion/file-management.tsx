@@ -5,7 +5,7 @@ import type React from "react"
 import { useState, forwardRef, useImperativeHandle, useEffect } from "react"
 import { Box } from "@mui/material"
 import { toast } from "react-toastify"
-import { formatFileSize } from "@/utils/fileUtils"
+import { formatFileSize, nombreDeArchivoDesdeUrl } from "@/utils/fileUtils"
 import { FileUploadSection, type FileItem as FileUploadItem } from "@/app/(runna)/legajo/[id]/medida/[medidaId]/components/medida/shared/file-upload-section"
 
 interface FileInfo {
@@ -43,9 +43,9 @@ const FileManagement = forwardRef<FileManagementHandle, FileManagementProps>(({ 
   useEffect(() => {
     if (existingAdjuntos && existingAdjuntos.length > 0) {
       const existingFiles = existingAdjuntos.map((adjunto, index) => {
-        // Extract filename from URL
         const url = adjunto.archivo
-        const fileName = url.split('/').pop() || `archivo_${index + 1}`
+        // La URL firmada trae un "?X-Amz-..." que no es parte del nombre
+        const fileName = nombreDeArchivoDesdeUrl(url, `archivo_${index + 1}`)
 
         // Determine if it's a full URL or relative path
         const fileUrl = url.startsWith('http') ? url : `${process.env.NEXT_PUBLIC_API_URL || ''}${url}`
@@ -65,8 +65,8 @@ const FileManagement = forwardRef<FileManagementHandle, FileManagementProps>(({ 
           id: `existing_${index}`,
           name: fileName,
           type: fileType,
-          size: 0, // Unknown size for existing files
-          date: 'Archivo existente',
+          size: 0, // el servidor no manda el tamaño de los archivos ya guardados
+          date: '', // ni la fecha: se deja vacía para no mostrar "Invalid Date"
           url: fileUrl,
           archivo: url,
           // No File object for existing files from server
@@ -91,7 +91,7 @@ const FileManagement = forwardRef<FileManagementHandle, FileManagementProps>(({ 
         name: fileName,
         type: "application/pdf",
         size: pdfBlob.size,
-        date: new Date().toLocaleString(),
+        date: new Date().toISOString(),
         url: blobUrl,
         archivo: `/media/TDemandaAdjunto/archivo_${Math.floor(Math.random() * 1000)}/${fileName}`,
         file: file, // Store the File object
@@ -125,8 +125,9 @@ const FileManagement = forwardRef<FileManagementHandle, FileManagementProps>(({ 
     nombre: file.name,
     tipo: file.type,
     url: file.url,
-    tamano: file.size,
-    fecha_subida: file.date,
+    // Sin tamaño ni fecha (archivo ya guardado) se pasa undefined: con 0 React dibuja un "0" suelto
+    tamano: file.size || undefined,
+    fecha_subida: file.date || undefined,
   }))
 
   // Handle file upload
@@ -136,7 +137,7 @@ const FileManagement = forwardRef<FileManagementHandle, FileManagementProps>(({ 
       name: file.name,
       type: file.type,
       size: file.size,
-      date: new Date().toLocaleString(),
+      date: new Date().toISOString(),
       url: URL.createObjectURL(file),
       archivo: '', // Will be set after upload to server
       file: file,
