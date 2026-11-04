@@ -149,3 +149,17 @@ Se documentan para que no se confundan con uso normal. Medida `MED-2026-253` (le
 
 ### Pruebas directo contra la API (no desde la pantalla)
 Ninguna en este tramo: la MPI, la evaluación (incluida la subida del informe firmado) y el cierre se hicieron desde la pantalla.
+
+## Actualización (2026-11-04, noche III): plan de trabajo de la MPI
+
+Se creó la MPI `MED-2026-256` (legajo 181) desde la demanda #335 y se probó el plan de trabajo desde la pantalla.
+
+#### 16. Actividad que «exige adjuntos obligatorios al cerrar» se completa sin adjuntos (a confirmar)
+- Subtipo «Seguimiento del esquema de vacunación» (catálogo: «Exige adjuntos obligatorios al cerrar» = sí). Se pasó la actividad a «Completada» **sin adjuntar nada** y el servidor la aceptó.
+- El front solo advierte la evidencia en actividades de origen pedido de informe u oficio, así que no la exige por su cuenta.
+- **A confirmar:** ¿la regla del catálogo debe bloquear la finalización en todos los orígenes? Si sí, falta la validación en el servidor.
+
+#### 17. Catálogo: tipo «Derecho a la salud» con visado legal tildado (datos)
+- El tipo «Derecho a la salud» (Equipo Técnico) tiene «Requiere visado del equipo legal» = sí, pero sus subtipos no. El servidor decide por el subtipo (la actividad se completa directo); el tilde del tipo no tiene efecto.
+- Criterio del usuario: casi todas las actividades de Equipo Técnico no llevan visado; las de Legales sí. **Revisar** si el tilde del tipo corresponde.
+- El front ya decide el aviso de visado por el subtipo (rama `mejora-aviso-visado-subtipo`).

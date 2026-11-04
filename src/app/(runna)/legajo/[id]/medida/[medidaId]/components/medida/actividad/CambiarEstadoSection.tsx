@@ -20,6 +20,7 @@ import {
 } from '@mui/material'
 import ChangeCircleIcon from '@mui/icons-material/ChangeCircle'
 import type { TActividadPlanTrabajo } from '../../../types/actividades'
+import { actividadRequiereVisado } from '../../../utils/actividad-visado'
 
 // Valid state transitions based on PLTM-02 specification
 // Note: PENDIENTE_VISADO_JZ is auto-transitioned by backend when completing activity with requiere_visado_legales=true
@@ -80,10 +81,8 @@ export const CambiarEstadoSection: React.FC<CambiarEstadoSectionProps> = ({
   // Las actividades que vienen de un pedido de informe u oficio no se pueden completar sin evidencia adjunta.
   const requiereEvidencia = actividad.origen === 'DEMANDA_PI' || actividad.origen === 'DEMANDA_OFICIO'
   const sinAdjuntos = (actividad.adjuntos?.length ?? 0) === 0
-  // El visado puede estar configurado en el subtipo o en el tipo de actividad.
-  const requiereVisado = !!(
-    actividad.subtipo_actividad_info?.requiere_visado_legales || actividad.tipo_actividad_info?.requiere_visado_legales
-  )
+  // El visado lo decide el subtipo: si solo el tipo lo tiene tildado, el servidor completa la actividad directo.
+  const requiereVisado = actividadRequiereVisado(actividad)
   const transicionesPermitidas = TRANSICIONES_PERMITIDAS[estadoActual] || []
 
   const handleOpenDialog = () => {
